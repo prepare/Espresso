@@ -52,7 +52,7 @@ using namespace v8;
 
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
-#elif 
+#else 
 #define EXPORT
 #endif
 
