@@ -38,7 +38,7 @@ namespace VroomJs
         delegate JsValue KeepAliveSetPropertyValueDelegate(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
         delegate JsValue KeepAliveInvokeDelegate(int slot, JsValue args);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern IntPtr jsengine_new(
             KeepaliveRemoveDelegate keepaliveRemove,
             KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
@@ -46,46 +46,46 @@ namespace VroomJs
             KeepAliveInvokeDelegate keepaliveInvoke
         );
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern void jsengine_dispose(HandleRef engine);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern void jsengine_force_gc();
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_execute(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string str);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
 		static extern JsValue jsengine_get_global(HandleRef engine);
-		
-		[DllImport("VrooomJsNative")]
+
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_get_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_set_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
-		
-		[DllImport("VrooomJsNative")]
+
+		[DllImport("VroomJsNative")]
 		static extern JsValue jsengine_get_property_names(HandleRef engine, IntPtr ptr);
-	
-		[DllImport("VrooomJsNative")]
+
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_get_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name);
-		
-		[DllImport("VrooomJsNative")]
+
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_set_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static extern JsValue jsengine_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static internal extern JsValue jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static internal extern JsValue jsvalue_alloc_array(int length);
 
-		[DllImport("VrooomJsNative")]
+		[DllImport("VroomJsNative")]
         static internal extern void jsvalue_dispose(JsValue value);
 
         public JsEngine()

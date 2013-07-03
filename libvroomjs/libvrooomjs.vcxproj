@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{17763511-67AD-42AB-A27B-E3F63A3D1DC5}</ProjectGuid>
     <RootNamespace>libvrooomjs</RootNamespace>
-    <ProjectName>VrooomJsNative</ProjectName>
+    <ProjectName>VroomJsNative</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
