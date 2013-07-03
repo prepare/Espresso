@@ -50,6 +50,8 @@ using namespace v8;
 #define JSVALUE_TYPE_WRAPPED        14
 #define JSVALUE_TYPE_WRAPPED_ERROR  15
 
+#define EXPORT __declspec(dllexport)
+
 extern "C" 
 {
     struct jsvalue
@@ -72,7 +74,7 @@ extern "C"
         int32_t         length; // Also used as slot index on the CLR side.
     };
     
-    void jsvalue_dispose(jsvalue value);
+   EXPORT void jsvalue_dispose(jsvalue value);
 }
 
 // The only way for the C++/V8 side to call into the CLR is to use the function
@@ -109,8 +111,10 @@ class JsEngine {
     
     // Called by bridge to execute JS from managed code.
     jsvalue Execute(const uint16_t* str);    
+	jsvalue GetGlobal();
     jsvalue GetVariable(const uint16_t* name);
     jsvalue SetVariable(const uint16_t* name, jsvalue value);
+	jsvalue GetPropertyNames(Persistent<Object>* obj);
     jsvalue GetPropertyValue(Persistent<Object>* obj, const uint16_t* name);
     jsvalue SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value);
     jsvalue InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args);

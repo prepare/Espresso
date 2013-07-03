@@ -29,7 +29,7 @@ using namespace v8;
 
 extern "C" 
 {
-    JsEngine* jsengine_new(keepalive_remove_f keepalive_remove, 
+    EXPORT JsEngine* jsengine_new(keepalive_remove_f keepalive_remove, 
                            keepalive_get_property_value_f keepalive_get_property_value,
                            keepalive_set_property_value_f keepalive_set_property_value,
                            keepalive_invoke_f keepalive_invoke)
@@ -44,55 +44,65 @@ extern "C"
         return engine;
     }
 
-    void jsengine_dispose(JsEngine* engine)
+   EXPORT void jsengine_dispose(JsEngine* engine)
     {
         engine->Dispose();        
         delete engine;
     }
     
-    void jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
+    EXPORT void jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
     {
         if (engine != NULL)
             engine->DisposeObject(obj);
         delete obj;
     }     
     
-    void jsengine_force_gc()
+    EXPORT void jsengine_force_gc()
     {
         while(!V8::IdleNotification()) {};
     }
     
-    jsvalue jsengine_execute(JsEngine* engine, const uint16_t* str)
+    EXPORT jsvalue jsengine_execute(JsEngine* engine, const uint16_t* str)
     {
         return engine->Execute(str);
     }
         
-    jsvalue jsengine_set_variable(JsEngine* engine, const uint16_t* name, jsvalue value)
+	EXPORT jsvalue jsengine_get_global(JsEngine* engine)
+    {
+        return engine->GetGlobal();
+    }
+	
+    EXPORT jsvalue jsengine_set_variable(JsEngine* engine, const uint16_t* name, jsvalue value)
     {
         return engine->SetVariable(name, value);
     }
 
-    jsvalue jsengine_get_variable(JsEngine* engine, const uint16_t* name)
+    EXPORT jsvalue jsengine_get_variable(JsEngine* engine, const uint16_t* name)
     {
         return engine->GetVariable(name);
     }
 
-    jsvalue jsengine_get_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name)
+    EXPORT jsvalue jsengine_get_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name)
     {
         return engine->GetPropertyValue(obj, name);
     }
     
-    jsvalue jsengine_set_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue jsengine_set_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
     {
         return engine->SetPropertyValue(obj, name, value);
     }    
-    
-    jsvalue jsengine_invoke_property(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+
+	EXPORT jsvalue jsengine_get_property_names(JsEngine* engine, Persistent<Object>* obj)
+    {
+        return engine->GetPropertyNames(obj);
+    }    
+	    
+    EXPORT jsvalue jsengine_invoke_property(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
     {
         return engine->InvokeProperty(obj, name, args);
     }        
 
-    jsvalue jsvalue_alloc_string(const uint16_t* str)
+    EXPORT jsvalue jsvalue_alloc_string(const uint16_t* str)
     {
         jsvalue v;
     
@@ -112,7 +122,7 @@ extern "C"
         return v;
     }    
     
-    jsvalue jsvalue_alloc_array(const int32_t length)
+    EXPORT jsvalue jsvalue_alloc_array(const int32_t length)
     {
         jsvalue v;
           
@@ -125,7 +135,7 @@ extern "C"
         return v;
     }        
                 
-    void jsvalue_dispose(jsvalue value)
+    EXPORT void jsvalue_dispose(jsvalue value)
     {
         if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_ERROR) {
             if (value.value.str != NULL)

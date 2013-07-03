@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 
 namespace VroomJs
@@ -39,7 +40,7 @@ namespace VroomJs
 
             _engine = engine;
             _handle = ptr;
-        }
+		}
 
         readonly JsEngine _engine;
         readonly IntPtr _handle;
@@ -54,7 +55,7 @@ namespace VroomJs
             return true;
         }
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = _engine.GetPropertyValue(this, binder.Name);
             return true;
@@ -65,6 +66,11 @@ namespace VroomJs
             _engine.SetPropertyValue(this, binder.Name, value);
             return true;
         }
+
+		public override IEnumerable<string> GetDynamicMemberNames() 
+		{
+			return _engine.GetMemberNames(this);
+		}
 
         #region IDisposable implementation
 

@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -37,7 +38,7 @@ namespace VroomJs
         delegate JsValue KeepAliveSetPropertyValueDelegate(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
         delegate JsValue KeepAliveInvokeDelegate(int slot, JsValue args);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern IntPtr jsengine_new(
             KeepaliveRemoveDelegate keepaliveRemove,
             KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
@@ -45,40 +46,46 @@ namespace VroomJs
             KeepAliveInvokeDelegate keepaliveInvoke
         );
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern void jsengine_dispose(HandleRef engine);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern void jsengine_force_gc();
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_execute(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string str);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
+		static extern JsValue jsengine_get_global(HandleRef engine);
+		
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_get_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_set_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
-
-        [DllImport("vroomjs")]
+		
+		[DllImport("VrooomJsNative")]
+		static extern JsValue jsengine_get_property_names(HandleRef engine, IntPtr ptr);
+	
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_get_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name);
-
-        [DllImport("vroomjs")]
+		
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_set_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static extern JsValue jsengine_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static internal extern JsValue jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static internal extern JsValue jsvalue_alloc_array(int length);
 
-        [DllImport("vroomjs")]
+		[DllImport("VrooomJsNative")]
         static internal extern void jsvalue_dispose(JsValue value);
 
         public JsEngine()
@@ -136,6 +143,19 @@ namespace VroomJs
             return res;
         }
 
+		public object GetGlobal() 
+		{
+			CheckDisposed();	
+			JsValue v = jsengine_get_global(_engine);
+            object res = _convert.FromJsValue(v);
+            jsvalue_dispose(v);
+
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+		}
+
         public object GetVariable(string name)
         {
             if (name == null)
@@ -166,6 +186,27 @@ namespace VroomJs
 
             // TODO: Check the result of the operation for errors.
         }
+
+		public IEnumerable<string> GetMemberNames(JsObject obj) {
+			if (obj == null)
+				throw new ArgumentNullException("obj");
+
+			CheckDisposed();
+
+			if (obj.Handle == IntPtr.Zero)
+				throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+
+			JsValue v = jsengine_get_property_names(_engine, obj.Handle);
+			object res = _convert.FromJsValue(v);
+			jsvalue_dispose(v);
+
+			Exception e = res as JsException;
+			if (e != null)
+				throw e;
+
+			object[] arr = (object[])res;
+			return arr.Cast<string>();
+		}
 
         public object GetPropertyValue(JsObject obj, string name)
         {
@@ -411,5 +452,7 @@ namespace VroomJs
         }
 
         #endregion
+
+		
 	}
 }

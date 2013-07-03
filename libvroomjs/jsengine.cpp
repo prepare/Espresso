@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <vector>
+
 #include "vroomjs.h"
 
 using namespace v8;
@@ -73,10 +75,11 @@ JsEngine* JsEngine::New()
 {
     JsEngine* engine = new JsEngine();
     if (engine != NULL) {            
-        engine->isolate_ = Isolate::New();
+        engine->isolate_ = Isolate::GetCurrent();
         Locker locker(engine->isolate_);
         Isolate::Scope isolate_scope(engine->isolate_);
-        engine->context_ = new Persistent<Context>(Context::New());
+
+		engine->context_ = new Persistent<Context>(Context::New());
         
         (*(engine->context_))->Enter();
         
@@ -166,6 +169,29 @@ jsvalue JsEngine::SetVariable(const uint16_t* name, jsvalue value)
     return AnyFromV8(Null());
 }
 
+jsvalue JsEngine::GetGlobal() {
+	jsvalue v;
+    
+    Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+        
+    HandleScope scope;
+    TryCatch trycatch;
+                
+    Local<Value> value = (*context_)->Global();
+    if (!value.IsEmpty()) {
+        v = AnyFromV8(value);        
+    }
+    else {
+        v = ErrorFromV8(trycatch);
+    }
+    
+    (*context_)->Exit();
+    
+    return v;
+}
+
 jsvalue JsEngine::GetVariable(const uint16_t* name)
 {
     jsvalue v;
@@ -178,6 +204,29 @@ jsvalue JsEngine::GetVariable(const uint16_t* name)
     TryCatch trycatch;
                 
     Local<Value> value = (*context_)->Global()->Get(String::New(name));
+    if (!value.IsEmpty()) {
+        v = AnyFromV8(value);        
+    }
+    else {
+        v = ErrorFromV8(trycatch);
+    }
+    
+    (*context_)->Exit();
+    
+    return v;
+}
+
+jsvalue JsEngine::GetPropertyNames(Persistent<Object>* obj) {
+	 jsvalue v;
+    
+    Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+        
+    HandleScope scope;
+    TryCatch trycatch;
+                
+    Local<Value> value = (*obj)->GetPropertyNames();
     if (!value.IsEmpty()) {
         v = AnyFromV8(value);        
     }
@@ -250,11 +299,11 @@ jsvalue JsEngine::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, 
         v.type = JSVALUE_TYPE_ERROR;   
     }
     else {
-        Local<Value> argv[args.length];
-        ArrayToV8Args(args, argv);
+        std::vector<Local<Value>> argv(args.length);
+        ArrayToV8Args(args, &argv[0]);
         // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
         Local<Function> func = Local<Function>::Cast(prop);
-        Local<Value> value = func->Call(*obj, args.length, argv);
+        Local<Value> value = func->Call(*obj, args.length, &argv[0]);
         if (!value.IsEmpty()) {
             v = AnyFromV8(value);        
         }
@@ -280,7 +329,10 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
     v.value.str = 0;
     v.length = 0;
     
-    // If this is a managed exception we need to place its ID inside the jsvalue
+	Local<Message> message = trycatch.Message();
+	Local<String> errorString = message->Get();
+
+	// If this is a managed exception we need to place its ID inside the jsvalue
     // and set the type JSVALUE_TYPE_MANAGED_ERROR to make sure the CLR side will
     // throw on it. Else we just wrap and return the exception Object. Note that
     // this is far from perfect because we ignore both the Message object and the
@@ -291,14 +343,16 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
     if (exception->IsObject()) {
         Local<Object> obj = Local<Object>::Cast(exception);
         if (obj->InternalFieldCount() == 1) {
-            ManagedRef* ref = (ManagedRef*)obj->GetPointerFromInternalField(0); 
+            ManagedRef* ref = (ManagedRef*)obj->GetAlignedPointerFromInternalField(0); 
             v.type = JSVALUE_TYPE_MANAGED_ERROR;
             v.length = ref->Id();
-        }
-        else  {
+        } else if (errorString->Length() > 0) {
+			v = StringFromV8(errorString);
+			v.type = JSVALUE_TYPE_ERROR;  
+		} else {
             v = WrappedFromV8(obj);
-            v.type = JSVALUE_TYPE_WRAPPED_ERROR;        
-        }            
+            v.type = JSVALUE_TYPE_WRAPPED_ERROR;
+	    }            
     }
     else if (!exception.IsEmpty()) {
         v = StringFromV8(exception);
@@ -343,7 +397,7 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
 {
     jsvalue v;
     
-    ManagedRef* ref = (ManagedRef*)obj->GetPointerFromInternalField(0); 
+    ManagedRef* ref = (ManagedRef*)obj->GetAlignedPointerFromInternalField(0); 
     v.type = JSVALUE_TYPE_MANAGED;
     v.length = ref->Id();
     v.value.str = 0;
@@ -403,7 +457,7 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value)
     }
     else if (value->IsObject()) {
         Handle<Object> obj = Handle<Object>::Cast(value);
-        if (obj->InternalFieldCount() ==     1)
+        if (obj->InternalFieldCount() == 1)
             v = ManagedFromV8(obj);
         else
             v = WrappedFromV8(obj);
@@ -451,7 +505,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v)
     if (v.type == JSVALUE_TYPE_MANAGED || v.type == JSVALUE_TYPE_MANAGED_ERROR) {
         ManagedRef* ref = new ManagedRef(this, v.length);
         Persistent<Object> obj = Persistent<Object>::New((*(managed_template_))->NewInstance());
-        obj->SetInternalField(0, External::New(ref));
+        obj->SetAlignedPointerInInternalField(0, ref);
         obj.MakeWeak(NULL, managed_destroy);
         return obj;
     }

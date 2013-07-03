@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +13,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>..\build\Debug</OutputPath>
+    <OutputPath>..\build\Debug\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -47,13 +47,5 @@
     <Compile Include="VroomJs\KeepAliveDictionaryStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="VroomJs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\libvroomjs\libvroomjs.cproj">
-      <Project>{99553740-E58C-4114-97B9-39FFB3E48512}</Project>
-      <Name>libvroomjs</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
 </Project>
