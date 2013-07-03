@@ -343,8 +343,9 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
     if (exception->IsObject()) {
         Local<Object> obj = Local<Object>::Cast(exception);
         if (obj->InternalFieldCount() == 1) {
-            ManagedRef* ref = (ManagedRef*)obj->GetAlignedPointerFromInternalField(0); 
-            v.type = JSVALUE_TYPE_MANAGED_ERROR;
+			Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
+			ManagedRef* ref = (ManagedRef*)wrap->Value();
+	        v.type = JSVALUE_TYPE_MANAGED_ERROR;
             v.length = ref->Id();
         } else if (errorString->Length() > 0) {
 			v = StringFromV8(errorString);
@@ -397,8 +398,9 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
 {
     jsvalue v;
     
-    ManagedRef* ref = (ManagedRef*)obj->GetAlignedPointerFromInternalField(0); 
-    v.type = JSVALUE_TYPE_MANAGED;
+	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
+    ManagedRef* ref = (ManagedRef*)wrap->Value();
+	v.type = JSVALUE_TYPE_MANAGED;
     v.length = ref->Id();
     v.value.str = 0;
 

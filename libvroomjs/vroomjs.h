@@ -24,7 +24,7 @@
 // THE SOFTWARE.
 
 #ifndef LIBVROOMJS_H
-#define LIBVROOMJS_H 1
+#define LIBVROOMJS_H 
 
 #include <v8.h>
 #include <stdlib.h>
