@@ -75,7 +75,7 @@ JsEngine* JsEngine::New()
 {
     JsEngine* engine = new JsEngine();
     if (engine != NULL) {            
-        engine->isolate_ = Isolate::GetCurrent();
+        engine->isolate_ = Isolate::New();
         Locker locker(engine->isolate_);
         Isolate::Scope isolate_scope(engine->isolate_);
 
