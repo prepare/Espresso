@@ -299,7 +299,7 @@ jsvalue JsEngine::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, 
         v.type = JSVALUE_TYPE_ERROR;   
     }
     else {
-        std::vector<Local<Value>> argv(args.length);
+        std::vector<Local<Value> > argv(args.length);
         ArrayToV8Args(args, &argv[0]);
         // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
         Local<Function> func = Local<Function>::Cast(prop);
