@@ -50,7 +50,11 @@ using namespace v8;
 #define JSVALUE_TYPE_WRAPPED        14
 #define JSVALUE_TYPE_WRAPPED_ERROR  15
 
+#ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
+#elif 
+#define EXPORT
+#endif
 
 extern "C" 
 {
