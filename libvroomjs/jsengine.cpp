@@ -507,7 +507,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v)
     if (v.type == JSVALUE_TYPE_MANAGED || v.type == JSVALUE_TYPE_MANAGED_ERROR) {
         ManagedRef* ref = new ManagedRef(this, v.length);
         Persistent<Object> obj = Persistent<Object>::New((*(managed_template_))->NewInstance());
-        obj->SetAlignedPointerInInternalField(0, ref);
+		obj->SetInternalField(0, External::New(ref));
         obj.MakeWeak(NULL, managed_destroy);
         return obj;
     }
