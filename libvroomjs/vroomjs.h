@@ -67,7 +67,7 @@ extern "C"
     {
         // 8 bytes is the maximum CLR alignment; by putting the union first and a
         // int64_t inside it we make (almost) sure the offset of 'type' will always
-        // be 8 and the total size 16. We add a check to jsengine_new anyway.
+        // be 8 and the total size 16. We add a check to JsContext_new anyway.
         
         union 
         {
@@ -100,12 +100,11 @@ extern "C"
     typedef jsvalue (*keepalive_invoke_f) (int id, jsvalue args);
 }
 
-// JsEngine is a single isolated v8 interpreter and is the referenced as an IntPtr
-// by the JsEngine on the CLR side.
+class JsEngine;
 
-class JsEngine {
+class JsContext {
  public:
-    static JsEngine* New();
+    static JsContext* New(JsEngine *engine);
  
     inline void SetRemoveDelegate(keepalive_remove_f delegate) { keepalive_remove_ = delegate; }
     inline void SetGetPropertyValueDelegate(keepalive_get_property_value_f delegate) { keepalive_get_property_value_ = delegate; }
@@ -149,7 +148,7 @@ class JsEngine {
     void Dispose();
                 
  private:             
-    inline JsEngine() {}
+    inline JsContext() {}
    
     Isolate *isolate_;
     Persistent<Context> *context_;
@@ -160,9 +159,24 @@ class JsEngine {
     keepalive_invoke_f keepalive_invoke_;
 };
 
+// JsEngine is a single isolated v8 interpreter and is the referenced as an IntPtr
+// by the JsEngine on the CLR side.
+class JsEngine {
+public:
+	static JsEngine *New();
+	void Dispose();
+	
+	Isolate *GetIsolate() { return isolate_; }
+	Persistent<ObjectTemplate> *GetManagedTemplate() { return managed_template_; } 
+private:
+	inline JsEngine() {}
+	Isolate *isolate_;
+	Persistent<ObjectTemplate> *managed_template_;
+};
+
 class ManagedRef {
  public:
-    inline explicit ManagedRef(JsEngine* engine, int id) : engine_(engine), id_(id) {}
+    inline explicit ManagedRef(JsContext* engine, int id) : engine_(engine), id_(id) {}
     
     inline int32_t Id() { return id_; }
     
@@ -174,7 +188,7 @@ class ManagedRef {
     
  private:
     ManagedRef() {}
-    JsEngine* engine_;
+    JsContext* engine_;
     int32_t id_;
 };
 

@@ -230,6 +230,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bridge.cpp" />
+    <ClCompile Include="jscontext.cpp" />
     <ClCompile Include="jsengine.cpp" />
     <ClCompile Include="managedref.cpp" />
   </ItemGroup>

@@ -30,12 +30,12 @@ namespace VroomJs
 {
     class JsConvert
     {
-        public JsConvert(JsEngine engine)
+        public JsConvert(JsContext context)
         {
-            _engine = engine;
+            _context = context;
         }
 
-        readonly JsEngine _engine;
+        readonly JsContext _context;
 
         public object FromJsValue(JsValue v)
         {
@@ -80,20 +80,20 @@ namespace VroomJs
                     return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
                 case JsValueType.Managed:
-                    return _engine.KeepAliveGet(v.Index);
+                    return _context.KeepAliveGet(v.Index);
 
                 case JsValueType.ManagedError:
                     string msg = null;
                     if (v.Ptr != IntPtr.Zero)
                         msg = Marshal.PtrToStringUni(v.Ptr);
-                    return new JsException(msg, _engine.KeepAliveGet(v.Index) as Exception);
+                    return new JsException(msg, _context.KeepAliveGet(v.Index) as Exception);
 #if NET40
                 case JsValueType.Wrapped:
-                    return new JsObject(_engine, v.Ptr);
+                    return new JsObject(_context, v.Ptr);
 
                 case JsValueType.WrappedError:
-                    return new JsException(new JsObject(_engine, v.Ptr));
-#else 
+                    return new JsException(new JsObject(_context, v.Ptr));
+#else
 				case JsValueType.Wrapped:
             		return JsDictionaryObject(v);
 
@@ -137,7 +137,7 @@ namespace VroomJs
 
             if (type == typeof(String) || type == typeof(Char)) {
                 // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-                return JsEngine.jsvalue_alloc_string(obj.ToString());
+                return JsContext.jsvalue_alloc_string(obj.ToString());
             }
 
             if (type == typeof(Byte))
@@ -173,7 +173,7 @@ namespace VroomJs
 
             var array = obj as object[];
             if (array != null) {
-                JsValue v = JsEngine.jsvalue_alloc_array(array.Length);
+                JsValue v = JsContext.jsvalue_alloc_array(array.Length);
                 if (v.Length != array.Length)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
                 for (int i=0 ; i < array.Length ; i++)
@@ -187,7 +187,7 @@ namespace VroomJs
             // because adding the same object more than one time acts more or less as
             // reference counting.
 
-            return new JsValue { Type = JsValueType.Managed, Index = _engine.KeepAliveAdd(obj) };
+            return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
     }
 }

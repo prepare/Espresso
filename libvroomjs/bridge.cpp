@@ -31,82 +31,94 @@ int js_object_marshal_type;
 
 extern "C" 
 {
-	EXPORT void jsengine_set_object_marshal_type(int32_t type)
+	EXPORT void js_set_object_marshal_type(int32_t type)
     {
         js_object_marshal_type = type;
     }
 
-    EXPORT JsEngine* jsengine_new(keepalive_remove_f keepalive_remove, 
-                           keepalive_get_property_value_f keepalive_get_property_value,
-                           keepalive_set_property_value_f keepalive_set_property_value,
-                           keepalive_invoke_f keepalive_invoke)
-    {
-        JsEngine* engine = JsEngine::New();
-        if (engine != NULL) {
-            engine->SetRemoveDelegate(keepalive_remove);
-            engine->SetGetPropertyValueDelegate(keepalive_get_property_value);
-            engine->SetSetPropertyValueDelegate(keepalive_set_property_value);
-            engine->SetInvokeDelegate(keepalive_invoke);
-        }
-        return engine;
-    }
+	EXPORT JsEngine* jsengine_new() 
+	{
+		JsEngine *engine = JsEngine::New();
+		return engine;
+	}
 
-   EXPORT void jsengine_dispose(JsEngine* engine)
+	EXPORT void jsengine_dispose(JsEngine* engine)
     {
         engine->Dispose();        
         delete engine;
     }
-    
-    EXPORT void jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
+
+    EXPORT JsContext* jscontext_new(JsEngine *engine, keepalive_remove_f keepalive_remove, 
+                           keepalive_get_property_value_f keepalive_get_property_value,
+                           keepalive_set_property_value_f keepalive_set_property_value,
+                           keepalive_invoke_f keepalive_invoke)
     {
-        if (engine != NULL)
-            engine->DisposeObject(obj);
+        JsContext* context = JsContext::New(engine);
+        if (context != NULL) {
+            context->SetRemoveDelegate(keepalive_remove);
+            context->SetGetPropertyValueDelegate(keepalive_get_property_value);
+            context->SetSetPropertyValueDelegate(keepalive_set_property_value);
+            context->SetInvokeDelegate(keepalive_invoke);
+        }
+        return context;
+    }
+
+    EXPORT void jscontext_dispose(JsContext* context)
+    {
+        context->Dispose();        
+        delete context;
+    }
+    
+    EXPORT void jscontext_dispose_object(JsContext* context, Persistent<Object>* obj)
+    {
+        if (context != NULL)
+            context->DisposeObject(obj);
         delete obj;
     }     
     
-    EXPORT void jsengine_force_gc()
+    EXPORT void jscontext_force_gc()
     {
         while(!V8::IdleNotification()) {};
     }
     
-    EXPORT jsvalue jsengine_execute(JsEngine* engine, const uint16_t* str)
+    EXPORT jsvalue jscontext_execute(JsContext* context, const uint16_t* str)
     {
-        return engine->Execute(str);
+        return context->Execute(str);
     }
         
-	EXPORT jsvalue jsengine_get_global(JsEngine* engine)
+	EXPORT jsvalue jscontext_get_global(JsContext* context)
     {
-        return engine->GetGlobal();
+        return context->GetGlobal();
     }
 	
-    EXPORT jsvalue jsengine_set_variable(JsEngine* engine, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
     {
-        return engine->SetVariable(name, value);
+        return context->SetVariable(name, value);
     }
 
-    EXPORT jsvalue jsengine_get_variable(JsEngine* engine, const uint16_t* name)
+    EXPORT jsvalue jscontext_get_variable(JsContext* context, const uint16_t* name)
     {
-        return engine->GetVariable(name);
+        return context->GetVariable(name);
     }
 
-    EXPORT jsvalue jsengine_get_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name)
+    EXPORT jsvalue jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
     {
-        return engine->GetPropertyValue(obj, name);
+        return context->GetPropertyValue(obj, name);
     }
     
-    EXPORT jsvalue jsengine_set_property_value(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
     {
-        return engine->SetPropertyValue(obj, name, value);
+        return context->SetPropertyValue(obj, name, value);
     }    
 
-	EXPORT jsvalue jsengine_get_property_names(JsEngine* engine, Persistent<Object>* obj)
+	EXPORT jsvalue jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
     {
-        return engine->GetPropertyNames(obj);
+        return context->GetPropertyNames(obj);
     }    
 	    
-    EXPORT jsvalue jsengine_invoke_property(JsEngine* engine, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+    EXPORT jsvalue jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
     {
-        return engine->InvokeProperty(obj, name, args);
+        return context->InvokeProperty(obj, name, args);
     }        
 
     EXPORT jsvalue jsvalue_alloc_string(const uint16_t* str)

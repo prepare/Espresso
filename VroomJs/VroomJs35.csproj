@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VroomJs\JsContext.cs" />
     <Compile Include="VroomJs\JsEngine.cs" />
     <Compile Include="VroomJs\JsObjectMarshalType.cs" />
     <Compile Include="VroomJs\JsValue.cs" />

@@ -35,8 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VroomJs\JsContext.cs" />
+    <Compile Include="VroomJs\JsContext.Dynamic.cs" />
     <Compile Include="VroomJs\JsEngine.cs" />
     <Compile Include="VroomJs\JsObject.Dynamic.cs" />
+    <Compile Include="VroomJs\JsObjectMarshalType.cs" />
     <Compile Include="VroomJs\JsValue.cs" />
     <Compile Include="VroomJs\JsException.cs" />
     <Compile Include="VroomJs\JsValueType.cs" />

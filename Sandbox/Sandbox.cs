@@ -30,14 +30,16 @@ namespace Sandbox
 {
     class Sandbox
     {
-        public static void Main (string[] args)
-        {
-            using (JsEngine js = new JsEngine()) {
-                for (int i=0 ; i < 10 ; i++) {
-                    js.SetVariable("a", new Simple { N = i, S = (i*10).ToString() });
-                    Console.WriteLine(js.Execute("a.N+' '+a.S"));
-                }
-                Console.WriteLine(js.Execute("a.N+' '+a.X"));
+        public static void Main (string[] args) {
+
+        	using (JsEngine js = new JsEngine()) {
+				using (JsContext context = js.CreateContext()) {
+					for (int i = 0; i < 10; i++) {
+						context.SetVariable("a", new Simple { N = i, S = (i * 10).ToString() });
+						Console.WriteLine(context.Execute("a.N+' '+a.S"));
+					}
+					Console.WriteLine(context.Execute("a.N+' '+a.X"));
+				}
             }
         }
     }

@@ -1,0 +1,345 @@
+﻿// This file is part of the VroomJs library.
+//
+// Author:
+//     Federico Di Gregorio <fog@initd.org>
+//
+// Copyright © 2013 Federico Di Gregorio <fog@initd.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+namespace VroomJs
+{
+	public partial class JsContext : IDisposable
+	{
+        delegate void KeepaliveRemoveDelegate(int slot);
+        delegate JsValue KeepAliveGetPropertyValueDelegate(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name);
+        delegate JsValue KeepAliveSetPropertyValueDelegate(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
+        delegate JsValue KeepAliveInvokeDelegate(int slot, JsValue args);
+
+		[DllImport("VroomJsNative")]
+        static extern IntPtr jscontext_new(
+			HandleRef engine,
+            KeepaliveRemoveDelegate keepaliveRemove,
+            KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
+            KeepAliveSetPropertyValueDelegate keepaliveSetPropertyValue,
+            KeepAliveInvokeDelegate keepaliveInvoke
+        );
+
+		[DllImport("VroomJsNative")]
+		public static extern void jscontext_dispose(HandleRef engine);
+
+		[DllImport("VroomJsNative")]
+        static extern void jscontext_force_gc();
+
+		[DllImport("VroomJsNative")]
+        static extern JsValue jscontext_execute(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string str);
+
+		[DllImport("VroomJsNative")]
+		static extern JsValue jscontext_get_global(HandleRef engine);
+
+		[DllImport("VroomJsNative")]
+        static extern JsValue jscontext_get_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name);
+
+		[DllImport("VroomJsNative")]
+        static extern JsValue jscontext_set_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
+
+		[DllImport("VroomJsNative")]
+        static internal extern JsValue jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str);
+
+		[DllImport("VroomJsNative")]
+        static internal extern JsValue jsvalue_alloc_array(int length);
+
+		[DllImport("VroomJsNative")]
+        static internal extern void jsvalue_dispose(JsValue value);
+
+		public JsContext(HandleRef engine, Action<HandleRef> notifyDispose) {
+			_notifyDispose = notifyDispose;
+
+            _keepalives = new KeepAliveDictionaryStore();
+			_keepalive_remove = new KeepaliveRemoveDelegate(KeepAliveRemove);
+            _keepalive_get_property_value = new KeepAliveGetPropertyValueDelegate(KeepAliveGetPropertyValue);
+            _keepalive_set_property_value = new KeepAliveSetPropertyValueDelegate(KeepAliveSetPropertyValue);
+            _keepalive_invoke = new KeepAliveInvokeDelegate(KeepAliveInvoke);
+
+            _context = new HandleRef(this, jscontext_new(
+				 engine,
+                _keepalive_remove, 
+                _keepalive_get_property_value, _keepalive_set_property_value,
+                _keepalive_invoke));
+
+            _convert = new JsConvert(this);
+		}
+
+        readonly HandleRef _context;
+
+		public HandleRef Handle {
+			get { return _context; }
+		}
+
+        readonly JsConvert _convert;
+
+        // Keep objects passed to V8 alive even if no other references exist.
+        readonly IKeepAliveStore _keepalives;
+
+        // Make sure the delegates we pass to the C++ engine won't fly away during a GC.
+        readonly KeepaliveRemoveDelegate _keepalive_remove;
+        readonly KeepAliveGetPropertyValueDelegate _keepalive_get_property_value;
+        readonly KeepAliveSetPropertyValueDelegate _keepalive_set_property_value;
+        readonly KeepAliveInvokeDelegate _keepalive_invoke;
+
+        public JsEngineStats GetStats()
+        {
+            return new JsEngineStats {
+                KeepAliveMaxSlots = _keepalives.MaxSlots,
+                KeepAliveAllocatedSlots = _keepalives.AllocatedSlots,
+                KeepAliveUsedSlots = _keepalives.UsedSlots
+            };
+        }
+
+        public object Execute(string code)
+        {
+            if (code == null)
+                throw new ArgumentNullException("code");
+
+            CheckDisposed();
+
+            JsValue v = jscontext_execute(_context, code);
+            object res = _convert.FromJsValue(v);
+            jsvalue_dispose(v);
+
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+        }
+
+		public object GetGlobal() 
+		{
+			CheckDisposed();	
+			JsValue v = jscontext_get_global(_context);
+            object res = _convert.FromJsValue(v);
+            jsvalue_dispose(v);
+
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+		}
+
+        public object GetVariable(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue v = jscontext_get_variable(_context, name);
+            object res = _convert.FromJsValue(v);
+            jsvalue_dispose(v);
+
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+        }
+
+        public void SetVariable(string name, object value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            jscontext_set_variable(_context, name, a);
+            jsvalue_dispose(a);
+
+            // TODO: Check the result of the operation for errors.
+        }
+
+		public void Flush()
+        {
+            jscontext_force_gc();
+        }
+
+        #region Keep-alive management and callbacks.
+
+        internal int KeepAliveAdd(object obj)
+        {
+            return _keepalives.Add(obj);
+        }
+
+        internal object KeepAliveGet(int slot)
+        {
+            return _keepalives.Get(slot);
+        }
+
+        internal void KeepAliveRemove(int slot)
+        {
+            _keepalives.Remove(slot);
+        }
+
+        JsValue KeepAliveGetPropertyValue(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name)
+        {
+            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+
+            var obj = KeepAliveGet(slot);
+            if (obj != null) {
+                Type type = obj.GetType();
+
+                try {
+                    // First of all try with a public property (the most common case).
+
+                    PropertyInfo pi = type.GetProperty(name, BindingFlags.Instance|BindingFlags.Public|BindingFlags.GetProperty);
+                    if (pi != null)
+                        return _convert.ToJsValue(pi.GetValue(obj, null));
+
+                    // Then with an instance method: the problem is that we don't have a list of
+                    // parameter types so we just check if any method with the given name exists
+                    // and then keep alive a "weak delegate", i.e., just a name and the target.
+                    // The real method will be resolved during the invokation itself.
+
+                    const BindingFlags mFlags = BindingFlags.Instance|BindingFlags.Public
+                                               |BindingFlags.InvokeMethod|BindingFlags.FlattenHierarchy;
+                    // TODO: This is probably slooow.
+                    if (type.GetMethods(mFlags).Any(x => x.Name == name))
+                        return _convert.ToJsValue(new WeakDelegate(obj, name));
+
+                    // Else an error.
+
+                    return JsValue.Error(KeepAliveAdd(
+                        new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name)))); 
+                }
+                catch (TargetInvocationException e) {
+                    // Client code probably isn't interested in the exception part related to
+                    // reflection, so we unwrap it and pass to V8 only the real exception thrown.
+                    if (e.InnerException != null)
+                        return JsValue.Error(KeepAliveAdd(e.InnerException));
+                    throw;
+                }
+                catch (Exception e) {
+                    return JsValue.Error(KeepAliveAdd(e));
+                }
+            }
+
+            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot))); 
+        }
+
+        JsValue KeepAliveSetPropertyValue(int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value)
+        {
+            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+
+            var obj = KeepAliveGet(slot);
+            if (obj != null) {
+                Type type = obj.GetType();
+
+                // We can only set properties; everything else is an error.
+                try {
+                    PropertyInfo pi = type.GetProperty(name, BindingFlags.Instance|BindingFlags.Public|BindingFlags.SetProperty);
+                    if (pi != null) {
+                        pi.SetValue(obj, _convert.FromJsValue(value), null);
+                        return JsValue.Null;
+                    }
+
+                    return JsValue.Error(KeepAliveAdd(
+                        new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name)))); 
+                }
+                catch (Exception e) {
+                    return JsValue.Error(KeepAliveAdd(e));
+                }
+            }
+
+            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot))); 
+        }
+
+        JsValue KeepAliveInvoke(int slot, JsValue args)
+        {
+            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+
+         //   Console.WriteLine(args);
+
+            var obj = KeepAliveGet(slot) as WeakDelegate;
+            if (obj != null) {
+                Type type = obj.Target.GetType();
+                object[] a = (object[])_convert.FromJsValue(args);
+
+                try {
+                    const BindingFlags flags = BindingFlags.Instance|BindingFlags.Public
+                        |BindingFlags.InvokeMethod|BindingFlags.FlattenHierarchy;
+                    return _convert.ToJsValue(type.InvokeMember(obj.MethodName, flags, null, obj.Target, a));
+                }
+                catch (Exception e) {
+                    return JsValue.Error(KeepAliveAdd(e));
+                }
+            }
+
+            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot))); 
+        }
+
+        #endregion
+
+        #region IDisposable implementation
+
+		private readonly Action<HandleRef> _notifyDispose;
+        bool _disposed;
+		
+		public bool IsDisposed {
+            get { return _disposed; }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            CheckDisposed();
+
+            _disposed = true;
+
+            if (disposing) {
+                _keepalives.Clear();
+            }
+			jscontext_dispose(_context);
+			_notifyDispose(_context);
+        }
+
+        void CheckDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException("JsContext:" + _context.Handle);
+        }
+
+        ~JsContext()
+        {
+            if (!_disposed)
+                Dispose(false);
+        }
+
+        #endregion
+		
+	}
+}
