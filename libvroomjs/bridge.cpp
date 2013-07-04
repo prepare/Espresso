@@ -27,8 +27,15 @@
 
 using namespace v8;
 
+int js_object_marshal_type;
+
 extern "C" 
 {
+	EXPORT void jsengine_set_object_marshal_type(int32_t type)
+    {
+        js_object_marshal_type = type;
+    }
+
     EXPORT JsEngine* jsengine_new(keepalive_remove_f keepalive_remove, 
                            keepalive_get_property_value_f keepalive_get_property_value,
                            keepalive_set_property_value_f keepalive_set_property_value,

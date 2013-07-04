@@ -32,6 +32,9 @@
 
 using namespace v8;
 
+#define JSOBJECT_MARSHAL_TYPE_DYNAMIC       1
+#define JSOBJECT_MARSHAL_TYPE_DICTIONARY    2
+
 // jsvalue (JsValue on the CLR side) is a struct that can be easily marshaled
 // by simply blitting its value (being only 16 bytes should be quite fast too).
 
@@ -55,6 +58,8 @@ using namespace v8;
 #else 
 #define EXPORT
 #endif
+
+extern int32_t js_object_marshal_type;
 
 extern "C" 
 {

@@ -47,6 +47,9 @@ namespace VroomJs
         );
 
 		[DllImport("VroomJsNative")]
+        static extern void jsengine_set_object_marshal_type(JsObjectMarshalType objectMarshalType);
+		
+		[DllImport("VroomJsNative")]
         static extern void jsengine_dispose(HandleRef engine);
 
 		[DllImport("VroomJsNative")]
@@ -88,11 +91,17 @@ namespace VroomJs
 		[DllImport("VroomJsNative")]
         static internal extern void jsvalue_dispose(JsValue value);
 
-        public JsEngine()
-		{
-            _keepalives = new KeepAliveDictionaryStore();
+		static JsEngine() {
+			JsObjectMarshalType objectMarshalType = JsObjectMarshalType.Dictionary;
+#if NET40
+        	objectMarshalType = JsObjectMarshalType.Dynamic;
+#endif
+			jsengine_set_object_marshal_type(objectMarshalType);
+		}
 
-            _keepalive_remove = new KeepaliveRemoveDelegate(KeepAliveRemove);
+        public JsEngine() {
+            _keepalives = new KeepAliveDictionaryStore();
+			_keepalive_remove = new KeepaliveRemoveDelegate(KeepAliveRemove);
             _keepalive_get_property_value = new KeepAliveGetPropertyValueDelegate(KeepAliveGetPropertyValue);
             _keepalive_set_property_value = new KeepAliveSetPropertyValueDelegate(KeepAliveSetPropertyValue);
             _keepalive_invoke = new KeepAliveInvokeDelegate(KeepAliveInvoke);
@@ -187,6 +196,7 @@ namespace VroomJs
             // TODO: Check the result of the operation for errors.
         }
 
+#if NET40 
 		public IEnumerable<string> GetMemberNames(JsObject obj) {
 			if (obj == null)
 				throw new ArgumentNullException("obj");
@@ -207,6 +217,7 @@ namespace VroomJs
 			object[] arr = (object[])res;
 			return arr.Cast<string>();
 		}
+
 
         public object GetPropertyValue(JsObject obj, string name)
         {
@@ -290,8 +301,8 @@ namespace VroomJs
             else
                 jsengine_dispose_object(_engine, obj.Handle);
         }
-
-        public void Flush()
+#endif
+		public void Flush()
         {
             jsengine_force_gc();
         }

@@ -5,32 +5,36 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{69D8A607-DDBA-4106-A6D9-10CDCFDF51F8}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>Sandbox</RootNamespace>
-    <AssemblyName>Sandbox</AssemblyName>
-    <StartupObject>Sandbox.Sandbox</StartupObject>
+    <ProjectGuid>{2E79AA26-6CD3-4EF0-9123-8421E709E3D4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>VroomJs</RootNamespace>
+    <AssemblyName>VroomJs</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>..\build\Debug</OutputPath>
+    <OutputPath>..\build\Debug\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>..\build\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug NET35|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug NET35\</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <OutputPath>..\build\Debug NET35\</OutputPath>
+    <DefineConstants>DEBUG;NET35</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
@@ -38,23 +42,32 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release NET35|AnyCPU'">
     <OutputPath>bin\Release NET35\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <DefineConstants>NET35</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExceptionUnwind.cs" />
-    <Compile Include="Sandbox.cs" />
+    <Compile Include="VroomJs\JsEngine.cs" />
+    <Compile Include="VroomJs\JsObjectMarshalType.cs" />
+    <Compile Include="VroomJs\JsValue.cs" />
+    <Compile Include="VroomJs\JsException.cs" />
+    <Compile Include="VroomJs\JsValueType.cs" />
+    <Compile Include="VroomJs\JsInteropException.cs" />
+    <Compile Include="VroomJs\JsConvert.cs" />
+    <Compile Include="VroomJs\WeakDelegate.cs" />
+    <Compile Include="VroomJs\JsEngineStats.cs" />
+    <Compile Include="VroomJs\IKeepAliveStore.cs" />
+    <Compile Include="VroomJs\KeepAliveDictionaryStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\VroomJs\VroomJs.csproj">
-      <Project>{2E79AA26-6CD3-4EF0-9113-8421D709E3D4}</Project>
-      <Name>VroomJs</Name>
-    </ProjectReference>
+    <Compile Include="VroomJs\JsObject.Dictionary.cs" />
   </ItemGroup>
 </Project>

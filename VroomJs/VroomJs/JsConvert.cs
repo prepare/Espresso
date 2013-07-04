@@ -65,7 +65,7 @@ namespace VroomJs
                 case JsValueType.Array: {
                     var r = new object[v.Length];
                     for (int i=0 ; i < v.Length ; i++) {
-                        var vi =(JsValue)Marshal.PtrToStructure((v.Ptr + 16*i), typeof(JsValue));
+                        var vi =(JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16*i)), typeof(JsValue));
                         r[i] = FromJsValue(vi);
                     }
                     return r;
@@ -87,19 +87,40 @@ namespace VroomJs
                     if (v.Ptr != IntPtr.Zero)
                         msg = Marshal.PtrToStringUni(v.Ptr);
                     return new JsException(msg, _engine.KeepAliveGet(v.Index) as Exception);
-
+#if NET40
                 case JsValueType.Wrapped:
                     return new JsObject(_engine, v.Ptr);
 
                 case JsValueType.WrappedError:
                     return new JsException(new JsObject(_engine, v.Ptr));
+#else 
+				case JsValueType.Wrapped:
+            		return JsDictionaryObject(v);
 
-                default:
+				case JsValueType.WrappedError:
+            		return new JsException(JsDictionaryObject(v));
+#endif
+
+				default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);
             }           
         }
 
-        public JsValue ToJsValue(object obj)
+#if !NET40 
+    	private JsObject JsDictionaryObject(JsValue v) 
+		{
+			JsObject obj = new JsObject();
+			for (int i = 0; i < (v.Length * 2); i += 2) 
+			{
+				var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+				var value = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * (i + 1))), typeof(JsValue));
+				obj[FromJsValue(key)] = FromJsValue(value);
+			}
+			return obj;
+    	}
+#endif
+
+    	public JsValue ToJsValue(object obj)
         {
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
@@ -156,7 +177,7 @@ namespace VroomJs
                 if (v.Length != array.Length)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
                 for (int i=0 ; i < array.Length ; i++)
-                    Marshal.StructureToPtr(ToJsValue(array[i]), (v.Ptr + 16*i), false);
+                    Marshal.StructureToPtr(ToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16*i)), false);
                 return v;
             }
 
