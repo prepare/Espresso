@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "vroomjs.h"
 
 using namespace v8;
@@ -33,12 +35,19 @@ Handle<Value> ManagedRef::GetPropertyValue(Local<String> name)
     
     String::Value s(name);
     
-    jsvalue r = engine_->CallGetPropertyValue(id_, *s);
+#ifdef DEBUG_TRACE_API
+		std::cout << "GetPropertyValue" << std::endl;
+#endif
+
+    jsvalue r = engine_->CallGetPropertyValue(contextId_, id_, *s);
     if (r.type == JSVALUE_TYPE_MANAGED_ERROR)
-        res = ThrowException(engine_->AnyToV8(r));
+        res = ThrowException(engine_->AnyToV8(contextId_, r));
     else
-        res = engine_->AnyToV8(r);
+        res = engine_->AnyToV8(contextId_, r);
     
+#ifdef DEBUG_TRACE_API
+		std::cout << "cleaning up result from getproperty value" << std::endl;
+#endif
     // We don't need the jsvalue anymore and the CLR side never reuse them.
     jsvalue_dispose(r);
     
@@ -50,14 +59,21 @@ Handle<Value> ManagedRef::SetPropertyValue(Local<String> name, Local<Value> valu
     Handle<Value> res;
     
     String::Value s(name);
+
+#ifdef DEBUG_TRACE_API
+		std::cout << "SetPropertyValue" << std::endl;
+#endif
     
     jsvalue v = engine_->AnyFromV8(value);
-    jsvalue r = engine_->CallSetPropertyValue(id_, *s, v);
+    jsvalue r = engine_->CallSetPropertyValue(contextId_, id_, *s, v);
     if (r.type == JSVALUE_TYPE_MANAGED_ERROR)
-        res = ThrowException(engine_->AnyToV8(r));
+        res = ThrowException(engine_->AnyToV8(contextId_, r));
     else
-        res = engine_->AnyToV8(r);
+        res = engine_->AnyToV8(contextId_, r);
     
+#ifdef DEBUG_TRACE_API
+		std::cout << "cleaning up result from setproperty value" << std::endl;
+#endif
     // We don't need the jsvalues anymore and the CLR side never reuse them.
     jsvalue_dispose(v);
     jsvalue_dispose(r);
@@ -70,12 +86,15 @@ Handle<Value> ManagedRef::Invoke(const Arguments& args)
     Handle<Value> res;
         
     jsvalue a = engine_->ArrayFromArguments(args);
-    jsvalue r = engine_->CallInvoke(id_, a);
+    jsvalue r = engine_->CallInvoke(contextId_, id_, a);
     if (r.type == JSVALUE_TYPE_MANAGED_ERROR)
-        res = ThrowException(engine_->AnyToV8(r));
+        res = ThrowException(engine_->AnyToV8(contextId_, r));
     else
-        res = engine_->AnyToV8(r);
+        res = engine_->AnyToV8(contextId_, r);
     
+#ifdef DEBUG_TRACE_API
+		std::cout << "cleaning up result from invoke" << std::endl;
+#endif
     // We don't need the jsvalue anymore and the CLR side never reuse them.
     jsvalue_dispose(a);
     jsvalue_dispose(r);

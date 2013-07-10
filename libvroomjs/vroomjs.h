@@ -59,6 +59,12 @@ using namespace v8;
 #define EXPORT
 #endif
 
+#ifdef _WIN32 
+#define CALLINGCONVENTION __stdcall
+#else 
+#define CALLINGCONVENTION
+#endif
+
 extern int32_t js_object_marshal_type;
 
 extern "C" 
@@ -83,8 +89,11 @@ extern "C"
         int32_t         length; // Also used as slot index on the CLR side.
     };
     
-   EXPORT void jsvalue_dispose(jsvalue value);
+   EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value);
 }
+
+class JsEngine;
+class JsContext;
 
 // The only way for the C++/V8 side to call into the CLR is to use the function
 // pointers (CLR, delegates) defined below.
@@ -94,28 +103,17 @@ extern "C"
     // We don't have a keepalive_add_f because that is managed on the managed side.
     // Its definition would be "int (*keepalive_add_f) (ManagedRef obj)".
     
-    typedef void (*keepalive_remove_f) (int id);
-    typedef jsvalue (*keepalive_get_property_value_f) (int id, uint16_t* name);
-    typedef jsvalue (*keepalive_set_property_value_f) (int id, uint16_t* name, jsvalue value);
-    typedef jsvalue (*keepalive_invoke_f) (int id, jsvalue args);
+    typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
+    typedef jsvalue (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name);
+    typedef jsvalue (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue value);
+    typedef jsvalue (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue args);
 }
 
-class JsEngine;
 
 class JsContext {
  public:
-    static JsContext* New(JsEngine *engine);
+    static JsContext* New(int32_t id, JsEngine *engine);
  
-    inline void SetRemoveDelegate(keepalive_remove_f delegate) { keepalive_remove_ = delegate; }
-    inline void SetGetPropertyValueDelegate(keepalive_get_property_value_f delegate) { keepalive_get_property_value_ = delegate; }
-    inline void SetSetPropertyValueDelegate(keepalive_set_property_value_f delegate) { keepalive_set_property_value_ = delegate; }
-    inline void SetInvokeDelegate(keepalive_invoke_f delegate) { keepalive_invoke_ = delegate; }
-    
-    // Call delegates into managed code.
-    inline void CallRemove(int id) { keepalive_remove_(id); }
-    inline jsvalue CallGetPropertyValue(int32_t id, uint16_t* name) { return keepalive_get_property_value_(id, name); }
-    inline jsvalue CallSetPropertyValue(int32_t id, uint16_t* name, jsvalue value) { return keepalive_set_property_value_(id, name, value); }
-    inline jsvalue CallInvoke(int32_t id, jsvalue args) { return keepalive_invoke_(id, args); }
     
     // Called by bridge to execute JS from managed code.
     jsvalue Execute(const uint16_t* str);    
@@ -127,9 +125,53 @@ class JsContext {
     jsvalue SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value);
     jsvalue InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args);
     
-    // Conversions. Note that all the conversion functions should be called
+  
+    // Dispose a Persistent<Object> that was pinned on the CLR side by JsObject.
+    void DisposeObject(Persistent<Object>* obj);
+    
+    void Dispose();
+                
+	int32_t GetId() { return id_; }
+
+ private:             
+    inline JsContext() {}
+	int32_t id_;
+    Isolate *isolate_;
+	JsEngine *engine_;
+	Persistent<Context> *context_;
+};
+
+// JsEngine is a single isolated v8 interpreter and is the referenced as an IntPtr
+// by the JsEngine on the CLR side.
+class JsEngine {
+public:
+	static JsEngine *New(int32_t max_young_space, int32_t max_old_space);
+
+	inline void SetRemoveDelegate(keepalive_remove_f delegate) { keepalive_remove_ = delegate; }
+    inline void SetGetPropertyValueDelegate(keepalive_get_property_value_f delegate) { keepalive_get_property_value_ = delegate; }
+    inline void SetSetPropertyValueDelegate(keepalive_set_property_value_f delegate) { keepalive_set_property_value_ = delegate; }
+    inline void SetInvokeDelegate(keepalive_invoke_f delegate) { keepalive_invoke_ = delegate; }
+    
+	void TerminateExecution();
+
+    // Call delegates into managed code.
+    inline void CallRemove(int32_t context, int id) { 
+		keepalive_remove_(context, id); 
+	}
+    inline jsvalue CallGetPropertyValue(int32_t context, int32_t id, uint16_t* name) {
+		return keepalive_get_property_value_(context, id, name);
+	}
+    inline jsvalue CallSetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue value) { 
+		return keepalive_set_property_value_(context, id, name, value); 
+	}
+    inline jsvalue CallInvoke(int32_t context, int32_t id, jsvalue args) { 
+		return keepalive_invoke_(context, id, args); 
+	}
+  
+
+	// Conversions. Note that all the conversion functions should be called
     // with an HandleScope already on the stack or sill misarabily fail.
-    Handle<Value> AnyToV8(jsvalue value); 
+    Handle<Value> AnyToV8(int32_t contextId, jsvalue value); 
     jsvalue ErrorFromV8(TryCatch& trycatch);
     jsvalue StringFromV8(Handle<Value> value);
     jsvalue WrappedFromV8(Handle<Object> obj);
@@ -137,46 +179,33 @@ class JsContext {
     jsvalue AnyFromV8(Handle<Value> value);
     
     // Needed to create an array of args on the stack for calling functions.
-    int32_t ArrayToV8Args(jsvalue value, Handle<Value> preallocatedArgs[]);     
+    int32_t ArrayToV8Args(int32_t contextId, jsvalue value, Handle<Value> preallocatedArgs[]);     
     
     // Converts JS function Arguments to an array of jsvalue to call managed code.
     jsvalue ArrayFromArguments(const Arguments& args);
     
-    // Dispose a Persistent<Object> that was pinned on the CLR side by JsObject.
-    void DisposeObject(Persistent<Object>* obj);
-    
-    void Dispose();
-                
- private:             
-    inline JsContext() {}
-   
-    Isolate *isolate_;
-    Persistent<Context> *context_;
-    Persistent<ObjectTemplate> *managed_template_;
+
+	void Dispose();
+	
+	void DumpHeapStats();
+	Isolate *GetIsolate() { return isolate_; }
+
+	Persistent<ObjectTemplate> *managed_template_;
+
+private:
+	inline JsEngine() {}
+	Isolate *isolate_;
     keepalive_remove_f keepalive_remove_;
     keepalive_get_property_value_f keepalive_get_property_value_;
     keepalive_set_property_value_f keepalive_set_property_value_;
     keepalive_invoke_f keepalive_invoke_;
 };
 
-// JsEngine is a single isolated v8 interpreter and is the referenced as an IntPtr
-// by the JsEngine on the CLR side.
-class JsEngine {
-public:
-	static JsEngine *New();
-	void Dispose();
-	
-	Isolate *GetIsolate() { return isolate_; }
-	Persistent<ObjectTemplate> *GetManagedTemplate() { return managed_template_; } 
-private:
-	inline JsEngine() {}
-	Isolate *isolate_;
-	Persistent<ObjectTemplate> *managed_template_;
-};
-
 class ManagedRef {
  public:
-    inline explicit ManagedRef(JsContext* engine, int id) : engine_(engine), id_(id) {}
+    inline explicit ManagedRef(JsEngine *engine, int contextId, int id) : engine_(engine), id_(id) {
+		contextId_ = contextId;
+	}
     
     inline int32_t Id() { return id_; }
     
@@ -184,12 +213,13 @@ class ManagedRef {
     Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
     Handle<Value> Invoke(const Arguments& args);
     
-    ~ManagedRef() { engine_->CallRemove(id_); }
+    ~ManagedRef() { engine_->CallRemove(contextId_, id_); }
     
  private:
     ManagedRef() {}
-    JsContext* engine_;
-    int32_t id_;
+	JsEngine* engine_;
+    int32_t contextId_;
+	int32_t id_;
 };
 
 #endif

@@ -30,6 +30,8 @@ namespace VroomJs
 {
     class JsConvert
     {
+		public static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         public JsConvert(JsContext context)
         {
             _context = context;
@@ -57,10 +59,13 @@ namespace VroomJs
                     return Marshal.PtrToStringUni(v.Ptr);
 
                 case JsValueType.Date:
+					/*
                     // The formula (v.num * 10000) + 621355968000000000L was taken from a StackOverflow
                     // question and should be OK. Then why do we need to compensate by -26748000000000L
                     // (a value determined from the failing tests)?!
                     return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
+					 */
+					return EPOCH.AddMilliseconds(v.Num);
 
                 case JsValueType.Array: {
                     var r = new object[v.Length];
@@ -114,7 +119,7 @@ namespace VroomJs
 			{
 				var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
 				var value = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * (i + 1))), typeof(JsValue));
-				obj[FromJsValue(key)] = FromJsValue(value);
+				obj[(string)FromJsValue(key)] = FromJsValue(value);
 			}
 			return obj;
     	}
@@ -165,7 +170,7 @@ namespace VroomJs
             if (type == typeof(DateTime))
                 return new JsValue { 
                 Type = JsValueType.Date, 
-                Num = (((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0 
+                Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds) /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
             };
 
             // Arrays of anything that can be cast to object[] are recursively convertef after

@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "vroomjs.h"
 
 using namespace v8;
@@ -31,98 +33,154 @@ int js_object_marshal_type;
 
 extern "C" 
 {
-	EXPORT void js_set_object_marshal_type(int32_t type)
+	EXPORT void CALLINGCONVENTION js_set_object_marshal_type(int32_t type)
     {
-        js_object_marshal_type = type;
+#ifdef DEBUG_TRACE_API
+		std::wcout << "js_object_marshal_type " << type << std::endl;
+#endif
+	    js_object_marshal_type = type;
     }
 
-	EXPORT JsEngine* jsengine_new() 
+	EXPORT JsEngine* CALLINGCONVENTION jsengine_new(keepalive_remove_f keepalive_remove, 
+                           keepalive_get_property_value_f keepalive_get_property_value,
+                           keepalive_set_property_value_f keepalive_set_property_value,
+                           keepalive_invoke_f keepalive_invoke, int32_t max_young_space, int32_t max_old_space) 
 	{
-		JsEngine *engine = JsEngine::New();
+#ifdef DEBUG_TRACE_API
+		std::cout << "jsengine_new" << std::endl;
+#endif
+		JsEngine *engine = JsEngine::New(max_young_space, max_old_space);
+		if (engine != NULL) {
+            engine->SetRemoveDelegate(keepalive_remove);
+            engine->SetGetPropertyValueDelegate(keepalive_get_property_value);
+            engine->SetSetPropertyValueDelegate(keepalive_set_property_value);
+            engine->SetInvokeDelegate(keepalive_invoke);
+        }
 		return engine;
 	}
 
-	EXPORT void jsengine_dispose(JsEngine* engine)
+	EXPORT void CALLINGCONVENTION jsengine_terminate_execution(JsEngine* engine) {
+		engine->TerminateExecution();
+	}
+
+    EXPORT void CALLINGCONVENTION jsengine_dump_heap_stats(JsEngine* engine) {
+		engine->DumpHeapStats();
+	}
+
+	EXPORT void CALLINGCONVENTION jsengine_dispose(JsEngine* engine)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jsengine_dispose" << std::endl;
+#endif
         engine->Dispose();        
         delete engine;
     }
 
-    EXPORT JsContext* jscontext_new(JsEngine *engine, keepalive_remove_f keepalive_remove, 
-                           keepalive_get_property_value_f keepalive_get_property_value,
-                           keepalive_set_property_value_f keepalive_set_property_value,
-                           keepalive_invoke_f keepalive_invoke)
+    EXPORT JsContext* CALLINGCONVENTION jscontext_new(int32_t id, JsEngine *engine)
     {
-        JsContext* context = JsContext::New(engine);
-        if (context != NULL) {
-            context->SetRemoveDelegate(keepalive_remove);
-            context->SetGetPropertyValueDelegate(keepalive_get_property_value);
-            context->SetSetPropertyValueDelegate(keepalive_set_property_value);
-            context->SetInvokeDelegate(keepalive_invoke);
-        }
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_new" << std::endl;
+#endif
+        JsContext* context = JsContext::New(id, engine);
         return context;
+    }
+
+	EXPORT void CALLINGCONVENTION jscontext_force_gc()
+    {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_force_gc" << std::endl;
+#endif
+        while(!V8::IdleNotification()) {};
     }
 
     EXPORT void jscontext_dispose(JsContext* context)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_dispose" << std::endl;
+#endif
         context->Dispose();        
         delete context;
     }
     
-    EXPORT void jscontext_dispose_object(JsContext* context, Persistent<Object>* obj)
+    EXPORT void CALLINGCONVENTION jscontext_dispose_object(JsContext* context, Persistent<Object>* obj)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_dispose_object" << std::endl;
+#endif
         if (context != NULL)
             context->DisposeObject(obj);
         delete obj;
     }     
     
-    EXPORT void jscontext_force_gc()
+    EXPORT jsvalue CALLINGCONVENTION jscontext_execute(JsContext* context, const uint16_t* str)
     {
-        while(!V8::IdleNotification()) {};
-    }
-    
-    EXPORT jsvalue jscontext_execute(JsContext* context, const uint16_t* str)
-    {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_execute" << std::endl;
+#endif
         return context->Execute(str);
     }
         
-	EXPORT jsvalue jscontext_get_global(JsContext* context)
+	EXPORT jsvalue CALLINGCONVENTION jscontext_get_global(JsContext* context)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_get_global" << std::endl;
+#endif
         return context->GetGlobal();
     }
 	
-    EXPORT jsvalue jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_set_variable" << std::endl;
+#endif
         return context->SetVariable(name, value);
     }
 
-    EXPORT jsvalue jscontext_get_variable(JsContext* context, const uint16_t* name)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_get_variable(JsContext* context, const uint16_t* name)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_get_variable" << std::endl;
+#endif
         return context->GetVariable(name);
     }
 
-    EXPORT jsvalue jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_get_property_value" << std::endl;
+#endif
         return context->GetPropertyValue(obj, name);
     }
     
-    EXPORT jsvalue jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_set_property_value" << std::endl;
+#endif
         return context->SetPropertyValue(obj, name, value);
     }    
 
-	EXPORT jsvalue jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
+	EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_get_property_names" << std::endl;
+#endif
         return context->GetPropertyNames(obj);
     }    
 	    
-    EXPORT jsvalue jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jscontext_invoke_property" << std::endl;
+#endif
         return context->InvokeProperty(obj, name, args);
     }        
 
-    EXPORT jsvalue jsvalue_alloc_string(const uint16_t* str)
+    EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_string(const uint16_t* str)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jsvalue_alloc_string" << std::endl;
+#endif
         jsvalue v;
     
         int length = 0;
@@ -141,8 +199,11 @@ extern "C"
         return v;
     }    
     
-    EXPORT jsvalue jsvalue_alloc_array(const int32_t length)
+    EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_array(const int32_t length)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jsvalue_alloc_array" << std::endl;
+#endif
         jsvalue v;
           
         v.value.arr = new jsvalue[length];
@@ -154,8 +215,11 @@ extern "C"
         return v;
     }        
                 
-    EXPORT void jsvalue_dispose(jsvalue value)
+    EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value)
     {
+#ifdef DEBUG_TRACE_API
+		std::cout << "jsvalue_dispose" << std::endl;
+#endif
         if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_ERROR) {
             if (value.value.str != NULL)
                 delete value.value.str;
