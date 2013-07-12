@@ -24,7 +24,6 @@
 // THE SOFTWARE.
 
 #include <iostream>
-
 #include "vroomjs.h"
 
 using namespace v8;
@@ -47,7 +46,7 @@ extern "C"
                            keepalive_invoke_f keepalive_invoke, int32_t max_young_space, int32_t max_old_space) 
 	{
 #ifdef DEBUG_TRACE_API
-		std::cout << "jsengine_new" << std::endl;
+		std::wcout << "jsengine_new" << std::endl;
 #endif
 		JsEngine *engine = JsEngine::New(max_young_space, max_old_space);
 		if (engine != NULL) {
@@ -60,17 +59,24 @@ extern "C"
 	}
 
 	EXPORT void CALLINGCONVENTION jsengine_terminate_execution(JsEngine* engine) {
+#ifdef DEBUG_TRACE_API
+                std::wcout << "jsengine_terminate_execution" << std::endl;
+#endif
+
 		engine->TerminateExecution();
 	}
 
     EXPORT void CALLINGCONVENTION jsengine_dump_heap_stats(JsEngine* engine) {
+#ifdef DEBUG_TRACE_API
+                std::wcout << "jsengine_dump_heap_stats" << std::endl;
+#endif
 		engine->DumpHeapStats();
 	}
 
 	EXPORT void CALLINGCONVENTION jsengine_dispose(JsEngine* engine)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jsengine_dispose" << std::endl;
+		std::wcout << "jsengine_dispose" << std::endl;
 #endif
         engine->Dispose();        
         delete engine;
@@ -79,7 +85,7 @@ extern "C"
     EXPORT JsContext* CALLINGCONVENTION jscontext_new(int32_t id, JsEngine *engine)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_new" << std::endl;
+		std::wcout << "jscontext_new" << std::endl;
 #endif
         JsContext* context = JsContext::New(id, engine);
         return context;
@@ -88,7 +94,7 @@ extern "C"
 	EXPORT void CALLINGCONVENTION jscontext_force_gc()
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_force_gc" << std::endl;
+		std::wcout << "jscontext_force_gc" << std::endl;
 #endif
         while(!V8::IdleNotification()) {};
     }
@@ -96,7 +102,7 @@ extern "C"
     EXPORT void jscontext_dispose(JsContext* context)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_dispose" << std::endl;
+		std::wcout << "jscontext_dispose" << std::endl;
 #endif
         context->Dispose();        
         delete context;
@@ -105,7 +111,7 @@ extern "C"
     EXPORT void CALLINGCONVENTION jscontext_dispose_object(JsContext* context, Persistent<Object>* obj)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_dispose_object" << std::endl;
+		std::wcout << "jscontext_dispose_object" << std::endl;
 #endif
         if (context != NULL)
             context->DisposeObject(obj);
@@ -115,7 +121,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_execute(JsContext* context, const uint16_t* str)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_execute" << std::endl;
+		std::wcout << "jscontext_execute" << std::endl;
 #endif
         return context->Execute(str);
     }
@@ -123,7 +129,7 @@ extern "C"
 	EXPORT jsvalue CALLINGCONVENTION jscontext_get_global(JsContext* context)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_get_global" << std::endl;
+		std::wcout << "jscontext_get_global" << std::endl;
 #endif
         return context->GetGlobal();
     }
@@ -131,7 +137,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_set_variable" << std::endl;
+		std::wcout << "jscontext_set_variable" << std::endl;
 #endif
         return context->SetVariable(name, value);
     }
@@ -139,7 +145,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_get_variable(JsContext* context, const uint16_t* name)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_get_variable" << std::endl;
+		std::wcout << "jscontext_get_variable" << std::endl;
 #endif
         return context->GetVariable(name);
     }
@@ -147,7 +153,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_get_property_value" << std::endl;
+		std::wcout << "jscontext_get_property_value" << std::endl;
 #endif
         return context->GetPropertyValue(obj, name);
     }
@@ -155,7 +161,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_set_property_value" << std::endl;
+		std::wcout << "jscontext_set_property_value" << std::endl;
 #endif
         return context->SetPropertyValue(obj, name, value);
     }    
@@ -163,7 +169,7 @@ extern "C"
 	EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_get_property_names" << std::endl;
+		std::wcout << "jscontext_get_property_names" << std::endl;
 #endif
         return context->GetPropertyNames(obj);
     }    
@@ -171,7 +177,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jscontext_invoke_property" << std::endl;
+		std::wcout << "jscontext_invoke_property" << std::endl;
 #endif
         return context->InvokeProperty(obj, name, args);
     }        
@@ -179,7 +185,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_string(const uint16_t* str)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jsvalue_alloc_string" << std::endl;
+		std::wcout << "jsvalue_alloc_string" << std::endl;
 #endif
         jsvalue v;
     
@@ -202,7 +208,7 @@ extern "C"
     EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_array(const int32_t length)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jsvalue_alloc_array" << std::endl;
+		std::wcout << "jsvalue_alloc_array" << std::endl;
 #endif
         jsvalue v;
           
@@ -218,7 +224,7 @@ extern "C"
     EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
-		std::cout << "jsvalue_dispose" << std::endl;
+		std::wcout << "jsvalue_dispose" << std::endl;
 #endif
         if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_ERROR) {
             if (value.value.str != NULL)

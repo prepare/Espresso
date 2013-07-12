@@ -119,7 +119,6 @@ namespace VroomJs
 			try {
 				JsValue v = jscontext_execute(_context, code);
 				res = _convert.FromJsValue(v);
-
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
@@ -246,13 +245,16 @@ namespace VroomJs
 
         void CheckDisposed()
         {
+			if (_engine.IsDisposed) {
+				throw new ObjectDisposedException("JsContext: engine has been disposed");
+			}
             if (_disposed)
                 throw new ObjectDisposedException("JsContext:" + _context.Handle);
         }
 
         ~JsContext()
         {
-            if (!_disposed)
+            if (!_engine.IsDisposed && !_disposed)
                 Dispose(false);
         }
 

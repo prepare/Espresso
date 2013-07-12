@@ -157,7 +157,10 @@ namespace VroomJs {
             	}
 				_aliveContexts.Clear();
             }
-
+#if DEBUG_TRACE_API
+				Console.WriteLine("Calling jsEngine dispose: " + _engine.Handle.ToInt64());
+#endif
+        
 			jsengine_dispose(_engine);
         }
 

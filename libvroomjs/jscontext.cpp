@@ -42,17 +42,19 @@ JsContext* JsContext::New(int id, JsEngine *engine)
 
 		context->context_ = new Persistent<Context>(Context::New());
         
-        (*(context->context_))->Enter();
+        // (*(context->context_))->Enter();
     }
     return context;
 }
 
 void JsContext::Dispose()
 {
-    Locker locker(isolate_);
-    Isolate::Scope isolate_scope(isolate_);
-    context_->Dispose();            
-    delete context_;
+	if(engine_->GetIsolate() != NULL) {
+    		Locker locker(isolate_);
+   	 	Isolate::Scope isolate_scope(isolate_);
+    		context_->Dispose();            
+    		delete context_;
+	}
 }
 
 void JsContext::DisposeObject(Persistent<Object>* obj)

@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include "vroomjs.h"
 
@@ -63,8 +64,8 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
     if (engine != NULL) 
 	{            
 		engine->isolate_ = Isolate::New();
-		engine->isolate_->Enter();
-				
+                engine->isolate_->Enter();
+		
 		if (max_young_space > 0 && max_old_space > 0) {
 			v8::ResourceConstraints constraints;
 			constraints.set_max_young_space_size(max_young_space * Mega);
@@ -73,8 +74,10 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			v8::SetResourceConstraints(&constraints);
 		}
 
-	    Locker locker(engine->isolate_);
-		Isolate::Scope isolate_scope(engine->isolate_);
+		engine->isolate_->Exit();
+
+            Locker locker(engine->isolate_);
+	    Isolate::Scope isolate_scope(engine->isolate_);
 
 		// Setup the template we'll use for all managed object references.
         HandleScope scope;            
@@ -84,8 +87,6 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
         o->SetCallAsFunctionHandler(managed_call);
         Persistent<ObjectTemplate> p = Persistent<ObjectTemplate>::New(o);
         engine->managed_template_ = new Persistent<ObjectTemplate>(p);
-
-		engine->isolate_->Exit();
 	}
 	return engine;
 }
@@ -97,22 +98,27 @@ void JsEngine::TerminateExecution()
 
 void JsEngine::DumpHeapStats() 
 {
+	Locker locker(isolate_);
+    	Isolate::Scope isolate_scope(isolate_);
+
 	// gc first.
 	while(!V8::IdleNotification()) {};
 	
 	HeapStatistics stats;
 	isolate_->GetHeapStatistics(&stats);
-	std::cout << "Heap size limit " << (stats.heap_size_limit() / Mega) << std::endl;
-	std::cout << "Total heap size " << (stats.total_heap_size() / Mega) << std::endl;
-	std::cout << "Heap size executable " << (stats.total_heap_size_executable() / Mega) << std::endl;
-	std::cout << "Total physical size " << (stats.total_physical_size() / Mega) << std::endl;
-	std::cout << "Used heap size " << (stats.used_heap_size() / Mega) << std::endl;
+	std::wcout << "Heap size limit " << (stats.heap_size_limit() / Mega) << std::endl;
+	std::wcout << "Total heap size " << (stats.total_heap_size() / Mega) << std::endl;
+	std::wcout << "Heap size executable " << (stats.total_heap_size_executable() / Mega) << std::endl;
+	std::wcout << "Total physical size " << (stats.total_physical_size() / Mega) << std::endl;
+	std::wcout << "Used heap size " << (stats.used_heap_size() / Mega) << std::endl;
 }
 
 void JsEngine::Dispose()
 {
-	isolate_->Dispose();
-	isolate_ = NULL;
+	if (isolate_ != NULL) {
+		isolate_->Dispose();
+		isolate_ = NULL;
+	}
 }
 
 jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)

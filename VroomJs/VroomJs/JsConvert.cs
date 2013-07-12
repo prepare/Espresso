@@ -41,7 +41,10 @@ namespace VroomJs
 
         public object FromJsValue(JsValue v)
         {
-            switch (v.Type) 
+#if DEBUG_TRACE_API
+			Console.WriteLine("Converting Js value to .net");
+#endif
+			switch (v.Type) 
             {
                 case JsValueType.Null:
                     return null;
