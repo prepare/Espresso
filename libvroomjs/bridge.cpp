@@ -226,15 +226,24 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_dispose" << std::endl;
 #endif
-        if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_ERROR) {
+        if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_STRING_ERROR) {
             if (value.value.str != NULL)
                 delete value.value.str;
         }
-        else if (value.type == JSVALUE_TYPE_ARRAY) {
+        else if (value.type == JSVALUE_TYPE_ARRAY || 
+			(js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DICTIONARY && value.type == JSVALUE_TYPE_DICT)) {
+
             for (int i=0 ; i < value.length ; i++)
                 jsvalue_dispose(value.value.arr[i]);
             if (value.value.arr != NULL)
                 delete value.value.arr;
-        }            
+        }
+		else if (value.type == JSVALUE_TYPE_ERROR) {
+			jserror *error = (jserror*)value.value.ptr;
+			jsvalue_dispose(error->resource);
+			jsvalue_dispose(error->message);
+			jsvalue_dispose(error->exception);
+			delete error;
+		}
     }       
 }

@@ -244,7 +244,7 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
     Local<Value> prop = (*obj)->Get(String::New(name));
     if (prop.IsEmpty() || !prop->IsFunction()) {
         v = engine_->StringFromV8(String::New("property not found or isn't a function"));
-        v.type = JSVALUE_TYPE_ERROR;   
+        v.type = JSVALUE_TYPE_STRING_ERROR;   
     }
     else {
         std::vector<Local<Value> > argv(args.length);

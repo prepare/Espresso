@@ -38,10 +38,11 @@ namespace VroomJs
         String = 4,
         Date = 5,
         Array = 10,
-        Error = 11,
+        StringError = 11,
         Managed = 12,
         ManagedError = 13,
         Wrapped = 14,
-        WrappedError = 15
+        Dictionary = 15,
+		Error = 16
     }
 }

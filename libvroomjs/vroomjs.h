@@ -47,11 +47,12 @@ using namespace v8;
 #define JSVALUE_TYPE_DATE            5
 #define JSVALUE_TYPE_INDEX           6
 #define JSVALUE_TYPE_ARRAY          10
-#define JSVALUE_TYPE_ERROR          11
+#define JSVALUE_TYPE_STRING_ERROR   11
 #define JSVALUE_TYPE_MANAGED        12
 #define JSVALUE_TYPE_MANAGED_ERROR  13
 #define JSVALUE_TYPE_WRAPPED        14
-#define JSVALUE_TYPE_WRAPPED_ERROR  15
+#define JSVALUE_TYPE_DICT           15
+#define JSVALUE_TYPE_ERROR          16
 
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
@@ -88,8 +89,18 @@ extern "C"
         int32_t         type;
         int32_t         length; // Also used as slot index on the CLR side.
     };
-    
-   EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value);
+ 
+	struct jserror
+	{
+		jsvalue type;
+		int32_t line;
+		int32_t column;
+		jsvalue resource;
+		jsvalue message;
+		jsvalue exception;
+	};
+	
+	EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value);
 }
 
 class JsEngine;

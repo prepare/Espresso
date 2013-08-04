@@ -84,7 +84,7 @@ namespace VroomJs
                         return new JsException(Marshal.PtrToStringUni(v.Ptr));
                     return new JsInteropException("unknown error without reason");
 
-                case JsValueType.Error:
+                case JsValueType.StringError:
                     return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
                 case JsValueType.Managed:
@@ -98,16 +98,12 @@ namespace VroomJs
 #if NET40
                 case JsValueType.Wrapped:
                     return new JsObject(_context, v.Ptr);
-
-                case JsValueType.WrappedError:
-                    return new JsException(new JsObject(_context, v.Ptr));
 #else
-				case JsValueType.Wrapped:
+				case JsValueType.Dictionary:
             		return JsDictionaryObject(v);
-
-				case JsValueType.WrappedError:
-            		return new JsException(JsDictionaryObject(v));
 #endif
+				case JsValueType.Error:
+            		return JsException.Create(this, (JsError)Marshal.PtrToStructure(v.Ptr, typeof(JsError)));
 
 				default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);

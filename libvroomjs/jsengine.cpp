@@ -128,25 +128,15 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
     HandleScope scope;
     
     Local<Value> exception = trycatch.Exception();
-
-    v.type = JSVALUE_TYPE_UNKNOWN_ERROR;        
-    v.value.str = 0;
+	    
+	v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
+	v.value.str = 0;
     v.length = 0;
-
-	Local<String> errorString;
-	Local<Message> message = trycatch.Message();
-	if (!message.IsEmpty()) {
-		errorString = message->Get();
-	}
 
 	// If this is a managed exception we need to place its ID inside the jsvalue
     // and set the type JSVALUE_TYPE_MANAGED_ERROR to make sure the CLR side will
-    // throw on it. Else we just wrap and return the exception Object. Note that
-    // this is far from perfect because we ignore both the Message object and the
-    // stack stack trace. If the exception is not an object (but just a string,
-    // for example) we convert it with toString() and return that as an Exception.
-    // TODO: return a composite/special object with stack trace information.
-    
+    // throw on it.
+
     if (exception->IsObject()) {
         Local<Object> obj = Local<Object>::Cast(exception);
         if (obj->InternalFieldCount() == 1) {
@@ -154,20 +144,31 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
 			ManagedRef* ref = (ManagedRef*)wrap->Value();
 	        v.type = JSVALUE_TYPE_MANAGED_ERROR;
             v.length = ref->Id();
-        } else if (!errorString.IsEmpty() && errorString->Length() > 0) {
-			v = StringFromV8(errorString);
-			v.type = JSVALUE_TYPE_ERROR;  
-		} else {
-            v = WrappedFromV8(obj);
-            v.type = JSVALUE_TYPE_WRAPPED_ERROR;
-	    }            
-    }
-    else if (!exception.IsEmpty()) {
-        v = StringFromV8(exception);
-        v.type = JSVALUE_TYPE_ERROR;   
-    }
+			return v;
+		}
+	}
+
+	jserror *error = new jserror();
+	memset(error, 0, sizeof(jserror));
+	
+	Local<Message> message = trycatch.Message();
+
+	if (!message.IsEmpty()) {
+		error->line = message->GetLineNumber();
+		error->column = message->GetStartColumn();
+		error->resource = AnyFromV8(message->GetScriptResourceName());
+		error->message = AnyFromV8(message->Get());
+	}
+	 if (exception->IsObject()) {
+        Local<Object> obj2 = Local<Object>::Cast(exception);
+		error->type = AnyFromV8(obj2->GetConstructorName());
+	 }
+
+	error->exception = AnyFromV8(exception);
+	v.type = JSVALUE_TYPE_ERROR;
+	v.value.ptr = error;
     
-    return v;
+	return v;
 }
     
 jsvalue JsEngine::StringFromV8(Handle<Value> value)
@@ -188,17 +189,17 @@ jsvalue JsEngine::StringFromV8(Handle<Value> value)
 jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 {
     jsvalue v;
-    
-    v.type = JSVALUE_TYPE_WRAPPED;
-
+       
 	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
-		 v.length = 0;
+		v.type = JSVALUE_TYPE_WRAPPED;
+		v.length = 0;
         // A Persistent<Object> is exactly the size of an IntPtr, right?
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
 		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
 	} else {
+		v.type = JSVALUE_TYPE_DICT;
 		Local<Array> names = obj->GetOwnPropertyNames();
 		v.length = names->Length();
 		jsvalue* values = new jsvalue[v.length * 2];
