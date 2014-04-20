@@ -19,6 +19,33 @@ as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
 
+How To Build
+------------
+
+```
+# Get a supported version of V8 code
+cd /usr/local/src/
+git clone https://github.com/v8/v8.git
+cd v8
+git checkout 3.15
+
+# Build V8
+make werror=no library=shared x64.release
+
+# Build libvroomjs
+cd /usr/local/src
+git clone https://github.com/fogzot/vroomjs.git
+cd vroomjs/libvroomjs
+g++ jsengine.cpp managedref.cpp bridge.cpp -o libvroomjs.so -shared -L /usr/local/src/v8/out/x64.release/lib.target/ -I /usr/local/src/v8/include/ -fPIC -Wl,--no-as-needed -lv8 -g
+```
+
+Then either copy the `.so` files to `/usr/local/lib`, or use the `LD_LIBRARY_PATH`
+environment variable when executing Mono.
+
+```
+LD_LIBRARY_PATH=/usr/local/src/vroomjs/libvroomjs:/usr/local/src/v8/out/x64.release/lib.target/:$LD_LIBRARY_PATH mono Sandbox.exe
+```
+
 Examples
 --------
 
