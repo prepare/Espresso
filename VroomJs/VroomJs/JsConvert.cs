@@ -44,24 +44,27 @@ namespace VroomJs
 #if DEBUG_TRACE_API
 			Console.WriteLine("Converting Js value to .net");
 #endif
-			switch (v.Type) 
-            {
-                case JsValueType.Null:
-                    return null;
+			switch (v.Type) {
+				case JsValueType.Empty:
+				case JsValueType.Null:
+					return null;
 
-                case JsValueType.Boolean:
-                    return v.I32 != 0;
+				case JsValueType.Boolean:
+					return v.I32 != 0;
 
-                case JsValueType.Integer:
-                    return v.I32;
+				case JsValueType.Integer:
+					return v.I32;
 
-                case JsValueType.Number:
-                    return v.Num;
+				case JsValueType.Index:
+					return (UInt32)v.I64;
 
-                case JsValueType.String:
-                    return Marshal.PtrToStringUni(v.Ptr);
+				case JsValueType.Number:
+					return v.Num;
 
-                case JsValueType.Date:
+				case JsValueType.String:
+					return Marshal.PtrToStringUni(v.Ptr);
+
+				case JsValueType.Date:
 					/*
                     // The formula (v.num * 10000) + 621355968000000000L was taken from a StackOverflow
                     // question and should be OK. Then why do we need to compensate by -26748000000000L
@@ -70,31 +73,37 @@ namespace VroomJs
 					 */
 					return EPOCH.AddMilliseconds(v.Num);
 
-                case JsValueType.Array: {
-                    var r = new object[v.Length];
-                    for (int i=0 ; i < v.Length ; i++) {
-                        var vi =(JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16*i)), typeof(JsValue));
-                        r[i] = FromJsValue(vi);
-                    }
-                    return r;
-                }
+				case JsValueType.Array: {
+					var r = new object[v.Length];
+					for (int i = 0; i < v.Length; i++) {
+						var vi = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+						r[i] = FromJsValue(vi);
+					}
+					return r;
+				}
 
-                case JsValueType.UnknownError:
-                    if (v.Ptr != IntPtr.Zero)
-                        return new JsException(Marshal.PtrToStringUni(v.Ptr));
-                    return new JsInteropException("unknown error without reason");
+				case JsValueType.UnknownError:
+					if (v.Ptr != IntPtr.Zero)
+						return new JsException(Marshal.PtrToStringUni(v.Ptr));
+					return new JsInteropException("unknown error without reason");
 
-                case JsValueType.StringError:
-                    return new JsException(Marshal.PtrToStringUni(v.Ptr));
+				case JsValueType.StringError:
+					return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
-                case JsValueType.Managed:
-                    return _context.KeepAliveGet(v.Index);
+				case JsValueType.Managed:
+					return _context.KeepAliveGet(v.Index);
 
-                case JsValueType.ManagedError:
-                    string msg = null;
-                    if (v.Ptr != IntPtr.Zero)
-                        msg = Marshal.PtrToStringUni(v.Ptr);
-                    return new JsException(msg, _context.KeepAliveGet(v.Index) as Exception);
+				case JsValueType.ManagedError:
+					Exception inner = _context.KeepAliveGet(v.Index) as Exception;
+					string msg = null;
+					if (v.Ptr != IntPtr.Zero) {
+						msg = Marshal.PtrToStringUni(v.Ptr);
+					} else {
+						if (inner != null) {
+							msg = inner.Message;
+						}
+					}
+					return new JsException(msg, inner);
 #if NET40
                 case JsValueType.Wrapped:
                     return new JsObject(_context, v.Ptr);
@@ -105,7 +114,13 @@ namespace VroomJs
 				case JsValueType.Error:
             		return JsException.Create(this, (JsError)Marshal.PtrToStructure(v.Ptr, typeof(JsError)));
 
-				default:
+				case JsValueType.Function:
+					var fa = new JsValue[2];
+					for (int i = 0; i < 2; i++) {
+						fa[i] = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+					}
+            		return new JsFunction(_context, fa[0].Ptr, fa[1].Ptr);
+            	default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);
             }           
         }

@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+
 namespace VroomJs
 { 
 	class WeakDelegate
@@ -33,7 +35,13 @@ namespace VroomJs
             MethodName = name;
         }
 
-        public object Target;
+		public WeakDelegate(Type type, string name) {
+			Type = type;
+			MethodName = name;
+		}
+
+		public Type Type;
+		public object Target;
         public string MethodName;
     }
 }

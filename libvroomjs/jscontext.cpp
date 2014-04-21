@@ -25,10 +25,11 @@
 
 #include <vector>
 #include <iostream>
-
 #include "vroomjs.h"
 
 using namespace v8;
+
+long js_mem_debug_context_count;
 
 JsContext* JsContext::New(int id, JsEngine *engine)
 {
@@ -37,38 +38,26 @@ JsContext* JsContext::New(int id, JsEngine *engine)
 		context->id_ = id;
 		context->engine_ = engine;
 		context->isolate_ = engine->GetIsolate();
-        Locker locker(context->isolate_);
+        
+		Locker locker(context->isolate_);
         Isolate::Scope isolate_scope(context->isolate_);
 
 		context->context_ = new Persistent<Context>(Context::New());
-        
-        // (*(context->context_))->Enter();
-    }
+	}
     return context;
 }
 
 void JsContext::Dispose()
 {
 	if(engine_->GetIsolate() != NULL) {
-    		Locker locker(isolate_);
+		Locker locker(isolate_);
    	 	Isolate::Scope isolate_scope(isolate_);
-    		context_->Dispose();            
-    		delete context_;
+		context_->Dispose();            
+    	delete context_;
 	}
 }
 
-void JsContext::DisposeObject(Persistent<Object>* obj)
-{
-    Locker locker(isolate_);
-    Isolate::Scope isolate_scope(isolate_);
-    (*context_)->Enter();
-    
-    obj->Dispose();
-    
-    (*context_)->Exit();
-}
-
-jsvalue JsContext::Execute(const uint16_t* str)
+jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = NULL)
 {
     jsvalue v;
 
@@ -78,10 +67,18 @@ jsvalue JsContext::Execute(const uint16_t* str)
         
     HandleScope scope;
     TryCatch trycatch;
-        
-    Handle<String> source = String::New(str);    
-    Handle<Script> script = Script::Compile(source);          
-    if (!script.IsEmpty()) {
+    
+    Handle<String> source = String::New(str);   
+	Handle<Script> script;
+
+	if (resourceName != NULL) {
+		Handle<String> name = String::New(resourceName);
+		script = Script::Compile(source, name);  
+	} else {
+		script = Script::Compile(source);  
+	}
+
+	if (!script.IsEmpty()) {
 		Local<Value> result = script->Run();
 		
 		if (result.IsEmpty())
@@ -94,8 +91,33 @@ jsvalue JsContext::Execute(const uint16_t* str)
     }
             
     (*context_)->Exit();
+	return v;     
+}
 
-    return v;     
+jsvalue JsContext::Execute(JsScript *jsscript)
+{
+    jsvalue v;
+
+    Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+        
+    HandleScope scope;
+    TryCatch trycatch;
+   
+	Handle<Script> script = (*jsscript->GetScript());
+
+	if (!script.IsEmpty()) {
+		Local<Value> result = script->Run();
+	
+		if (result.IsEmpty())
+			v = engine_->ErrorFromV8(trycatch);
+		else
+			v = engine_->AnyFromV8(result);        
+	}
+
+    (*context_)->Exit();
+	return v;     
 }
 
 jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
@@ -106,12 +128,12 @@ jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
         
     HandleScope scope;
         
-    Handle<Value> v = engine_->AnyToV8(id_, value);
+    Handle<Value> v = engine_->AnyToV8(value, id_);
 
     if ((*context_)->Global()->Set(String::New(name), v) == false) {
         // TODO: Return an error if set failed.
     }        
-      
+
     (*context_)->Exit();
     
     return engine_->AnyFromV8(Null());
@@ -211,6 +233,7 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
     return v;
 }
 
+
 jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value)
 {
     Locker locker(isolate_);
@@ -219,15 +242,56 @@ jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
         
     HandleScope scope;
         
-    Handle<Value> v = engine_->AnyToV8(id_, value);
+    Handle<Value> v = engine_->AnyToV8(value, id_);
 
     if ((*obj)->Set(String::New(name), v) == false) {
         // TODO: Return an error if set failed.
     }          
-    
+    	
     (*context_)->Exit();
     
     return engine_->AnyFromV8(Null());
+}
+
+jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args) {
+	jsvalue v;
+	
+    Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+        
+    HandleScope scope;    
+    TryCatch trycatch;
+  
+	Local<Value> prop = *(*func);
+    if (prop.IsEmpty() || !prop->IsFunction()) {
+        v = engine_->StringFromV8(String::New("isn't a function"));
+        v.type = JSVALUE_TYPE_STRING_ERROR;   
+    }
+	
+	Local<Object> reciever = *(*thisArg);
+	if (reciever.IsEmpty()) {
+		reciever = (*context_)->Global();
+	}
+
+    else {
+        std::vector<Local<Value> > argv(args.length);
+        engine_->ArrayToV8Args(args, id_, &argv[0]);
+        // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
+        Local<Function> func = Local<Function>::Cast(prop);
+		Local<Value> value = func->Call(reciever, args.length, &argv[0]);
+        if (!value.IsEmpty()) {
+            v = engine_->AnyFromV8(value);        
+        }
+        else {
+            v = engine_->ErrorFromV8(trycatch);
+        }         
+    }
+    
+    (*context_)->Exit();
+    
+    return v;
+
 }
 
 jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args)
@@ -248,7 +312,7 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
     }
     else {
         std::vector<Local<Value> > argv(args.length);
-        engine_->ArrayToV8Args(id_, args, &argv[0]);
+        engine_->ArrayToV8Args(args, id_, &argv[0]);
         // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
         Local<Function> func = Local<Function>::Cast(prop);
         Local<Value> value = func->Call(*obj, args.length, &argv[0]);
@@ -264,4 +328,6 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
     
     return v;
 }
+
+
 

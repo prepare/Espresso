@@ -28,7 +28,7 @@
 
 using namespace v8;
 
-int js_object_marshal_type;
+int32_t js_object_marshal_type;
 
 extern "C" 
 {
@@ -43,7 +43,11 @@ extern "C"
 	EXPORT JsEngine* CALLINGCONVENTION jsengine_new(keepalive_remove_f keepalive_remove, 
                            keepalive_get_property_value_f keepalive_get_property_value,
                            keepalive_set_property_value_f keepalive_set_property_value,
-                           keepalive_invoke_f keepalive_invoke, int32_t max_young_space, int32_t max_old_space) 
+						   keepalive_valueof_f keepalive_valueof,
+                           keepalive_invoke_f keepalive_invoke,
+						   keepalive_delete_property_f keepalive_delete_property,
+						   keepalive_enumerate_properties_f keepalive_enumerate_properties,
+						   int32_t max_young_space, int32_t max_old_space) 
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsengine_new" << std::endl;
@@ -53,7 +57,10 @@ extern "C"
             engine->SetRemoveDelegate(keepalive_remove);
             engine->SetGetPropertyValueDelegate(keepalive_get_property_value);
             engine->SetSetPropertyValueDelegate(keepalive_set_property_value);
+			engine->SetValueOfDelegate(keepalive_valueof);
             engine->SetInvokeDelegate(keepalive_invoke);
+			engine->SetDeletePropertyDelegate(keepalive_delete_property);
+			engine->SetEnumeratePropertiesDelegate(keepalive_enumerate_properties);
         }
 		return engine;
 	}
@@ -71,6 +78,16 @@ extern "C"
                 std::wcout << "jsengine_dump_heap_stats" << std::endl;
 #endif
 		engine->DumpHeapStats();
+	}
+
+	EXPORT void CALLINGCONVENTION js_dump_allocated_items() {
+#ifdef DEBUG_TRACE_API
+                std::wcout << "js_dump_allocated_items" << std::endl;
+#endif
+		std::wcout << "Total allocated Js engines " << js_mem_debug_engine_count << std::endl;
+		std::wcout << "Total allocated Js contexts " << js_mem_debug_context_count << std::endl;
+		std::wcout << "Total allocated Js scripts " << js_mem_debug_script_count << std::endl;
+		std::wcout << "Total allocated Managed Refs " << js_mem_debug_managedref_count << std::endl;
 	}
 
 	EXPORT void CALLINGCONVENTION jsengine_dispose(JsEngine* engine)
@@ -108,24 +125,33 @@ extern "C"
         delete context;
     }
     
-    EXPORT void CALLINGCONVENTION jscontext_dispose_object(JsContext* context, Persistent<Object>* obj)
+    EXPORT void CALLINGCONVENTION jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_dispose_object" << std::endl;
 #endif
-        if (context != NULL)
-            context->DisposeObject(obj);
-        delete obj;
+        if (engine != NULL) {
+            engine->DisposeObject(obj);
+		}
+		delete obj;
     }     
     
-    EXPORT jsvalue CALLINGCONVENTION jscontext_execute(JsContext* context, const uint16_t* str)
+    EXPORT jsvalue CALLINGCONVENTION jscontext_execute(JsContext* context, const uint16_t* str, const uint16_t *resourceName)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_execute" << std::endl;
 #endif
-        return context->Execute(str);
+        return context->Execute(str, resourceName);
     }
-        
+
+	EXPORT jsvalue CALLINGCONVENTION jscontext_execute_script(JsContext* context, JsScript *script)
+    {
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jscontext_execute_script" << std::endl;
+#endif
+        return context->Execute(script);
+    }
+
 	EXPORT jsvalue CALLINGCONVENTION jscontext_get_global(JsContext* context)
     {
 #ifdef DEBUG_TRACE_API
@@ -182,6 +208,40 @@ extern "C"
         return context->InvokeProperty(obj, name, args);
     }        
 
+	  EXPORT jsvalue CALLINGCONVENTION jscontext_invoke(JsContext* context, Persistent<Function>* funcArg, Persistent<Object>* thisArg, jsvalue args)
+    {
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jscontext_invoke" << std::endl;
+#endif
+        return context->InvokeFunction(funcArg, thisArg, args);
+    }        
+
+	 EXPORT JsScript* CALLINGCONVENTION jsscript_new(JsEngine *engine)
+    {
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jsscript_new" << std::endl;
+#endif
+        JsScript* script = JsScript::New(engine);
+        return script;
+    }
+
+	 EXPORT void CALLINGCONVENTION jsscript_dispose(JsScript *script)
+    {
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jsscript_dispose" << std::endl;
+#endif
+        script->Dispose();
+		delete script;
+    }
+
+	  EXPORT jsvalue CALLINGCONVENTION jsscript_compile(JsScript* script, const uint16_t* str, const uint16_t *resourceName)
+    {
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jsscript_compile" << std::endl;
+#endif
+		return script->Compile(str, resourceName);
+    }
+
     EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_string(const uint16_t* str)
     {
 #ifdef DEBUG_TRACE_API
@@ -227,17 +287,26 @@ extern "C"
 		std::wcout << "jsvalue_dispose" << std::endl;
 #endif
         if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_STRING_ERROR) {
-            if (value.value.str != NULL)
-                delete value.value.str;
+            if (value.value.str != NULL) {
+				delete[] value.value.str;
+			}
         }
-        else if (value.type == JSVALUE_TYPE_ARRAY || 
-			(js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DICTIONARY && value.type == JSVALUE_TYPE_DICT)) {
-
-            for (int i=0 ; i < value.length ; i++)
+		else if (value.type == JSVALUE_TYPE_ARRAY || value.type == JSVALUE_TYPE_FUNCTION) {
+		    for (int i=0 ; i < value.length ; i++) {
                 jsvalue_dispose(value.value.arr[i]);
-            if (value.value.arr != NULL)
-                delete value.value.arr;
+			}
+            if (value.value.arr != NULL) {
+                delete[] value.value.arr;
+			}
         }
+		else if (value.type == JSVALUE_TYPE_DICT) {
+			for (int i=0 ; i < value.length * 2; i++) {
+                jsvalue_dispose(value.value.arr[i]);
+			}
+            if (value.value.arr != NULL) {
+                delete[] value.value.arr;
+			}
+		}
 		else if (value.type == JSVALUE_TYPE_ERROR) {
 			jserror *error = (jserror*)value.value.ptr;
 			jsvalue_dispose(error->resource);

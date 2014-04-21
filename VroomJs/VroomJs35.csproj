@@ -47,6 +47,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <DefineConstants>NET35</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -54,11 +56,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VroomJs\BoundWeakDelegate.cs" />
     <Compile Include="VroomJs\JsContext.cs" />
     <Compile Include="VroomJs\JsEngine.cs" />
     <Compile Include="VroomJs\JsError.cs" />
     <Compile Include="VroomJs\JsExecutionTimedOutException.cs" />
+    <Compile Include="VroomJs\JsFunction.cs" />
     <Compile Include="VroomJs\JsObjectMarshalType.cs" />
+    <Compile Include="VroomJs\JsScript.cs" />
     <Compile Include="VroomJs\JsValue.cs" />
     <Compile Include="VroomJs\JsException.cs" />
     <Compile Include="VroomJs\JsValueType.cs" />

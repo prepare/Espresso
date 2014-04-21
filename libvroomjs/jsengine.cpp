@@ -2,20 +2,12 @@
 #include <iostream>
 #include "vroomjs.h"
 
+long js_mem_debug_engine_count;
+
 extern "C" jsvalue CALLINGCONVENTION jsvalue_alloc_array(const int32_t length);
 
-static void managed_destroy(Persistent<Value> object, void* parameter)
-{
-#ifdef DEBUG_TRACE_API
-		std::cout << "managed_destroy" << std::endl;
-#endif
-    HandleScope scope;
-    
-    Persistent<Object> self = Persistent<Object>::Cast(object);
-    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-    delete (ManagedRef*)wrap->Value();
-    object.Dispose();
-}
+static const int Mega = 1024 * 1024;
+
 
 static Handle<Value> managed_prop_get(Local<String> name, const AccessorInfo& info)
 {
@@ -40,7 +32,37 @@ static Handle<Value> managed_prop_set(Local<String> name, Local<Value> value, co
     Local<Object> self = info.Holder();
     Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
     ManagedRef* ref = (ManagedRef*)wrap->Value();
+	if (ref == NULL) {
+		Local<Value> result;
+		return scope.Close(result);
+	}
     return scope.Close(ref->SetPropertyValue(name, value));
+}
+
+static Handle<Boolean> managed_prop_delete(Local<String> name, const AccessorInfo& info)
+{
+#ifdef DEBUG_TRACE_API
+		std::cout << "managed_prop_delete" << std::endl;
+#endif
+	 HandleScope scope;
+    
+    Local<Object> self = info.Holder();
+    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+    ManagedRef* ref = (ManagedRef*)wrap->Value();
+    return scope.Close(ref->DeleteProperty(name));
+}
+
+static Handle<Array> managed_prop_enumerate(const AccessorInfo& info) 
+{
+#ifdef DEBUG_TRACE_API
+		std::cout << "managed_prop_enumerate" << std::endl;
+#endif
+	 HandleScope scope;
+    
+    Local<Object> self = info.Holder();
+    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+    ManagedRef* ref = (ManagedRef*)wrap->Value();
+    return scope.Close(ref->EnumerateProperties());
 }
 
 static Handle<Value> managed_call(const Arguments& args)
@@ -56,7 +78,17 @@ static Handle<Value> managed_call(const Arguments& args)
     return scope.Close(ref->Invoke(args));
 }
 
-static const int Mega = 1024 * 1024;
+Handle<Value> managed_valueof(const Arguments& args) {
+#ifdef DEBUG_TRACE_API
+		std::cout << "managed_valueof" << std::endl;
+#endif
+    HandleScope scope;
+    
+    Local<Object> self = args.Holder();
+    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+    ManagedRef* ref = (ManagedRef*)wrap->Value();
+	return scope.Close(ref->GetValueOf());
+}
 
 JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1)
 {
@@ -64,7 +96,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
     if (engine != NULL) 
 	{            
 		engine->isolate_ = Isolate::New();
-                engine->isolate_->Enter();
+		engine->isolate_->Enter();
 		
 		if (max_young_space > 0 && max_old_space > 0) {
 			v8::ResourceConstraints constraints;
@@ -76,20 +108,66 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 
 		engine->isolate_->Exit();
 
-            Locker locker(engine->isolate_);
-	    Isolate::Scope isolate_scope(engine->isolate_);
+		Locker locker(engine->isolate_);
+		Isolate::Scope isolate_scope(engine->isolate_);
+		HandleScope scope;      
 
 		// Setup the template we'll use for all managed object references.
-        HandleScope scope;            
-        Handle<ObjectTemplate> o = ObjectTemplate::New();
-        o->SetInternalFieldCount(1);
-        o->SetNamedPropertyHandler(managed_prop_get, managed_prop_set);
-        o->SetCallAsFunctionHandler(managed_call);
-        Persistent<ObjectTemplate> p = Persistent<ObjectTemplate>::New(o);
-        engine->managed_template_ = new Persistent<ObjectTemplate>(p);
+        Handle<FunctionTemplate> fo = FunctionTemplate::New(NULL);
+		Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
+    	obj_template->SetInternalFieldCount(1);
+        obj_template->SetNamedPropertyHandler(
+			managed_prop_get, 
+			managed_prop_set, 
+			NULL, 
+			managed_prop_delete, 
+			managed_prop_enumerate);
+        obj_template->SetCallAsFunctionHandler(managed_call);
+        engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>::New(fo));
+
+		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>::New(FunctionTemplate::New(managed_valueof));
+		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+		
+		engine->global_context_ = new Persistent<Context>(Context::New());
+		(*engine->global_context_)->Enter();
+
+		fo->PrototypeTemplate()->Set(String::New("valueOf"), fp->GetFunction());
+
+		(*engine->global_context_)->Exit();
 	}
 	return engine;
 }
+
+Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t *resourceName, jsvalue *error) {
+	Locker locker(isolate_);
+	Isolate::Scope isolate_scope(isolate_);
+	
+    HandleScope scope;
+	TryCatch trycatch;
+		
+	(*global_context_)->Enter();
+
+	Handle<String> source = String::New(str);
+	Handle<Script> script;
+
+	if (resourceName != NULL) {
+		Handle<String> name = String::New(resourceName);
+		script = Script::New(source, name);  
+	} else {
+		script = Script::New(source);  
+	}
+
+	if (script.IsEmpty()) {
+		*error = ErrorFromV8(trycatch);
+	}
+	
+	(*global_context_)->Exit();
+	
+	Persistent<Script> *pScript = new Persistent<Script>(Persistent<Script>::New(script));
+
+	return pScript;
+}
+
 
 void JsEngine::TerminateExecution() 
 {
@@ -116,9 +194,39 @@ void JsEngine::DumpHeapStats()
 void JsEngine::Dispose()
 {
 	if (isolate_ != NULL) {
+		isolate_->Enter();
+
+		managed_template_->Dispose();
+		delete managed_template_;
+		managed_template_ = NULL;
+	
+		valueof_function_template_->Dispose();
+		delete valueof_function_template_;
+		valueof_function_template_ = NULL;
+
+		global_context_->Dispose();            
+    	delete global_context_;
+		global_context_ = NULL;
+
+		isolate_->Exit();
 		isolate_->Dispose();
 		isolate_ = NULL;
+	    keepalive_remove_ = NULL;
+		keepalive_get_property_value_ = NULL;
+		keepalive_set_property_value_ = NULL;
+		keepalive_valueof_ = NULL;
+		keepalive_invoke_ = NULL;
+		keepalive_delete_property_ = NULL;
+		keepalive_enumerate_properties_ = NULL;
 	}
+}
+
+void JsEngine::DisposeObject(Persistent<Object>* obj)
+{
+    Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    
+	obj->Dispose(isolate_);
 }
 
 jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
@@ -230,7 +338,7 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
     return v;
 }
     
-jsvalue JsEngine::AnyFromV8(Handle<Value> value)
+jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 {
     jsvalue v;
     
@@ -278,8 +386,24 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value)
         }
     }
     else if (value->IsFunction()) {
-		v.type = JSVALUE_TYPE_NULL; // fix this we just ignore the value.
-        // TODO: how do we represent this on the CLR side? Delegate?
+		Handle<Function> function = Handle<Function>::Cast(value);
+		jsvalue* array = new jsvalue[2];
+        if (array != NULL) { 
+			array[0].value.ptr = new Persistent<Object>(Persistent<Function>::New(function));
+			array[0].length = 0;
+			array[0].type = JSVALUE_TYPE_WRAPPED;
+			if (!thisArg.IsEmpty()) {
+				array[1].value.ptr = new Persistent<Object>(Persistent<Object>::New(thisArg));
+				array[1].length = 0;
+				array[1].type = JSVALUE_TYPE_WRAPPED;
+			} else {
+				array[1].value.ptr = NULL;
+				array[1].length = 0;
+				array[1].type = JSVALUE_TYPE_NULL;
+			}
+	        v.type = JSVALUE_TYPE_FUNCTION;
+            v.value.arr = array;
+        }
     }
     else if (value->IsObject()) {
         Handle<Object> obj = Handle<Object>::Cast(value);
@@ -292,9 +416,38 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value)
     return v;
 }
 
-Handle<Value> JsEngine::AnyToV8(int32_t contextId, jsvalue v)
+jsvalue JsEngine::ArrayFromArguments(const Arguments& args)
 {
-    if (v.type == JSVALUE_TYPE_NULL) {
+    jsvalue v = jsvalue_alloc_array(args.Length());
+    Local<Object> thisArg = args.Holder();
+
+    for (int i=0 ; i < v.length ; i++) {
+        v.value.arr[i] = AnyFromV8(args[i], thisArg);
+    }
+    
+    return v;
+}
+
+static void managed_destroy(Persistent<Value> object, void* parameter)
+{
+#ifdef DEBUG_TRACE_API
+		std::cout << "managed_destroy" << std::endl;
+#endif
+    HandleScope scope;
+    
+    Persistent<Object> self = Persistent<Object>::Cast(object);
+    Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+	ManagedRef* ref = (ManagedRef*)wrap->Value();
+    delete ref;
+    object.Dispose();
+}
+
+Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
+{
+	if (v.type == JSVALUE_TYPE_EMPTY) {
+		return Handle<Value>();
+	}
+	if (v.type == JSVALUE_TYPE_NULL) {
         return Null();
     }
     if (v.type == JSVALUE_TYPE_BOOLEAN) {
@@ -312,13 +465,13 @@ Handle<Value> JsEngine::AnyToV8(int32_t contextId, jsvalue v)
     if (v.type == JSVALUE_TYPE_DATE) {
         return Date::New(v.value.num);
     }
-
+	
     // Arrays are converted to JS native arrays.
     
     if (v.type == JSVALUE_TYPE_ARRAY) {
         Local<Array> a = Array::New(v.length);
         for(int i = 0; i < v.length; i++) {
-            a->Set(i, AnyToV8(contextId, v.value.arr[i]));
+            a->Set(i, AnyToV8(v.value.arr[i], contextId));
         }
         return a;        
     }
@@ -327,37 +480,30 @@ Handle<Value> JsEngine::AnyToV8(int32_t contextId, jsvalue v)
     // cache. We just wrap it and the pointer to the engine inside an External. A
     // managed error is still a CLR object so it is wrapped exactly as a normal
     // managed object.
-    
     if (v.type == JSVALUE_TYPE_MANAGED || v.type == JSVALUE_TYPE_MANAGED_ERROR) {
-        ManagedRef* ref = new ManagedRef(this, contextId, v.length);
-        Persistent<Object> obj = Persistent<Object>::New((*(managed_template_))->NewInstance());
-		obj->SetInternalField(0, External::New(ref));
-        obj.MakeWeak(NULL, managed_destroy);
-        return obj;
+		ManagedRef* ref = new ManagedRef(this, contextId, v.length);
+		Local<Object> object = (*(managed_template_))->InstanceTemplate()->NewInstance();
+		if (object.IsEmpty()) {
+			return Null();
+		}
+		
+		Persistent<Object> persistent = Persistent<Object>::New(object);
+		persistent->SetInternalField(0, External::New(ref));
+		persistent.MakeWeak(NULL, managed_destroy);
+        return persistent;
     }
 
     return Null();
 }
 
-int32_t JsEngine::ArrayToV8Args(int32_t contextId, jsvalue value, Handle<Value> preallocatedArgs[])
+int32_t JsEngine::ArrayToV8Args(jsvalue value, int32_t contextId, Handle<Value> preallocatedArgs[])
 {
     if (value.type != JSVALUE_TYPE_ARRAY)
         return -1;
         
     for (int i=0 ; i < value.length ; i++) {
-        preallocatedArgs[i] = AnyToV8(contextId, value.value.arr[i]);
+        preallocatedArgs[i] = AnyToV8(value.value.arr[i], contextId);
     }
     
     return value.length;
-}
-
-jsvalue JsEngine::ArrayFromArguments(const Arguments& args)
-{
-    jsvalue v = jsvalue_alloc_array(args.Length());
-    
-    for (int i=0 ; i < v.length ; i++) {
-        v.value.arr[i] = AnyFromV8(args[i]);
-    }
-    
-    return v;
 }

@@ -29,12 +29,10 @@ using System.Dynamic;
 
 namespace VroomJs
 {
-    public class JsObject : DynamicObject
+    public class JsObject : DynamicObject, IDisposable
     {
         public JsObject(JsContext context, IntPtr ptr)
         {
-			if (context == null)
-                throw new ArgumentNullException("engine");
             if (ptr == IntPtr.Zero)
                 throw new ArgumentException("can't wrap an empty object (ptr is Zero)", "ptr");
 
@@ -89,12 +87,12 @@ namespace VroomJs
 
             _disposed = true;
 
-            _context.DisposeObject(this);
+            _context.Engine.DisposeObject(this.Handle);
         }
 
         ~JsObject()
         {
-            if (_disposed)
+            if (!_disposed)
                 Dispose(false);
         }
 

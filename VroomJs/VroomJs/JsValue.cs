@@ -44,8 +44,12 @@ namespace VroomJs
         [FieldOffset(12)] public int Index;
 
         public static JsValue Null {
-            get { return new JsValue(); }
+			get { return new JsValue() { Type = JsValueType.Null }; }
         }
+
+    	public static JsValue Empty {
+    		get { return new JsValue() { Type = JsValueType.Empty }; }
+    	}
 
         public static JsValue Error(int slot)
         {

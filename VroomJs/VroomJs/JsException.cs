@@ -36,7 +36,7 @@ namespace VroomJs
 			string resource = (string)convert.FromJsValue(error.Resource);
 			string message = (string)convert.FromJsValue(error.Message);
 			int line = error.Line;
-			int column = error.Column;
+			int column = error.Column + 1; // because zero based.
 			JsObject nativeException = (JsObject)convert.FromJsValue(error.Exception);
 
 			JsException exception;
@@ -57,15 +57,16 @@ namespace VroomJs
         }
 
         public JsException(string message, Exception inner) : base(message, inner)
-        {
-        }
+	    {
+		
+		}
 
 		protected JsException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
-		internal JsException(string type, string resource, string message, int line, int col, JsObject error) 
-			: base(message) {
+		internal JsException(string type, string resource, string message, int line, int col, JsObject error)
+			: base(string.Format("{0}: {1} at line: {2} column: {3}.", resource, message, line, col)) {
 			_type = type;
 			_resource = resource;
 			_line = line;
@@ -102,11 +103,7 @@ namespace VroomJs
 
 	public class JsSyntaxError : JsException {
 		internal JsSyntaxError(string type, string resource, string message, int line, int col) 
-			: base(string.Format("{0}: {1} at line: {2} column: {3}.", resource, message, line, col)) {
-			_type = type;
-			_resource = resource;
-			_line = line;
-			_column = col;
+			: base(type, resource, message, line, col, null) {
 		}
 	}
 }

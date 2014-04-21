@@ -32,7 +32,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\build\Debug NET35\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>

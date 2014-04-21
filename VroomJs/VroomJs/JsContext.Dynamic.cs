@@ -19,9 +19,6 @@ namespace VroomJs
 		[DllImport("VroomJsNative")]
 		static extern JsValue jscontext_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
 	
-		[DllImport("VroomJsNative")]
-		static extern void jscontext_dispose_object(HandleRef engine, IntPtr obj);
-		
 		public IEnumerable<string> GetMemberNames(JsObject obj) 
 		{
 			if (obj == null)
@@ -115,17 +112,6 @@ namespace VroomJs
             if (e != null)
                 throw e;
             return res;
-        }
-
-        public void DisposeObject(JsObject obj)
-        {
-            // If the engine has already been explicitly disposed we pass Zero as
-            // the first argument because we need to free the memory allocated by
-            // "new" but not the object on the V8 heap: it has already been freed.
-            if (_disposed)
-                jscontext_dispose_object(new HandleRef(this, IntPtr.Zero), obj.Handle);
-            else
-				jscontext_dispose_object(_context, obj.Handle);
         }
 	}
 }
