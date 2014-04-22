@@ -30,76 +30,116 @@ namespace VroomJs
 {
     class JsConvert
     {
-        public JsConvert(JsEngine engine)
+		public static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public JsConvert(JsContext context)
         {
-            _engine = engine;
+            _context = context;
         }
 
-        readonly JsEngine _engine;
+        readonly JsContext _context;
 
         public object FromJsValue(JsValue v)
         {
-            switch (v.Type) 
-            {
-                case JsValueType.Null:
-                    return null;
+#if DEBUG_TRACE_API
+			Console.WriteLine("Converting Js value to .net");
+#endif
+			switch (v.Type) {
+				case JsValueType.Empty:
+				case JsValueType.Null:
+					return null;
 
-                case JsValueType.Boolean:
-                    return v.I32 != 0;
+				case JsValueType.Boolean:
+					return v.I32 != 0;
 
-                case JsValueType.Integer:
-                    return v.I32;
+				case JsValueType.Integer:
+					return v.I32;
 
-                case JsValueType.Number:
-                    return v.Num;
+				case JsValueType.Index:
+					return (UInt32)v.I64;
 
-                case JsValueType.String:
-                    return Marshal.PtrToStringUni(v.Ptr);
+				case JsValueType.Number:
+					return v.Num;
 
-                case JsValueType.Date:
+				case JsValueType.String:
+					return Marshal.PtrToStringUni(v.Ptr);
+
+				case JsValueType.Date:
+					/*
                     // The formula (v.num * 10000) + 621355968000000000L was taken from a StackOverflow
                     // question and should be OK. Then why do we need to compensate by -26748000000000L
                     // (a value determined from the failing tests)?!
                     return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
+					 */
+					return EPOCH.AddMilliseconds(v.Num);
 
-                case JsValueType.Array: {
-                    var r = new object[v.Length];
-                    for (int i=0 ; i < v.Length ; i++) {
-                        var vi =(JsValue)Marshal.PtrToStructure((v.Ptr + 16*i), typeof(JsValue));
-                        r[i] = FromJsValue(vi);
-                    }
-                    return r;
-                }
+				case JsValueType.Array: {
+					var r = new object[v.Length];
+					for (int i = 0; i < v.Length; i++) {
+						var vi = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+						r[i] = FromJsValue(vi);
+					}
+					return r;
+				}
 
-                case JsValueType.UnknownError:
-                    if (v.Ptr != IntPtr.Zero)
-                        return new JsException(Marshal.PtrToStringUni(v.Ptr));
-                    return new JsInteropException("unknown error without reason");
+				case JsValueType.UnknownError:
+					if (v.Ptr != IntPtr.Zero)
+						return new JsException(Marshal.PtrToStringUni(v.Ptr));
+					return new JsInteropException("unknown error without reason");
 
-                case JsValueType.Error:
-                    return new JsException(Marshal.PtrToStringUni(v.Ptr));
+				case JsValueType.StringError:
+					return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
-                case JsValueType.Managed:
-                    return _engine.KeepAliveGet(v.Index);
+				case JsValueType.Managed:
+					return _context.KeepAliveGet(v.Index);
 
-                case JsValueType.ManagedError:
-                    string msg = null;
-                    if (v.Ptr != IntPtr.Zero)
-                        msg = Marshal.PtrToStringUni(v.Ptr);
-                    return new JsException(msg, _engine.KeepAliveGet(v.Index) as Exception);
-
+				case JsValueType.ManagedError:
+					Exception inner = _context.KeepAliveGet(v.Index) as Exception;
+					string msg = null;
+					if (v.Ptr != IntPtr.Zero) {
+						msg = Marshal.PtrToStringUni(v.Ptr);
+					} else {
+						if (inner != null) {
+							msg = inner.Message;
+						}
+					}
+					return new JsException(msg, inner);
+#if NET40
                 case JsValueType.Wrapped:
-                    return new JsObject(_engine, v.Ptr);
+                    return new JsObject(_context, v.Ptr);
+#else
+				case JsValueType.Dictionary:
+            		return JsDictionaryObject(v);
+#endif
+				case JsValueType.Error:
+            		return JsException.Create(this, (JsError)Marshal.PtrToStructure(v.Ptr, typeof(JsError)));
 
-                case JsValueType.WrappedError:
-                    return new JsException(new JsObject(_engine, v.Ptr));
-
-                default:
+				case JsValueType.Function:
+					var fa = new JsValue[2];
+					for (int i = 0; i < 2; i++) {
+						fa[i] = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+					}
+            		return new JsFunction(_context, fa[0].Ptr, fa[1].Ptr);
+            	default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);
             }           
         }
 
-        public JsValue ToJsValue(object obj)
+#if !NET40 
+    	private JsObject JsDictionaryObject(JsValue v) 
+		{
+			JsObject obj = new JsObject();
+			for (int i = 0; i < (v.Length * 2); i += 2) 
+			{
+				var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+				var value = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * (i + 1))), typeof(JsValue));
+				obj[(string)FromJsValue(key)] = FromJsValue(value);
+			}
+			return obj;
+    	}
+#endif
+
+    	public JsValue ToJsValue(object obj)
         {
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
@@ -116,7 +156,7 @@ namespace VroomJs
 
             if (type == typeof(String) || type == typeof(Char)) {
                 // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-                return JsEngine.jsvalue_alloc_string(obj.ToString());
+                return JsContext.jsvalue_alloc_string(obj.ToString());
             }
 
             if (type == typeof(Byte))
@@ -144,7 +184,7 @@ namespace VroomJs
             if (type == typeof(DateTime))
                 return new JsValue { 
                 Type = JsValueType.Date, 
-                Num = (((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0 
+                Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds) /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
             };
 
             // Arrays of anything that can be cast to object[] are recursively convertef after
@@ -152,11 +192,11 @@ namespace VroomJs
 
             var array = obj as object[];
             if (array != null) {
-                JsValue v = JsEngine.jsvalue_alloc_array(array.Length);
+                JsValue v = JsContext.jsvalue_alloc_array(array.Length);
                 if (v.Length != array.Length)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
                 for (int i=0 ; i < array.Length ; i++)
-                    Marshal.StructureToPtr(ToJsValue(array[i]), (v.Ptr + 16*i), false);
+                    Marshal.StructureToPtr(ToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16*i)), false);
                 return v;
             }
 
@@ -166,7 +206,7 @@ namespace VroomJs
             // because adding the same object more than one time acts more or less as
             // reference counting.
 
-            return new JsValue { Type = JsValueType.Managed, Index = _engine.KeepAliveAdd(obj) };
+            return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
     }
 }

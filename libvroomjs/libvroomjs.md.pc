@@ -1,5 +1,5 @@
 Name: libvroomjs
 Description: 
 Version: 0.1
-Libs: -L"/home/fog/Workspaces/vroomjs/vroomjs/build/Debug" -lvroomjs
-Cflags: -I"/home/fog/Workspaces/vroomjs/vroomjs/libvroomjs"
+Libs: -L"/root/vroomjs/build/Debug" -lVroomJsNative
+Cflags: -I"/root/vroomjs/libvroomjs"

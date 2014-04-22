@@ -24,24 +24,23 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 
 namespace VroomJs
 {
-    public class JsObject : DynamicObject
+    public class JsObject : DynamicObject, IDisposable
     {
-        public JsObject(JsEngine engine, IntPtr ptr)
+        public JsObject(JsContext context, IntPtr ptr)
         {
-            if (engine == null)
-                throw new ArgumentNullException("engine");
             if (ptr == IntPtr.Zero)
                 throw new ArgumentException("can't wrap an empty object (ptr is Zero)", "ptr");
 
-            _engine = engine;
+			_context = context;
             _handle = ptr;
-        }
+		}
 
-        readonly JsEngine _engine;
+		readonly JsContext _context;
         readonly IntPtr _handle;
 
         public IntPtr Handle {
@@ -50,21 +49,26 @@ namespace VroomJs
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
-            result = _engine.InvokeProperty(this, binder.Name, args);
+			result = _context.InvokeProperty(this, binder.Name, args);
             return true;
         }
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = _engine.GetPropertyValue(this, binder.Name);
+			result = _context.GetPropertyValue(this, binder.Name);
             return true;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _engine.SetPropertyValue(this, binder.Name, value);
+			_context.SetPropertyValue(this, binder.Name, value);
             return true;
         }
+
+		public override IEnumerable<string> GetDynamicMemberNames() 
+		{
+			return _context.GetMemberNames(this);
+		}
 
         #region IDisposable implementation
 
@@ -83,12 +87,12 @@ namespace VroomJs
 
             _disposed = true;
 
-            _engine.DisposeObject(this);
+            _context.Engine.DisposeObject(this.Handle);
         }
 
         ~JsObject()
         {
-            if (_disposed)
+            if (!_disposed)
                 Dispose(false);
         }
 
