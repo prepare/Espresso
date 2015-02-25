@@ -44,4 +44,5 @@ x64/
 *.vspscc
 *.vssscc
 *.sdf
+*.ipch
 .builds

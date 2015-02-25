@@ -31,24 +31,26 @@ namespace VroomJs.Tests
     [TestFixture]
     public class Globals
     {
-        JsEngine js;
-
+        JsEngine jsEngine;
+        JsContext js;
         [SetUp]
         public void Setup()
         {
-            js = new JsEngine();
+            jsEngine = new JsEngine();
+            js = jsEngine.CreateContext();
+
         }
 
         [TearDown]
         public void Teardown()
         {
-            js.Dispose();
+            jsEngine.Dispose();
         }
 
         [TestCase]
         public void SimpleExpressionNull()
         {
-            
+
             Assert.That(js.Execute("null"), Is.Null);
         }
 
@@ -79,7 +81,7 @@ namespace VroomJs.Tests
         [TestCase]
         public void SimpleExpressionDate()
         {
-            Assert.That(js.Execute("new Date(1971, 10, 19, 0, 42, 59)") , Is.EqualTo(new DateTime(1971, 10, 19, 0, 42, 59)));
+            Assert.That(js.Execute("new Date(1971, 10, 19, 0, 42, 59)"), Is.EqualTo(new DateTime(1971, 10, 19, 0, 42, 59)));
         }
 
         [TestCase]
@@ -156,10 +158,10 @@ namespace VroomJs.Tests
 
         [TestCase]
         public void SetGetVariableDate()
-        {   
+        {
             var dt = new DateTime(1971, 10, 19, 0, 42, 59);
             js.SetVariable("foo", dt);
-            Assert.That(js.GetVariable("foo") , Is.EqualTo(dt));
+            Assert.That(js.GetVariable("foo"), Is.EqualTo(dt));
         }
 
         [TestCase]
@@ -179,16 +181,16 @@ namespace VroomJs.Tests
 
         [TestCase]
         public void ObjectCount()
-        {   
+        {
             // Apparently there is no safe way to force a full GC on the JS side.
             // We will check that the number of live objects _at least_ got lower
             // than what we created.
             var dt = new TestClass();
-            for (int i=0 ; i < 100000 ; i++)
+            for (int i = 0; i < 100000; i++)
                 js.SetVariable("foo", dt);
             js.SetVariable("foo", null);
             js.Flush();
-            Assert.That(js.GetStats().KeepAliveUsedSlots , Is.LessThan(80000));
+            Assert.That(js.GetStats().KeepAliveUsedSlots, Is.LessThan(80000));
         }
 
     }

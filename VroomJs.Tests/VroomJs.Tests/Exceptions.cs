@@ -31,39 +31,48 @@ namespace VroomJs.Tests
     [TestFixture]
     public class Exceptions
     {
-        JsEngine js;
+        JsEngine jsEngine;
 
         [SetUp]
         public void Setup()
         {
-            js = new JsEngine();
+            jsEngine = new JsEngine();
         }
 
         [TearDown]
         public void Teardown()
         {
-            js.Dispose();
+            jsEngine.Dispose();
         }
 
         [TestCase]
         [ExpectedException(typeof(JsException))]
         public void SimpleExpressionException()
         {
-            js.Execute("throw 'xxx'");
+            using (JsContext js = jsEngine.CreateContext())
+            {
+                js.Execute("throw 'xxx'");
+            }
         }
 
         [TestCase]
         [ExpectedException(typeof(JsException))]
         public void JsObjectException()
         {
-            js.Execute("throw {msg:'Error!'}");
+            using (JsContext js = jsEngine.CreateContext())
+            {
+                js.Execute("throw {msg:'Error!'}");
+            }
         }
 
         [TestCase]
         [ExpectedException(typeof(JsException))]
         public void CompilationException()
         {
-            js.Execute("a+§");
+            using (JsContext js = jsEngine.CreateContext())
+            {
+                js.Execute("a+§");
+            }
         }
     }
 }
