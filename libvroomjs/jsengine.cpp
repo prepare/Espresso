@@ -176,19 +176,20 @@ void JsEngine::TerminateExecution()
 
 void JsEngine::DumpHeapStats() 
 {
-	Locker locker(isolate_);
-    	Isolate::Scope isolate_scope(isolate_);
+	//Locker locker(isolate_);
+ //   	Isolate::Scope isolate_scope(isolate_);
 
-	// gc first.
-	while(!V8::IdleNotification()) {};
-	
-	HeapStatistics stats;
-	isolate_->GetHeapStatistics(&stats);
-	std::wcout << "Heap size limit " << (stats.heap_size_limit() / Mega) << std::endl;
-	std::wcout << "Total heap size " << (stats.total_heap_size() / Mega) << std::endl;
-	std::wcout << "Heap size executable " << (stats.total_heap_size_executable() / Mega) << std::endl;
-	std::wcout << "Total physical size " << (stats.total_physical_size() / Mega) << std::endl;
-	std::wcout << "Used heap size " << (stats.used_heap_size() / Mega) << std::endl;
+	//// gc first.
+	//while(!V8::IdleNotification()) {};
+	//
+	//HeapStatistics stats;
+	//isolate_->GetHeapStatistics(&stats);
+	//
+	//std::wcout << "Heap size limit " << (stats.heap_size_limit() / Mega) << std::endl;
+	//std::wcout << "Total heap size " << (stats.total_heap_size() / Mega) << std::endl;
+	//std::wcout << "Heap size executable " << (stats.total_heap_size_executable() / Mega) << std::endl;
+	//std::wcout << "Total physical size " << (stats.total_physical_size() / Mega) << std::endl;
+	//std::wcout << "Used heap size " << (stats.used_heap_size() / Mega) << std::endl;
 }
 
 void JsEngine::Dispose()
@@ -225,8 +226,8 @@ void JsEngine::DisposeObject(Persistent<Object>* obj)
 {
     Locker locker(isolate_);
     Isolate::Scope isolate_scope(isolate_);
-    
-	obj->Dispose(isolate_);
+    obj->Dispose();
+	//obj->Dispose(isolate_);
 }
 
 jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)

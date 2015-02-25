@@ -48,6 +48,7 @@ namespace VroomJs.Tests
         [TestCase]
         public void SimpleExpressionNull()
         {
+            
             Assert.That(js.Execute("null"), Is.Null);
         }
 

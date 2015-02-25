@@ -43,4 +43,5 @@ x64/
 *.log
 *.vspscc
 *.vssscc
+*.sdf
 .builds
