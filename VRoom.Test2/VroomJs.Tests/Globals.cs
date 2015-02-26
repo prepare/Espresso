@@ -116,10 +116,19 @@ namespace VroomJs.Tests
         [TestCase]
         public void ExpressionAndCall()
         {
-            dynamic x = js.Execute(@"
+
+            DynamicObject x = js.Execute(@"
                 (function () { 
                     return {'answer':42, 'tellme':function (x) { return x+' The answer is: '+this.answer; }}
-                })()");
+                })()") as DynamicObject;
+            if (x != null)
+            {
+                var tellmeFunc = x["tellme"] as JsFunction;
+                tellmeFunc.Invoke(new object[] { "What is the answer to ...?" });
+
+
+            }
+
 #if NET40
             object s = x.tellme("What is the answer to ...?");
             Assert.That(s, Is.EqualTo("What is the answer to ...? The answer is: 42"));

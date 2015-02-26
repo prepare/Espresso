@@ -4,7 +4,7 @@
 
 long js_mem_debug_engine_count;
 
-extern "C" jsvalue CALLINGCONVENTION jsvalue_alloc_array(const int32_t length);
+extern "C" jsvalue CALLCONV jsvalue_alloc_array(const int32_t length);
 
 static const int Mega = 1024 * 1024;
 

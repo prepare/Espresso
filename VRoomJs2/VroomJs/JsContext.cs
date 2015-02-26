@@ -34,44 +34,48 @@ namespace VroomJs
 {
     public partial class JsContext : IDisposable
     {
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        const string VROOMLIB = "VroomJsNative";
+
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
+        static extern int getVersion(); 
+
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static extern IntPtr jscontext_new(int id, HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         public static extern void jscontext_dispose(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static extern void jscontext_force_gc();
 
-        //[DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        //static extern JsValue jscontext_execute(HandleRef context, [MarshalAs(UnmanagedType.LPWStr)] string str, [MarshalAs(UnmanagedType.LPWStr)] string name);
-        [DllImport("VroomJsNative.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         static extern JsValue jscontext_execute(HandleRef context,
             [MarshalAs(UnmanagedType.LPWStr)] string str,
             [MarshalAs(UnmanagedType.LPWStr)] string name);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         static extern JsValue jscontext_execute_script(HandleRef context, HandleRef script);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static extern JsValue jscontext_get_global(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static extern JsValue jscontext_get_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static extern JsValue jscontext_set_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static internal extern JsValue jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static internal extern JsValue jsvalue_alloc_array(int length);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static internal extern void jsvalue_dispose(JsValue value);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport(VROOMLIB, CallingConvention = CallingConvention.StdCall)]
         static internal extern JsValue jscontext_invoke(HandleRef engine, IntPtr funcPtr, IntPtr thisPtr, JsValue args);
 
         private readonly int _id;
@@ -192,8 +196,8 @@ namespace VroomJs
             try
             {
                 watch2.Start();
-                //IntPtr pp = jscontext_execute(_context, code, name ?? "<Unnamed Script>");
-                //JsValue v = new JsValue();//= jscontext_execute(_context, code, name ?? "<Unnamed Script>");
+               
+                int ver = getVersion(); 
                 JsValue v = jscontext_execute(_context, code, name ?? "<Unnamed Script>");
                 watch2.Stop();
                 res = _convert.FromJsValue(v);
@@ -800,7 +804,10 @@ namespace VroomJs
 
             JsValue a = JsValue.Null; // Null value unless we're given args.
             if (args != null)
+            {
                 a = _convert.ToJsValue(args);
+            }
+
 
             JsValue v = jscontext_invoke(_context, funcPtr, thisPtr, a);
             object res = _convert.FromJsValue(v);

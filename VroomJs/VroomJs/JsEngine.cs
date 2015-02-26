@@ -16,13 +16,13 @@ namespace VroomJs
         delegate JsValue KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name);
         delegate JsValue KeepAliveEnumeratePropertiesDelegate(int context, int slot);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern void js_set_object_marshal_type(JsObjectMarshalType objectMarshalType);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern void js_dump_allocated_items();
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr jsengine_new(
             KeepaliveRemoveDelegate keepaliveRemove,
             KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
@@ -34,13 +34,13 @@ namespace VroomJs
             int maxYoungSpace, int maxOldSpace
         );
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_terminate_execution(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dump_heap_stats(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose(HandleRef engine);
 
         [DllImport("VroomJsNative")]

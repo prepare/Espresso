@@ -65,10 +65,12 @@ using namespace v8;
 
 #ifdef _WIN32
 #include "Windows.h"
-#define CALLINGCONVENTION __stdcall
+#define CALLCONV
+#define CALLINGCONVENTION __stdcall 
 #define INCREMENT(x) InterlockedIncrement(&x)
 #define DECREMENT(x) InterlockedDecrement(&x)
 #else 
+#define CALLCONV
 #define CALLINGCONVENTION
 #define INCREMENT(x) __sync_fetch_and_add(&x, 1)
 #define DECREMENT(x) __sync_fetch_and_add(&x, -1)
@@ -113,7 +115,7 @@ extern "C"
 		jsvalue exception;
 	};
 	
-	EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value);
+	EXPORT void CALLCONV jsvalue_dispose(jsvalue value);
 }
 
 class JsEngine;

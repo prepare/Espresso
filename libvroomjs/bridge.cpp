@@ -31,8 +31,14 @@ using namespace v8;
 int32_t js_object_marshal_type;
 
 extern "C" 
-{
-	EXPORT void CALLINGCONVENTION js_set_object_marshal_type(int32_t type)
+{	
+	EXPORT int getVersion()
+	{
+		return 1;
+	}
+	 
+
+	EXPORT void CALLCONV js_set_object_marshal_type(int32_t type)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "js_object_marshal_type " << type << std::endl;
@@ -40,7 +46,7 @@ extern "C"
 	    js_object_marshal_type = type;
     }
 
-	EXPORT JsEngine* CALLINGCONVENTION jsengine_new(keepalive_remove_f keepalive_remove, 
+	EXPORT JsEngine* CALLCONV jsengine_new(keepalive_remove_f keepalive_remove, 
                            keepalive_get_property_value_f keepalive_get_property_value,
                            keepalive_set_property_value_f keepalive_set_property_value,
 						   keepalive_valueof_f keepalive_valueof,
@@ -65,7 +71,7 @@ extern "C"
 		return engine;
 	}
 
-	EXPORT void CALLINGCONVENTION jsengine_terminate_execution(JsEngine* engine) {
+	EXPORT void CALLCONV jsengine_terminate_execution(JsEngine* engine) {
 #ifdef DEBUG_TRACE_API
                 std::wcout << "jsengine_terminate_execution" << std::endl;
 #endif
@@ -73,14 +79,14 @@ extern "C"
 		engine->TerminateExecution();
 	}
 
-    EXPORT void CALLINGCONVENTION jsengine_dump_heap_stats(JsEngine* engine) {
+    EXPORT void CALLCONV jsengine_dump_heap_stats(JsEngine* engine) {
 #ifdef DEBUG_TRACE_API
                 std::wcout << "jsengine_dump_heap_stats" << std::endl;
 #endif
 		engine->DumpHeapStats();
 	}
 
-	EXPORT void CALLINGCONVENTION js_dump_allocated_items() {
+	EXPORT void CALLCONV js_dump_allocated_items() {
 #ifdef DEBUG_TRACE_API
                 std::wcout << "js_dump_allocated_items" << std::endl;
 #endif
@@ -90,7 +96,7 @@ extern "C"
 		std::wcout << "Total allocated Managed Refs " << js_mem_debug_managedref_count << std::endl;
 	}
 
-	EXPORT void CALLINGCONVENTION jsengine_dispose(JsEngine* engine)
+	EXPORT void CALLCONV jsengine_dispose(JsEngine* engine)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsengine_dispose" << std::endl;
@@ -99,7 +105,7 @@ extern "C"
         delete engine;
     }
 
-    EXPORT JsContext* CALLINGCONVENTION jscontext_new(int32_t id, JsEngine *engine)
+    EXPORT JsContext* CALLCONV jscontext_new(int32_t id, JsEngine *engine)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_new" << std::endl;
@@ -108,7 +114,7 @@ extern "C"
         return context;
     }
 
-	EXPORT void CALLINGCONVENTION jscontext_force_gc()
+	EXPORT void CALLCONV jscontext_force_gc()
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_force_gc" << std::endl;
@@ -116,7 +122,7 @@ extern "C"
         while(!V8::IdleNotification()) {};
     }
 
-    EXPORT void jscontext_dispose(JsContext* context)
+    EXPORT void CALLCONV jscontext_dispose(JsContext* context)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_dispose" << std::endl;
@@ -125,7 +131,7 @@ extern "C"
         delete context;
     }
     
-    EXPORT void CALLINGCONVENTION jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
+    EXPORT void CALLCONV jsengine_dispose_object(JsEngine* engine, Persistent<Object>* obj)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_dispose_object" << std::endl;
@@ -136,7 +142,8 @@ extern "C"
 		delete obj;
     }     
     
-    EXPORT jsvalue CALLINGCONVENTION jscontext_execute(JsContext* context, const uint16_t* str, const uint16_t *resourceName)
+    
+	EXPORT jsvalue CALLCONV jscontext_execute(JsContext* context, const uint16_t* str, const uint16_t *resourceName)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_execute" << std::endl;
@@ -144,7 +151,7 @@ extern "C"
         return context->Execute(str, resourceName);
     }
 
-	EXPORT jsvalue CALLINGCONVENTION jscontext_execute_script(JsContext* context, JsScript *script)
+	EXPORT jsvalue CALLCONV jscontext_execute_script(JsContext* context, JsScript *script)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_execute_script" << std::endl;
@@ -152,7 +159,7 @@ extern "C"
         return context->Execute(script);
     }
 
-	EXPORT jsvalue CALLINGCONVENTION jscontext_get_global(JsContext* context)
+	EXPORT jsvalue CALLCONV jscontext_get_global(JsContext* context)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_global" << std::endl;
@@ -160,7 +167,7 @@ extern "C"
         return context->GetGlobal();
     }
 	
-    EXPORT jsvalue CALLINGCONVENTION jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue CALLCONV jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_set_variable" << std::endl;
@@ -168,7 +175,7 @@ extern "C"
         return context->SetVariable(name, value);
     }
 
-    EXPORT jsvalue CALLINGCONVENTION jscontext_get_variable(JsContext* context, const uint16_t* name)
+    EXPORT jsvalue CALLCONV jscontext_get_variable(JsContext* context, const uint16_t* name)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_variable" << std::endl;
@@ -176,7 +183,7 @@ extern "C"
         return context->GetVariable(name);
     }
 
-    EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
+    EXPORT jsvalue CALLCONV jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_property_value" << std::endl;
@@ -184,7 +191,7 @@ extern "C"
         return context->GetPropertyValue(obj, name);
     }
     
-    EXPORT jsvalue CALLINGCONVENTION jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+    EXPORT jsvalue CALLCONV jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_set_property_value" << std::endl;
@@ -192,7 +199,7 @@ extern "C"
         return context->SetPropertyValue(obj, name, value);
     }    
 
-	EXPORT jsvalue CALLINGCONVENTION jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
+	EXPORT jsvalue CALLCONV jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_property_names" << std::endl;
@@ -200,7 +207,7 @@ extern "C"
         return context->GetPropertyNames(obj);
     }    
 	    
-    EXPORT jsvalue CALLINGCONVENTION jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+    EXPORT jsvalue CALLCONV jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_invoke_property" << std::endl;
@@ -208,7 +215,7 @@ extern "C"
         return context->InvokeProperty(obj, name, args);
     }        
 
-	  EXPORT jsvalue CALLINGCONVENTION jscontext_invoke(JsContext* context, Persistent<Function>* funcArg, Persistent<Object>* thisArg, jsvalue args)
+	  EXPORT jsvalue CALLCONV jscontext_invoke(JsContext* context, Persistent<Function>* funcArg, Persistent<Object>* thisArg, jsvalue args)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_invoke" << std::endl;
@@ -216,7 +223,7 @@ extern "C"
         return context->InvokeFunction(funcArg, thisArg, args);
     }        
 
-	 EXPORT JsScript* CALLINGCONVENTION jsscript_new(JsEngine *engine)
+	 EXPORT JsScript* CALLCONV jsscript_new(JsEngine *engine)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsscript_new" << std::endl;
@@ -225,7 +232,7 @@ extern "C"
         return script;
     }
 
-	 EXPORT void CALLINGCONVENTION jsscript_dispose(JsScript *script)
+	 EXPORT void CALLCONV jsscript_dispose(JsScript *script)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsscript_dispose" << std::endl;
@@ -234,7 +241,7 @@ extern "C"
 		delete script;
     }
 
-	  EXPORT jsvalue CALLINGCONVENTION jsscript_compile(JsScript* script, const uint16_t* str, const uint16_t *resourceName)
+	  EXPORT jsvalue CALLCONV jsscript_compile(JsScript* script, const uint16_t* str, const uint16_t *resourceName)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsscript_compile" << std::endl;
@@ -242,7 +249,7 @@ extern "C"
 		return script->Compile(str, resourceName);
     }
 
-    EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_string(const uint16_t* str)
+    EXPORT jsvalue CALLCONV jsvalue_alloc_string(const uint16_t* str)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_string" << std::endl;
@@ -265,7 +272,7 @@ extern "C"
         return v;
     }    
     
-    EXPORT jsvalue CALLINGCONVENTION jsvalue_alloc_array(const int32_t length)
+    EXPORT jsvalue CALLCONV jsvalue_alloc_array(const int32_t length)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_array" << std::endl;
@@ -281,7 +288,7 @@ extern "C"
         return v;
     }        
                 
-    EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value)
+    EXPORT void CALLCONV jsvalue_dispose(jsvalue value)
     {
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_dispose" << std::endl;
