@@ -41,12 +41,11 @@
     <Compile Include="VroomJs.Tests\Objects.cs" />
     <Compile Include="VroomJs.Tests\TestClass.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\VroomJs\VroomJs.csproj">
       <Project>{2E79AA26-6CD3-4EF0-9113-8421D709E3D4}</Project>
       <Name>VroomJs</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
