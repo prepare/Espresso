@@ -3,89 +3,104 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace VroomJs {
-	public class JsFunction : IDisposable {
-		readonly JsContext _context;
-		readonly IntPtr _funcPtr;
-		readonly IntPtr _thisPtr;
+namespace VroomJs
+{
+    public class JsFunction : IDisposable
+    {
+        readonly JsContext _context;
+        readonly IntPtr _funcPtr;
+        readonly IntPtr _thisPtr;
 
-		public JsFunction(JsContext context, IntPtr funcPtr, IntPtr thisPtr) {
-			if (context == null)
-				throw new ArgumentNullException("context");
-			if (funcPtr == IntPtr.Zero)
-				throw new ArgumentException("can't wrap an empty function (ptr is Zero)", "ptr");
+        public JsFunction(JsContext context, IntPtr funcPtr, IntPtr thisPtr)
+        {
+            if (context == null)
+                throw new ArgumentNullException("context");
+            if (funcPtr == IntPtr.Zero)
+                throw new ArgumentException("can't wrap an empty function (ptr is Zero)", "ptr");
 
-			_context = context;
-			_funcPtr = funcPtr;
-			_thisPtr = thisPtr;
-		}
+            _context = context;
+            _funcPtr = funcPtr;
+            _thisPtr = thisPtr;
+        }
 
-		public object Invoke(object[] args) {
-			object result = _context.Invoke(_funcPtr, _thisPtr, args);
-			return result;
-		}
+        public object Invoke(object[] args)
+        {
+            object result = _context.Invoke(_funcPtr, _thisPtr, args);
+            return result;
+        }
 
-		public object MakeDelegate(Type type, object[] args) {
-			if (type.BaseType != typeof(MulticastDelegate)) {
-				throw new ApplicationException("Not a delegate.");
-			}
+        public object MakeDelegate(Type type, object[] args)
+        {
+            return null;
 
-			MethodInfo invoke = type.GetMethod("Invoke");
-			if (invoke == null) {
-				throw new ApplicationException("Not a delegate.");
-			}
+            //if (type.BaseType != typeof(MulticastDelegate))
+            //{
+            //    throw new ApplicationException("Not a delegate.");
+            //}
 
-			ParameterInfo[] invokeParams = invoke.GetParameters();
-			Type returnType = invoke.ReturnType;
-			
-			List<ParameterExpression> parameters = new List<ParameterExpression>();
-			List<Expression> arrayInitExpressions = new List<Expression>();
+            //MethodInfo invoke = type.GetMethod("Invoke");
+            //if (invoke == null)
+            //{
+            //    throw new ApplicationException("Not a delegate.");
+            //}
 
-			for (int i = 0; i < invokeParams.Length; i++) {
-				ParameterExpression param = Expression.Parameter(invokeParams[i].ParameterType, invokeParams[i].Name);
-				parameters.Add(param);
-				arrayInitExpressions.Add(Expression.Convert(param, typeof(object)));
-			}
+            //ParameterInfo[] invokeParams = invoke.GetParameters();
+            //Type returnType = invoke.ReturnType;
 
-			Expression array = Expression.NewArrayInit(typeof(object), arrayInitExpressions);
-			
-			Expression me = Expression.Constant(this);
-			MethodInfo myInvoke = GetType().GetMethod("Invoke");
-			Expression callExpression = Expression.Call(me, myInvoke, array);
+            //List<ParameterExpression> parameters = new List<ParameterExpression>();
+            //List<Expression> arrayInitExpressions = new List<Expression>();
 
-			if (returnType != typeof(void)) {
-				callExpression = Expression.Convert(callExpression, returnType);
-			}
-			
-			return Expression.Lambda(type, callExpression, parameters).Compile();
-		}
+            //for (int i = 0; i < invokeParams.Length; i++)
+            //{
+            //    ParameterExpression param = Expression.Parameter(invokeParams[i].ParameterType, invokeParams[i].Name);
+            //    parameters.Add(param);
+            //    arrayInitExpressions.Add(Expression.Convert(param, typeof(object)));
+            //}
 
-		#region IDisposable implementation
+            //Expression array = Expression.NewArrayInit(typeof(object), arrayInitExpressions);
+
+            //Expression me = Expression.Constant(this);
+            //MethodInfo myInvoke = GetType().GetMethod("Invoke");
+            //Expression callExpression = Expression.Call(me, myInvoke, array);
+
+            //if (returnType != typeof(void))
+            //{
+            //    callExpression = Expression.Convert(callExpression, returnType);
+            //}
+
+            //return Expression.Lambda(type, callExpression, parameters).Compile();
+        }
+
+        #region IDisposable implementation
 
         bool _disposed;
 
-        public void Dispose() {
-        	Dispose(true);
-        	GC.SuppressFinalize(this);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-		protected virtual void Dispose(bool disposing) {
-			if (_disposed)
-				throw new ObjectDisposedException("JsObject:" + _funcPtr);
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException("JsObject:" + _funcPtr);
 
-			_disposed = true;
+            _disposed = true;
 
-			_context.Engine.DisposeObject(this._funcPtr);
-			if (_thisPtr != IntPtr.Zero) {
-				_context.Engine.DisposeObject(this._thisPtr);
-			}
-		}
+            _context.Engine.DisposeObject(this._funcPtr);
+            if (_thisPtr != IntPtr.Zero)
+            {
+                _context.Engine.DisposeObject(this._thisPtr);
+            }
+        }
 
-		~JsFunction() {
-			if (!_disposed)
-				Dispose(false);
-		}
+        ~JsFunction()
+        {
+            if (!_disposed)
+                Dispose(false);
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }
