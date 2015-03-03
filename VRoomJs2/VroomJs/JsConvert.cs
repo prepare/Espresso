@@ -116,8 +116,11 @@ namespace VroomJs
                     return new JsObject(_context, v.Ptr);
 #else
                 case JsValueType.Dictionary:
-                    return JsDictionaryObject(v, v.Ptr);
+                    return JsDictionaryObject(v);
 #endif
+                case JsValueType.Wrapped:
+                    return new JsObject(_context, v.Ptr);
+
                 case JsValueType.Error:
                     return JsException.Create(this, (JsError)Marshal.PtrToStructure(v.Ptr, typeof(JsError)));
 
@@ -134,9 +137,9 @@ namespace VroomJs
         }
 
 #if !NET40
-        private JsObject JsDictionaryObject(JsValue v, IntPtr ptr)
+        private JsObject JsDictionaryObject(JsValue v)
         {
-            JsObject obj = new JsObject(this._context, ptr);
+            JsObject obj = new JsObject(this._context, v.Ptr);
             for (int i = 0; i < (v.Length * 2); i += 2)
             {
                 var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));

@@ -117,16 +117,18 @@ namespace VroomJs.Tests
         public void ExpressionAndCall()
         {
 
-            DynamicObject x = js.Execute(@"
+            JsObject x = js.Execute(@"
                 (function () { 
                     return {'answer':42, 'tellme':function (x) { return x+' The answer is: '+this.answer; }}
-                })()") as DynamicObject;
+                })()") as JsObject;
             if (x != null)
             {
                 var tellmeFunc = x["tellme"] as JsFunction;
-                tellmeFunc.Invoke(new object[] { "What is the answer to ...?" });
-
-
+                //tellmeFunc.Invoke(new object[] { "What is the answer to ...?" });
+                object s;
+                x.TryInvokeMember("tellme", new[] { "What is the answer to ...?" }, out s);
+                //object s = tellmeFunc.InvokeInstance(x.Handle, new[] { "What is the answer to ...?" });
+                Assert.That(s, Is.EqualTo("What is the answer to ...? The answer is: 42"));
             }
 
 #if NET40

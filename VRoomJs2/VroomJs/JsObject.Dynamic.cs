@@ -30,11 +30,30 @@ namespace VroomJs
 {
     public class DynamicObject
     {
+        //member cache
         Dictionary<string, object> members = new Dictionary<string, object>();
         public object this[string name]
         {
-            get { return this.members[name]; }
-            set { this.members[name] = value; }
+            get
+            {
+                object foundMember;
+                if (!members.TryGetValue(name, out foundMember))
+                {
+                    if (this.TryGetMember(name, out foundMember))
+                    {
+                        //found
+                        members[name] = foundMember;
+                        return foundMember;
+                    }
+                    return null;
+                }
+                return foundMember;
+            }
+            set
+            {
+                this.TrySetMember(name, value);
+                //this.members[name] = value;
+            }
         }
 
         public virtual bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
@@ -48,7 +67,16 @@ namespace VroomJs
             result = null;
             return false;
         }
+        public virtual bool TryGetMember(string mbname, out object result)
+        {
+            result = null;
+            return false;
+        }
         public virtual bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            return false;
+        }
+        public virtual bool TrySetMember(string mbname, object value)
         {
             return false;
         }
@@ -92,19 +120,31 @@ namespace VroomJs
         {
             get { return _handle; }
         }
-
+        public virtual bool TryInvokeMember(string name, object[] args, out object result)
+        {
+            result = _context.InvokeProperty(this, name, args);
+            return true;
+        }
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             result = _context.InvokeProperty(this, binder.Name, args);
             return true;
         }
+        public override bool TryGetMember(string mbname, out object result)
+        {
+            return (result = _context.GetPropertyValue(this, mbname)) != null;
 
+        }
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = _context.GetPropertyValue(this, binder.Name);
+            return (result = _context.GetPropertyValue(this, binder.Name)) != null;
+
+        }
+        public override bool TrySetMember(string mbname, object value)
+        {
+            _context.SetPropertyValue(this, mbname, value);
             return true;
         }
-
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             _context.SetPropertyValue(this, binder.Name, value);

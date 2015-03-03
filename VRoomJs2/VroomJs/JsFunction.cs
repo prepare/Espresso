@@ -27,7 +27,11 @@ namespace VroomJs
             object result = _context.Invoke(_funcPtr, _thisPtr, args);
             return result;
         }
-
+        public object InvokeInstance(IntPtr anotherInst, object[] args)
+        {
+            object result = _context.Invoke(_funcPtr, anotherInst, args);
+            return result;
+        }
         public object MakeDelegate(Type type, object[] args)
         {
             return null;
