@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Start\JsBridgeName.cs" />
     <Compile Include="VroomJs\BoundWeakDelegate.cs" />
     <Compile Include="VroomJs\IKeepAliveStore.cs" />
     <Compile Include="VroomJs\JsContext.cs" />

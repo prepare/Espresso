@@ -31,7 +31,12 @@ namespace VroomJs
     class JsConvert
     {
         public static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime EPOCH_LocalTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+        static JsConvert()
+        {
+
+        }
         public JsConvert(JsContext context)
         {
             _context = context;
@@ -72,8 +77,14 @@ namespace VroomJs
                     // (a value determined from the failing tests)?!
                     return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
                      */
-                    return EPOCH.AddMilliseconds(v.Num);
 
+                    //var msFromJsTime = v.I64 % 1000;
+                    return EPOCH_LocalTime.AddMilliseconds(v.I64);// + new TimeSpan(7, 0, 0);
+                //return EPOCH_LocalTime.AddMilliseconds(v.I64);// + new TimeSpan(7, 0, 0);
+                //return EPOCH.AddMilliseconds(v.I64);
+
+                //return EPOCH.AddMilliseconds(v.Num);
+                //return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
                 case JsValueType.Array:
                     {
                         var r = new object[v.Length];

@@ -1,49 +1,51 @@
 ﻿using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace VroomJs
 {
-	public partial class JsContext {
+    public partial class JsContext
+    {
 
-		[DllImport("VroomJsNative")]
-		static extern JsValue jscontext_get_property_names(HandleRef engine, IntPtr ptr);
+        
+        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern JsValue jscontext_get_property_names(HandleRef engine, IntPtr ptr);
 
-		[DllImport("VroomJsNative")]
-		static extern JsValue jscontext_get_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name);
+        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern JsValue jscontext_get_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name);
 
-		[DllImport("VroomJsNative")]
-		static extern JsValue jscontext_set_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
+        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern JsValue jscontext_set_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
 
-		[DllImport("VroomJsNative")]
-		static extern JsValue jscontext_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
-	
-		public IEnumerable<string> GetMemberNames(JsObject obj) 
-		{
-			if (obj == null)
-				throw new ArgumentNullException("obj");
+        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern JsValue jscontext_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
 
-			CheckDisposed();
+        public IEnumerable<string> GetMemberNames(JsObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
 
-			if (obj.Handle == IntPtr.Zero)
-				throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+            CheckDisposed();
 
-			JsValue v = jscontext_get_property_names(_context, obj.Handle);
-			object res = _convert.FromJsValue(v);
-			jsvalue_dispose(v);
+            if (obj.Handle == IntPtr.Zero)
+                throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-			Exception e = res as JsException;
-			if (e != null)
-				throw e;
+            JsValue v = jscontext_get_property_names(_context, obj.Handle);
+            object res = _convert.FromJsValue(v);
+            jsvalue_dispose(v);
 
-			object[] arr = (object[])res;
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+
+            object[] arr = (object[])res;
             string[] strArr = new string[arr.Length];
             for (int i = arr.Length - 1; i >= 0; --i)
             {
                 strArr[i] = arr[i].ToString();
             }
             return strArr;
-		}
+        }
 
 
         public object GetPropertyValue(JsObject obj, string name)
@@ -58,7 +60,7 @@ namespace VroomJs
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-			JsValue v = jscontext_get_property_value(_context, obj.Handle, name);
+            JsValue v = jscontext_get_property_value(_context, obj.Handle, name);
             object res = _convert.FromJsValue(v);
             jsvalue_dispose(v);
 
@@ -81,7 +83,7 @@ namespace VroomJs
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
             JsValue a = _convert.ToJsValue(value);
-			JsValue v = jscontext_set_property_value(_context, obj.Handle, name, a);
+            JsValue v = jscontext_set_property_value(_context, obj.Handle, name, a);
             object res = _convert.FromJsValue(v);
             jsvalue_dispose(v);
             jsvalue_dispose(a);
@@ -107,7 +109,7 @@ namespace VroomJs
             if (args != null)
                 a = _convert.ToJsValue(args);
 
-			JsValue v = jscontext_invoke_property(_context, obj.Handle, name, a);
+            JsValue v = jscontext_invoke_property(_context, obj.Handle, name, a);
             object res = _convert.FromJsValue(v);
             jsvalue_dispose(v);
             jsvalue_dispose(a);
@@ -117,5 +119,5 @@ namespace VroomJs
                 throw e;
             return res;
         }
-	}
+    }
 }

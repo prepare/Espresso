@@ -8,7 +8,7 @@ namespace VroomJs
         [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall)]
         static extern IntPtr jsscript_new(HandleRef engine);
 
-       
+
 
         [DllImport("VroomJsNative", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         static extern IntPtr jsscript_compile(HandleRef script, [MarshalAs(UnmanagedType.LPWStr)] string str,
