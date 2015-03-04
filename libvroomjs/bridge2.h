@@ -1,26 +1,31 @@
 //BSD 2015, WinterDev
-#pragma once
+ 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
  
 #include <v8.h>
 #include <string>
 #include <vector> 
-#include "mini_bridge.h"
+
 #include "vroomjs.h"
+#include "mini_bridge.h"
+
 
 using namespace v8; 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
  
+const int mt_bool=1;
+const int mt_int32=2;
+const int mt_float=3;
+const int mt_double=4;
+const int mt_int64=5;
+const int mt_string=6; 
+const int mt_externalObject=7;
+
+
 extern "C"{
 	
-	const int mt_bool=1;
-	const int mt_int32=2;
-	const int mt_float=3;
-	const int mt_double=4;
-	const int mt_int64=5;
-	const int mt_string=6; 
-	const int mt_externalObject=7;
+	
 
 	typedef struct MethodCallingArgs{ 
 		int numArgs;  
@@ -70,6 +75,8 @@ extern "C"{
 	typedef void (__stdcall *del_JsBridge)(int oIndex,const v8::Arguments* args,ExternalMethodReturnResult* result);
 	//-------------------------------------------------------------------------------------------
 	  
+	EXPORT int GetMiniBridgeVersion();
+
 	EXPORT ExtManagedHandler* CreateWrapperForManagedObject(int mindex,ExternalTypeDef* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ExtManagedHandler* externalManagedHandler);
 	EXPORT int GetManagedIndex(ExtManagedHandler* externalManagedHandler); 
@@ -116,6 +123,5 @@ extern "C"{
 	//--------------------------------------------------------------------- 
 
 
-	EXPORT int TestCallBack();
-    EXPORT int LibGetVersion();
+	EXPORT int TestCallBack(); 
 }

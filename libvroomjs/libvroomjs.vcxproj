@@ -45,6 +45,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>D:\famous_opensource_2_html_engine\node-v0.10.32\deps\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,7 +68,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bridge.cpp" />
-    <ClCompile Include="bridge2.cpp" />
+    <ClCompile Include="bridge2_impl.cpp" />
     <ClCompile Include="bridge2.h" />
     <ClCompile Include="jscontext.cpp" />
     <ClCompile Include="jsengine.cpp" />

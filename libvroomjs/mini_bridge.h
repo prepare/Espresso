@@ -8,6 +8,9 @@
 
 using namespace v8;
 
+
+
+
 class ExternalManagedHandler
 {
 public:

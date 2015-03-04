@@ -1,17 +1,25 @@
 //BSD 2015, WinterDev
 #include <string>
-#include "bridge2.h"
-#include "vroomjs.h" 
-#include "mini_bridge.h"
+
+ #include <v8.h>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
-
+#include "bridge2.h"
 
 del02 managedListner; //for debug 
-
 del_JsBridge managedJsBridge;
 //-----------------
+int GetMiniBridgeVersion(){return 6;};
+
+Persistent<ObjectTemplate> 	createObjectTemplate(){
+	HandleScope handleScope;
+	Handle<ObjectTemplate> result = ObjectTemplate::New();
+	//result->SetInternalFieldCount(1);
+	//result->SetNamedPropertyHandler(Getter, Setter);
+	//result->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
+	return Persistent<ObjectTemplate>::New(handleScope.Close(result));
+}
 
 
 void RegisterManagedCallback(void* funcPtr,int callbackKind)
@@ -27,59 +35,49 @@ void RegisterManagedCallback(void* funcPtr,int callbackKind)
 			managedJsBridge=  (del_JsBridge)funcPtr;
 		}break;
 	} 
-}
+};
 
 int TestCallBack()
 {
 	MethodCallingArgs a;
 	managedListner(0,L"OKOK001",&a);
 	return 1;
-}
-int LibGetVersion()
-{		 
-	return 3;
-}
+};
+
 void ArgSetBool(MyExternalMethodReturnResult* result,bool value)
 {
 	result->resultKind = mt_bool;
 	result->possibleValue.v_bool = value;
-}
+};
 void ArgSetInt32(MyExternalMethodReturnResult* result,int value)
 {
 	result->resultKind =mt_int32;
 	result->possibleValue.int32 = value;
-}
+};
 void ArgSetFloat(MyExternalMethodReturnResult* result,float value)
 {	
 	result->resultKind =mt_float;
 	result->possibleValue.fl32 = value;
-}
+};
 void ArgSetDouble(MyExternalMethodReturnResult* result,double value)
 {
 	result->resultKind =mt_double;
 	result->possibleValue.fl64 = value;
-}
+};
 void ArgSetString(MyExternalMethodReturnResult* result,wchar_t* value)
 {	
 	result->resultKind =mt_string;
 	result->possibleValue.str_value = value;
-}
+};
 void ArgSetNativeObject(MyExternalMethodReturnResult* result,int proxyId)
 {
 	result->resultKind = mt_int32;
 	result->possibleValue.int32 = proxyId; 
-}
+};
 
 
-Persistent<ObjectTemplate> 	createObjectTemplate(){
+//Persistent<ObjectTemplate> 	createObjectTemplate(){
 
-	HandleScope handleScope;
-	Handle<ObjectTemplate> result = ObjectTemplate::New();
-	//result->SetInternalFieldCount(1);
-	//result->SetNamedPropertyHandler(Getter, Setter);
-	//result->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
-	return Persistent<ObjectTemplate>::New(handleScope.Close(result));
-} 
 Handle<Value> JsFunctionBridge(const Arguments& args)
 {	 
 	//call to bridge with args 
@@ -176,7 +174,7 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 		} 
 	}
 	return v8::Undefined();
-}
+};
 
 
 ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
@@ -187,7 +185,7 @@ ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDe
 	HandleScope handleScope3;*/
 	ExternalManagedHandler* handler= new ExternalManagedHandler(mIndex);
 
-    //create js from template
+	//create js from template
 	if(externalTypeDef)
 	{
 		if(managedListner){
@@ -206,17 +204,17 @@ ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDe
 			Persistent<v8::Object>::New(externalTypeDef->handlerToJsObjectTemplate->NewInstance());
 		handler->v8InstanceHandler->SetInternalField(0,External::New(handler));
 	}
-	 
+
 	return handler;
-}
+};
 int GetManagedIndex(ExternalManagedHandler* externalManagedHandler)
 {
 	return  ((ExternalManagedHandler*)externalManagedHandler)->managedIndex;
-}
+};
 void ReleaseWrapper(ExternalManagedHandler* externalManagedHandler)
 {	
 	delete externalManagedHandler;
-}
+};
 
 //
 // 
@@ -247,11 +245,11 @@ Handle<Value>
 	Getter(Local<String> iName, const AccessorInfo &iInfo)
 {
 	//name may be method or field 
-	
+
 	wstring name = (wchar_t*) *String::Value(iName);
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	ExternalManagedHandler* extHandler=(ExternalManagedHandler*)external->Value();;
-   
+
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 	//Handle<Function> function;
 	//Handle<Value> value;
@@ -277,7 +275,7 @@ Handle<Value>
 	//if ((wrapper->GetOptions() & SetParameterOptions::RejectUnknownProperties) == SetParameterOptions::RejectUnknownProperties)
 	//	return v8::ThrowException(JavascriptInterop::ConvertToV8("Unknown member: " + gcnew System::String((wchar_t*) *String::Value(iName))));
 	return Handle<Value>();
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -285,12 +283,12 @@ Handle<Value>
 	Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 {
 
-	 
+
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	//Noesis::Javascript::ExternalManagedHandler* exH = (Noesis::Javascript::ExternalManagedHandler*)external->Value();
-	 
+
 	return Handle<Value>();
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 
@@ -379,7 +377,7 @@ ExternalTypeDefinition* EngineRegisterTypeDefinition(
 	//--------------------------------------------------------------
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
-	 wstring typeDefName= binReader.ReadUtf16String();	 
+	wstring typeDefName= binReader.ReadUtf16String();	 
 	if(managedListner){ //--if valid pointer
 
 		managedListner(0,typeDefName.c_str() ,0);
