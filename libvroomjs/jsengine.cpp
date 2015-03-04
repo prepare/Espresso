@@ -317,6 +317,8 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		// it in a union: going scary and scarier here.    
 		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
 
+
+		//-------------------------------------------------------------------------
 		/*v.type = JSVALUE_TYPE_DICT;
 		Local<Array> names = obj->GetOwnPropertyNames();
 		v.length = names->Length();
@@ -381,7 +383,8 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
     }
     else if (value->IsDate()) {
         v.type = JSVALUE_TYPE_DATE;
-        v.value.num = value->NumberValue();
+        //v.value.num = value->NumberValue();		
+		v.value.i64 = value->IntegerValue();
     }
     else if (value->IsArray()) {
         Handle<Array> object = Handle<Array>::Cast(value->ToObject());
