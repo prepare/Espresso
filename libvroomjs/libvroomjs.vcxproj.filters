@@ -31,6 +31,9 @@
     <ClCompile Include="bridge2.h">
       <Filter>Source_MiniBridge</Filter>
     </ClCompile>
+    <ClCompile Include="bridge2.cpp">
+      <Filter>Source_MiniBridge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vroomjs.h">

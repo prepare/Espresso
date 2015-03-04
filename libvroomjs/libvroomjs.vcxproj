@@ -67,6 +67,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bridge.cpp" />
+    <ClCompile Include="bridge2.cpp" />
     <ClCompile Include="bridge2.h" />
     <ClCompile Include="jscontext.cpp" />
     <ClCompile Include="jsengine.cpp" />

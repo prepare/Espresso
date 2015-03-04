@@ -183,7 +183,7 @@ public:
     inline jsvalue CallGetPropertyValue(int32_t context, int32_t id, uint16_t* name) {
 		if (keepalive_get_property_value_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_get_property_value_(context, id, name);
@@ -192,7 +192,7 @@ public:
     inline jsvalue CallSetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue value) {
 		if (keepalive_set_property_value_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_set_property_value_(context, id, name, value); 
@@ -200,7 +200,7 @@ public:
 	inline jsvalue CallValueOf(int32_t context, int32_t id) { 
 		if (keepalive_valueof_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_valueof_(context, id); 
@@ -208,7 +208,7 @@ public:
     inline jsvalue CallInvoke(int32_t context, int32_t id, jsvalue args) { 
 		if (keepalive_invoke_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_invoke_(context, id, args); 
@@ -216,7 +216,7 @@ public:
 	inline jsvalue CallDeleteProperty(int32_t context, int32_t id, uint16_t* name) {
 		if (keepalive_delete_property_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_delete_property_(context, id, name);
@@ -225,7 +225,7 @@ public:
 	inline jsvalue CallEnumerateProperties(int32_t context, int32_t id) {
 		if (keepalive_enumerate_properties_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_enumerate_properties_(context, id);

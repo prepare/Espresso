@@ -1,4 +1,6 @@
 //MIT 2015, WinterDev
+#pragma once
+
 #include <v8.h>
 #include <stdlib.h>
 #include <stdint.h>

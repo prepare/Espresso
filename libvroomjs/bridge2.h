@@ -69,14 +69,7 @@ extern "C"{
 	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MethodCallingArgs* args);
 	typedef void (__stdcall *del_JsBridge)(int oIndex,const v8::Arguments* args,ExternalMethodReturnResult* result);
 	//-------------------------------------------------------------------------------------------
-	 
-	////-------------------------------------------------------------------------------------------
-	//MY_DLL_EXPORT int TestMe(int a);
-	//MY_DLL_EXPORT int TestMe_WithScript(const wchar_t* scriptsource);
-	//MY_DLL_EXPORT void TestMe_CallMyDelegate(del01 callback); 
-	////-------------------------------------------------------------------------------------------
-	// 
-	 
+	  
 	EXPORT ExtManagedHandler* CreateWrapperForManagedObject(int mindex,ExternalTypeDef* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ExtManagedHandler* externalManagedHandler);
 	EXPORT int GetManagedIndex(ExtManagedHandler* externalManagedHandler); 
@@ -86,26 +79,26 @@ extern "C"{
 	//---------------------------------------------------------------------
  
 	//create engine with external managed index	 
-	EXPORT JsContext* CreateEngineContext(int mIndex);
-	EXPORT void ReleaseEngineContext(JsContext* engineContext); 
+	/*EXPORT JsContext* CreateEngineContext(int mIndex);
+	EXPORT void ReleaseEngineContext(JsContext* engineContext); */
 	//---------------------------------------------------------------------
 	 
-	EXPORT void RegisterExternalParameter_int32(JsContext* engineContext,const wchar_t* name,int arg);
-	EXPORT void RegisterExternalParameter_double(JsContext* engineContext,const wchar_t* name,double arg);
-	EXPORT void RegisterExternalParameter_float(JsContext* engineContext,const wchar_t* name,float arg);	 
-	EXPORT void RegisterExternalParameter_string(JsContext* engineContext,const wchar_t* name,const wchar_t* arg);
-	EXPORT void RegisterExternalParameter_External(JsContext* engineContext,const wchar_t* name,ExtManagedHandler* arg);
-	//---------------------------------------------------------------------
-	EXPORT int EngineContextRun(JsContext* engineContext,const wchar_t* scriptsource);
-	
-	//---------------------------------------------------------------------
-	EXPORT v8Locker* EngineContextEnter(JsContext* engineContext);
-	EXPORT void EngineContextExit(JsContext* engineContext,v8Locker* locker);
-	//---------------------------------------------------------------------
+	//EXPORT void RegisterExternalParameter_int32(JsContext* engineContext,const wchar_t* name,int arg);
+	//EXPORT void RegisterExternalParameter_double(JsContext* engineContext,const wchar_t* name,double arg);
+	//EXPORT void RegisterExternalParameter_float(JsContext* engineContext,const wchar_t* name,float arg);	 
+	//EXPORT void RegisterExternalParameter_string(JsContext* engineContext,const wchar_t* name,const wchar_t* arg);
+	//EXPORT void RegisterExternalParameter_External(JsContext* engineContext,const wchar_t* name,ExtManagedHandler* arg);
+	////---------------------------------------------------------------------
+	//EXPORT int EngineContextRun(JsContext* engineContext,const wchar_t* scriptsource);
+	//
+	////---------------------------------------------------------------------
+	//EXPORT v8Locker* EngineContextEnter(JsContext* engineContext);
+	//EXPORT void EngineContextExit(JsContext* engineContext,v8Locker* locker);
+	////---------------------------------------------------------------------
 	 
 	//create object template for describing managed type
 	//then return type definition handler to managed code
-	EXPORT ExternalTypeDef* EngineRegisterTypeDefinition(
+	EXPORT ExternalTypeDefinition* EngineRegisterTypeDefinition(
 		JsContext* engineContext,int mIndex, const char* stream,int streamLength); 
 	//--------------------------------------------------------------------- 
 	EXPORT int ArgGetInt32(const v8::Arguments* args,int index);
