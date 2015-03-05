@@ -1,3 +1,5 @@
+//MIT 2015, WinterDev
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -22,6 +24,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
+
+
 
 #ifndef LIBVROOMJS_H
 #define LIBVROOMJS_H 
@@ -284,7 +289,7 @@ private:
 };
 
 class ExternalTypeDefinition;
-class ExternalManagedHandler;
+class ManagedObjRef;
 
 class JsContext {
  public:
@@ -304,10 +309,10 @@ class JsContext {
     jsvalue InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args);
     void Dispose();
 
-	
+	 
 	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
-	ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
-
+	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
+	
       
 	inline int32_t GetId() {
 		return id_;
@@ -363,22 +368,14 @@ class ManagedRef {
 
 
 //------------------------------------------------------------
-class ExternalManagedHandler
+class ManagedObjRef
 {
 public:
 	 
 	int managedIndex;
 	v8::Persistent<v8::Object> v8InstanceHandler;
-	ExternalManagedHandler(int mIndex);
-};
-
-class ExternalTypeMember
-{
-
-public:
-	int managedIndex; 
-	int memberkind; 
-};
+	ManagedObjRef(int mIndex);
+}; 
 
 
 
@@ -406,5 +403,10 @@ public:
 	ExternalTypeDefinition(int mIndex);
 	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };
+
+
+
+
+
 
 #endif

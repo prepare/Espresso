@@ -389,33 +389,33 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
     else if (value->IsArray()) {
         Handle<Array> object = Handle<Array>::Cast(value->ToObject());
         v.length = object->Length();
-        jsvalue* array = new jsvalue[v.length];
-        if (array != NULL) {
+        jsvalue* arr = new jsvalue[v.length];
+        if (arr != NULL) {
             for(int i = 0; i < v.length; i++) {
-                array[i] = AnyFromV8(object->Get(i));
+                arr[i] = AnyFromV8(object->Get(i));
             }
             v.type = JSVALUE_TYPE_ARRAY;
-            v.value.arr = array;
+            v.value.arr = arr;
         }
     }
     else if (value->IsFunction()) {
 		Handle<Function> function = Handle<Function>::Cast(value);
-		jsvalue* array = new jsvalue[2];
-        if (array != NULL) { 
-			array[0].value.ptr = new Persistent<Object>(Persistent<Function>::New(function));
-			array[0].length = 0;
-			array[0].type = JSVALUE_TYPE_WRAPPED;
+		jsvalue* arr = new jsvalue[2];
+        if (arr != NULL) { 
+			arr[0].value.ptr = new Persistent<Object>(Persistent<Function>::New(function));
+			arr[0].length = 0;
+			arr[0].type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
-				array[1].value.ptr = new Persistent<Object>(Persistent<Object>::New(thisArg));
-				array[1].length = 0;
-				array[1].type = JSVALUE_TYPE_WRAPPED;
+				arr[1].value.ptr = new Persistent<Object>(Persistent<Object>::New(thisArg));
+				arr[1].length = 0;
+				arr[1].type = JSVALUE_TYPE_WRAPPED;
 			} else {
-				array[1].value.ptr = NULL;
-				array[1].length = 0;
-				array[1].type = JSVALUE_TYPE_NULL;
+				arr[1].value.ptr = NULL;
+				arr[1].length = 0;
+				arr[1].type = JSVALUE_TYPE_NULL;
 			}
 	        v.type = JSVALUE_TYPE_FUNCTION;
-            v.value.arr = array;
+            v.value.arr = arr;
         }
     }
     else if (value->IsObject()) {
@@ -432,9 +432,9 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 jsvalue JsEngine::ArrayFromArguments(const Arguments& args)
 {
     jsvalue v = jsvalue_alloc_array(args.Length());
-    Local<Object> thisArg = args.Holder();
-
-    for (int i=0 ; i < v.length ; i++) {
+    Local<Object> thisArg = args.Holder(); 
+    for (int i=0 ; i < v.length ; i++) 
+	{
         v.value.arr[i] = AnyFromV8(args[i], thisArg);
     }
     
@@ -457,61 +457,55 @@ static void managed_destroy(Persistent<Value> object, void* parameter)
 
 Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 {
-	if (v.type == JSVALUE_TYPE_EMPTY) {
-		return Handle<Value>();
-	}
-	if (v.type == JSVALUE_TYPE_NULL) {
-        return Null();
-    }
-    if (v.type == JSVALUE_TYPE_BOOLEAN) {
-        return Boolean::New(v.value.i32);
-    }
-    if (v.type == JSVALUE_TYPE_INTEGER) {
-        return Int32::New(v.value.i32);
-    }
-    if (v.type == JSVALUE_TYPE_NUMBER) {
-        return Number::New(v.value.num);
-    }
-    if (v.type == JSVALUE_TYPE_STRING) {
-        return String::New(v.value.str);
-    }
-    if (v.type == JSVALUE_TYPE_DATE) {
-        return Date::New(v.value.num);
-    }
-	if(v.type == JSVALUE_TYPE_JSTYPEDEF)
+	switch(v.type)
 	{
-		ExternalManagedHandler* ext = (ExternalManagedHandler*)v.value.ptr;
-		return ext->v8InstanceHandler;
-	}
-    // Arrays are converted to JS native arrays.
-    
-    if (v.type == JSVALUE_TYPE_ARRAY) {
-        Local<Array> a = Array::New(v.length);
-        for(int i = 0; i < v.length; i++) {
-            a->Set(i, AnyToV8(v.value.arr[i], contextId));
-        }
-        return a;        
-    }
-	
-        
-    // This is an ID to a managed object that lives inside the JsContext keep-alive
-    // cache. We just wrap it and the pointer to the engine inside an External. A
-    // managed error is still a CLR object so it is wrapped exactly as a normal
-    // managed object.
-    if (v.type == JSVALUE_TYPE_MANAGED || v.type == JSVALUE_TYPE_MANAGED_ERROR) {
-		ManagedRef* ref = new ManagedRef(this, contextId, v.length);
-		Local<Object> object = (*(managed_template_))->InstanceTemplate()->NewInstance();
-		if (object.IsEmpty()) {
-			return Null();
-		}
+		case JSVALUE_TYPE_EMPTY:
+		    return Handle<Value>();
+		case JSVALUE_TYPE_NULL:
+			return  Null();
+		case JSVALUE_TYPE_BOOLEAN:
+			return Boolean::New(v.value.i32);
+		case JSVALUE_TYPE_INTEGER:
+			return Int32::New(v.value.i32);
+		case JSVALUE_TYPE_NUMBER:
+			return Number::New(v.value.num);
+		case JSVALUE_TYPE_STRING:
+			return String::New(v.value.str);
+		case JSVALUE_TYPE_DATE:
+			return Date::New(v.value.num);
+		case JSVALUE_TYPE_JSTYPEDEF:
+			{
+				ManagedObjRef* ext = (ManagedObjRef*)v.value.ptr;
+				return ext->v8InstanceHandler;
+			}
+		case JSVALUE_TYPE_ARRAY:
+			{// Arrays are converted to JS native arrays.
+				Local<Array> a = Array::New(v.length);
+				for(int i = 0; i < v.length; i++) {
+					a->Set(i, AnyToV8(v.value.arr[i], contextId));
+				}
+				return a;    
+			}
+		case JSVALUE_TYPE_MANAGED:
+		case JSVALUE_TYPE_MANAGED_ERROR:
+			{
+				// This is an ID to a managed object that lives inside the JsContext keep-alive
+				// cache. We just wrap it and the pointer to the engine inside an External. A
+				// managed error is still a CLR object so it is wrapped exactly as a normal
+				// managed object.
+				ManagedRef* ref = new ManagedRef(this, contextId, v.length);
+				Local<Object> object = (*(managed_template_))->InstanceTemplate()->NewInstance();
+				if (object.IsEmpty()) {
+					return Null();
+				}
 		
-		Persistent<Object> persistent = Persistent<Object>::New(object);
-		persistent->SetInternalField(0, External::New(ref));
-		persistent.MakeWeak(NULL, managed_destroy);
-        return persistent;
-    }
-
-    return Null();
+				Persistent<Object> persistent = Persistent<Object>::New(object);
+				persistent->SetInternalField(0, External::New(ref));
+				persistent.MakeWeak(NULL, managed_destroy);
+				return persistent;
+			}
+	} 
+	return Null(); 
 }
 
 int32_t JsEngine::ArrayToV8Args(jsvalue value, int32_t contextId, Handle<Value> preallocatedArgs[])

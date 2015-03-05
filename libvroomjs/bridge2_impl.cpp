@@ -1,7 +1,7 @@
 //BSD 2015, WinterDev
 #include <string>
 
- #include <v8.h>
+#include <v8.h>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
@@ -10,16 +10,16 @@ using namespace v8;
 del02 managedListner; //for debug 
 del_JsBridge managedJsBridge;
 //-----------------
-int GetMiniBridgeVersion(){return 6;};
-
-Persistent<ObjectTemplate> 	createObjectTemplate(){
-	HandleScope handleScope;
-	Handle<ObjectTemplate> result = ObjectTemplate::New();
-	//result->SetInternalFieldCount(1);
-	//result->SetNamedPropertyHandler(Getter, Setter);
-	//result->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
-	return Persistent<ObjectTemplate>::New(handleScope.Close(result));
-}
+int GetMiniBridgeVersion(){return 7;};
+//
+//Persistent<ObjectTemplate> 	createObjectTemplate(){
+//	HandleScope handleScope;
+//	Handle<ObjectTemplate> result = ObjectTemplate::New();
+//	//result->SetInternalFieldCount(1);
+//	//result->SetNamedPropertyHandler(Getter, Setter);
+//	//result->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
+//	return Persistent<ObjectTemplate>::New(handleScope.Close(result));
+//}
 
 
 void RegisterManagedCallback(void* funcPtr,int callbackKind)
@@ -80,25 +80,13 @@ void ArgSetNativeObject(MyExternalMethodReturnResult* result,int proxyId)
 
 Handle<Value> JsFunctionBridge(const Arguments& args)
 {	 
-	//call to bridge with args 
-	//auto data= args.Data(); 
-
-
-	/* Local<Object> self = info.Holder();
-	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	return scope.Close(ref->GetPropertyValue(name));
-	*/
-
-	HandleScope h01;
-
-	if(managedListner)
-	{
-		//for debug
-		managedListner(0,L"data",0);
-	} 
-
-
+	//call to bridge with args  
+	HandleScope h01; 
+	//if(managedListner)
+	//{
+	//	//for debug
+	//	managedListner(0,L"data",0);
+	//}  
 	if(managedJsBridge)
 	{  	   
 
@@ -107,55 +95,39 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 		result.resultKind =0;//init  
 		result.length =0; //init      
 		int m_index =  ArgGetAttachDataAsInt32(&args);
-		//extract args values
-		/*Local<v8::Value> a0= (Local<v8::Value>)args[0];
-		if(a0->IsString())
-		{	
-		auto str01=  a0->ToString();
-		auto str01_len= str01->Length();
 
-		wchar_t* a0_str= (wchar_t*)*v8::String::Value(a0->ToString());
-
-		int a02= a0->Int32Value(); 
-		}
-		int a01= a0->Int32Value(); */ 
 		managedJsBridge(m_index, &args,&result); 
 		switch(result.resultKind)
 		{
 
-		case 1:
+		case mt_bool:
 			{
 				//boolean
-				return v8::Boolean::New(result.possibleValue.v_bool);
+				return h01.Close(v8::Boolean::New(result.possibleValue.v_bool));
 			}break;
-		case 2://int32
-			{		 
-				//return v8::Persistent<v8::Object>(v8::Int32::New(result.possibleValue.int32));
-				//return scope1.Close( v8::Int32::New(result.possibleValue.int32));
-
-				//return hscope.Close(v8::Int32::New(result.possibleValue.int32));
-				return h01.Close(v8::Int32::New(result.possibleValue.int32));
-				//return  v8::Int32::New(result.possibleValue.int32);
+		case mt_int32://int32
+			{	 
+				return h01.Close(v8::Int32::New(result.possibleValue.int32)); 
 			}		 
-		case 3:
-			{ //float
-				return v8::Number::New(result.possibleValue.fl32);
+		case mt_float:
+			{   //float
+				return h01.Close(v8::Number::New(result.possibleValue.fl32));
 			}break;
-		case 4:
-			{ //double
-				return v8::Number::New(result.possibleValue.fl64);
+		case mt_double:
+			{   //double
+				return h01.Close(v8::Number::New(result.possibleValue.fl64));
 			}break;		
-		case 5:
+		case mt_int64:
 			{	//int64
-				return v8::Number::New(result.possibleValue.int64);
+				return h01.Close(v8::Number::New(result.possibleValue.int64));
 			}
-		case 6:
+		case mt_string:
 			{  
 				//string  wchar_t*			
 				//always send with null terminal char**				 
-				return v8::String::New((uint16_t*)result.possibleValue.str_value); 
+				return h01.Close(v8::String::New((uint16_t*)result.possibleValue.str_value)); 
 			}break; 
-		case 7:
+		case mt_externalObject:
 			{
 				////return v8::Persistent<v8::object>(result.pos
 				////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
@@ -169,39 +141,39 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 			}break;
 		default:
 			{
-				return v8::Undefined();
+				return h01.Close(v8::Undefined());
 			}
 		} 
 	}
-	return v8::Undefined();
+	return h01.Close(v8::Undefined());
 };
 
 
-ExternalManagedHandler* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
+ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 
 	Locker locker(isolate_);
-    Isolate::Scope isolate_scope(isolate_);
-    (*context_)->Enter();
+	Isolate::Scope isolate_scope(isolate_);
+	(*context_)->Enter();
 
 
 	HandleScope handleScope;	 
-	ExternalManagedHandler* handler= new ExternalManagedHandler(mIndex);
+	ManagedObjRef* handler= new ManagedObjRef(mIndex);
 
 	//create js from template
 	if(externalTypeDef)
 	{
-		if(managedListner){
-			managedListner(1,L"handle0",0);
-			if((externalTypeDef->handlerToJsObjectTemplate).IsEmpty())
-			{
-				managedListner(1,L"handle1",0);
-			}
-			else
-			{
-				managedListner(1,L"handle2",0);
-			}
+		/*if(managedListner){
+		managedListner(1,L"handle0",0);
+		if((externalTypeDef->handlerToJsObjectTemplate).IsEmpty())
+		{
+		managedListner(1,L"handle1",0);
 		}
+		else
+		{
+		managedListner(1,L"handle2",0);
+		}
+		}*/
 		//auto a1= externalTypeDef->handlerToJsObjectTemplate->NewInstance();
 		handler->v8InstanceHandler=
 			Persistent<v8::Object>::New(externalTypeDef->handlerToJsObjectTemplate->NewInstance());
@@ -211,29 +183,27 @@ ExternalManagedHandler* JsContext::CreateWrapperForManagedObject(int mIndex, Ext
 	return handler;
 };
 
-ExternalManagedHandler* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
+ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 	return engineContext->CreateWrapperForManagedObject(mIndex,externalTypeDef); 
-};
+}; 
 
-
-
-int GetManagedIndex(ExternalManagedHandler* externalManagedHandler)
+int GetManagedIndex(ManagedObjRef* externalManagedHandler)
 {
-	return  ((ExternalManagedHandler*)externalManagedHandler)->managedIndex;
+	return  ((ManagedObjRef*)externalManagedHandler)->managedIndex;
 };
-void ReleaseWrapper(ExternalManagedHandler* externalManagedHandler)
+void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
 {	
 	delete externalManagedHandler;
 };
 
 //
 // 
-//int GetManagedIndex(ExternalManagedHandler* externalManagedHandler)
+//int GetManagedIndex(ManagedObjRef* externalManagedHandler)
 //{
-//	return  ((ExternalManagedHandler*)externalManagedHandler)->managedIndex;
+//	return  ((ManagedObjRef*)externalManagedHandler)->managedIndex;
 //}
-//void ReleaseWrapper(ExternalManagedHandler* externalManagedHandler)
+//void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
 //{	
 //	delete externalManagedHandler;
 //}
@@ -259,7 +229,7 @@ Handle<Value>
 
 	wstring name = (wchar_t*) *String::Value(iName);
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-	ExternalManagedHandler* extHandler=(ExternalManagedHandler*)external->Value();;
+	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 	//Handle<Function> function;
@@ -298,7 +268,7 @@ Handle<Value>
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-	//Noesis::Javascript::ExternalManagedHandler* exH = (Noesis::Javascript::ExternalManagedHandler*)external->Value();
+	//Noesis::Javascript::ManagedObjRef* exH = (Noesis::Javascript::ManagedObjRef*)external->Value();
 
 	return Handle<Value>();
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
@@ -348,18 +318,8 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 {
 
 	Locker locker(isolate_);
-    Isolate::Scope isolate_scope(isolate_);
-    (*context_)->Enter();
-
-	//entercontext
- //   v8::Locker *locker = new v8::Locker(isolate);
-	//isolate->Enter();
-	//// We store the old context so that JavascriptContexts can be created and run
-	//// recursively.
-	//oldContext = sCurrentContext;
-	//sCurrentContext = this;
-	//(*mContext)->Enter();
-
+	Isolate::Scope isolate_scope(isolate_);
+	(*context_)->Enter(); 
 
 	//use 2 handle scopes ***, otherwise this will error	 
 
@@ -370,6 +330,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	objTemplate->SetInternalFieldCount(1);//store native instance
 	objTemplate->SetNamedPropertyHandler(Getter, Setter);
 	objTemplate->SetIndexedPropertyHandler(IndexGetter, IndexSetter);
+	
 	//--------------------------------------------------------------
 
 	//read with stream
@@ -378,9 +339,9 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//marker (2 bytes)
 	int marker_kind= binReader.ReadInt16();  
 	//--------------------------------------------------------------
-	if(managedListner){
-		managedListner(0,L"typekind",0);
-	}
+	/*if(managedListner){
+	managedListner(0,L"typekind",0);
+	}*/
 	//---------------------------------------------------------------
 	//deserialize data to typedefinition
 	//plan: we can use other technique eg. json deserialization 
@@ -399,10 +360,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
 	wstring typeDefName= binReader.ReadUtf16String();	 
-	if(managedListner){ //--if valid pointer
+	//if(managedListner){ //--if valid pointer
 
-		managedListner(0,typeDefName.c_str() ,0);
-	}
+	//	managedListner(0,typeDefName.c_str() ,0);
+	//}
 	//4. num of fields
 	int nfields= binReader.ReadInt16();
 	for(int i=0;i< nfields;++i)
@@ -415,12 +376,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		int fieldId= binReader.ReadInt16();
 		int flags= binReader.ReadInt16();
 		std::wstring fieldname= binReader.ReadUtf16String();
-		if(managedListner){ //--if valid pointer
-
-			fieldname.append(L"-field");
-			managedListner(0,fieldname.c_str() ,0);
-		}  
-
+		//if(managedListner){ //--if valid pointer 
+		//	fieldname.append(L"-field");
+		//	managedListner(0,fieldname.c_str() ,0);
+		//}  
 	}   
 	//6. num of methods
 	int nMethods= binReader.ReadInt16();
@@ -438,10 +397,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		//String::New(L"mm")); 
 		objTemplate->Set(String::New((uint16_t*)(metName.c_str())),funcTemplate);
 
-		if(managedListner){ //--if valid pointer 
-			metName.append(L"-met");
-			managedListner(0,metName.c_str() ,0);
-		}  
+		//if(managedListner){ //--if valid pointer 
+		//	metName.append(L"-met");
+		//	managedListner(0,metName.c_str() ,0);
+		//}  
 	} 
 
 	externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); 
@@ -452,13 +411,13 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	return externalTypeDef; 
 } 
 
-ExternalTypeDefinition* EngineRegisterTypeDefinition(
-	JsContext* engineContext, 
+ExternalTypeDefinition* ContextRegisterTypeDefintion(
+	JsContext* context, 
 	int mIndex,  //managed index of type
 	const char* stream,
 	int streamLength)
 {   
-	return engineContext->RegisterTypeDefinition(mIndex,stream,streamLength); 
+	return context->RegisterTypeDefinition(mIndex,stream,streamLength); 
 } 
 //=====================================================
 //
@@ -516,7 +475,7 @@ ExternalTypeDefinition* EngineRegisterTypeDefinition(
 //}
 ////RegisterExternalParameter_External
 //void RegisterExternalParameter_External(JsContext* engineContext,
-//	const wchar_t* name,ExternalManagedHandler* arg)
+//	const wchar_t* name,ManagedObjRef* arg)
 //{
 //	(engineContext)->SetParameter_External(name,arg);
 //}
@@ -535,13 +494,6 @@ int ArgGetInt32(const v8::Arguments* args,int index)
 }
 int ArgGetString(const v8::Arguments* args,int index, int outputLen, uint16_t* output)
 {	
-	//return (wchar_t*)(*(((*args)[index])->ToString())); 
-	//wstring name = (wchar_t*) *v8::String::Value(iName);  
-	//wchar_t* ww= (wchar_t*) (*(v8::String::Value(arg)));  
-	//return ww; 
-	//return (wchar_t*)*v8::String::Value(iValue->ToString()); 
-	//return (wchar_t*)(*(((*args)[index])->ToString()));
-	//5return (wchar_t*)(*(*(args)[index])->ToString()));
 
 	Local<v8::Value> arg= (Local<v8::Value>)(*args)[index];  
 	if(arg->IsString())
@@ -569,3 +521,18 @@ int ArgGetStringLen(const v8::Arguments* args,int index)
 	}  
 	return 0;
 }
+//======================================================
+ManagedObjRef::ManagedObjRef(int mIndex)
+{
+	this->managedIndex = mIndex;
+}
+
+//====================================================== 
+ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
+{
+	this->managedIndex = mIndex;
+}
+void ExternalTypeDefinition:: ReadTypeDefinitionFromStream(BinaryStreamReader* reader)
+{ 
+}
+//====================================================== 

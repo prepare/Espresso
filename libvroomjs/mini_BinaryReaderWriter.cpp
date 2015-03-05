@@ -6,24 +6,7 @@
 
 using namespace v8;
 
-//======================================================
-ExternalManagedHandler::ExternalManagedHandler(int mIndex)
-{
-	this->managedIndex = mIndex;
-}
 
-//====================================================== 
-ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
-{
-	this->managedIndex = mIndex;
-}
-void ExternalTypeDefinition:: ReadTypeDefinitionFromStream(BinaryStreamReader* reader)
-{
-	//
-
-
-}
-//====================================================== 
 BinaryStreamReader::BinaryStreamReader(const char* stream,int length)
 {
 	this->length = length;
