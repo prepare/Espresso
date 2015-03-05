@@ -68,7 +68,7 @@ extern "C"{
 
 
 	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MethodCallingArgs* args);
-	typedef void (__stdcall *del_JsBridge)(int oIndex,const v8::Arguments* args,ExternalMethodReturnResult* result);
+	typedef void (__stdcall *del_JsBridge)(int oIndex,int methodKind,const v8::Arguments* args,ExternalMethodReturnResult* result);
 	//-------------------------------------------------------------------------------------------
 
 	EXPORT int GetMiniBridgeVersion();

@@ -18,7 +18,7 @@ namespace NativeV8
 
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void ManageMethodCallDel(int mIndex, IntPtr args, IntPtr result);
+    public delegate void ManagedMethodCallDel(int mIndex, int hint, IntPtr args, IntPtr result);
 
 
 
@@ -27,6 +27,8 @@ namespace NativeV8
         //store definition for js
         List<JsFieldDefinition> fields = new List<JsFieldDefinition>();
         List<JsMethodDefinition> methods = new List<JsMethodDefinition>();
+        List<JsPropertyDefinition> props = new List<JsPropertyDefinition>();
+
         public JsTypeDefinition(string typename)
             : base(typename, JsMemberKind.Type)
         {
@@ -42,35 +44,44 @@ namespace NativeV8
             methodDef.SetOwner(this);
             methods.Add(methodDef);
         }
+        public void AddMember(JsPropertyDefinition propDef)
+        {
+            propDef.SetOwner(this);
+            props.Add(propDef);
 
+        }
         /// <summary>
         /// serialization this typedefinition to binary format and 
         /// send to native side
         /// </summary>
         /// <param name="writer"></param>
-        public void WriteDefinitionToStream(BinaryWriter writer)
+        internal void WriteDefinitionToStream(BinaryWriter writer)
         {
             //----------------------
             //this is our custom protocol/convention with the MiniJsBridge            
             //we may change this in the future
             //eg. use json serialization/deserialization 
             //----------------------
-            //1.
+
+            //1. kind/flags
             writer.Write((short)this.MemberId);
-            //2. type kind
+            //2. member id
             writer.Write((short)0);
             //3. typename                         
             WriteUtf16String(this.MemberName, writer);
+
             //4. num of field
             int j = fields.Count;
             writer.Write((short)j);
             for (int i = 0; i < j; ++i)
             {
                 JsFieldDefinition fielddef = fields[i];
-                //*** field id -- unique field id within one type
-                writer.Write((short)fielddef.MemberId);
                 //field flags
                 writer.Write((short)0);
+
+                //*** field id -- unique field id within one type
+                writer.Write((short)fielddef.MemberId);
+
                 //field name
                 WriteUtf16String(fielddef.MemberName, writer);
             }
@@ -80,23 +91,42 @@ namespace NativeV8
             for (int i = 0; i < j; ++i)
             {
                 JsMethodDefinition methoddef = methods[i];
-                writer.Write((short)methoddef.MemberId);
                 //method flags
                 writer.Write((short)0);
+                //id
+                writer.Write((short)methoddef.MemberId);
                 //method name
                 WriteUtf16String(methoddef.MemberName, writer);
             }
+
+            //property
+            j = props.Count;
+            writer.Write((short)j);
+            for (int i = 0; i < j; ++i)
+            {
+                JsPropertyDefinition property = this.props[i];
+                //flags
+                writer.Write((short)0);
+                //id
+                writer.Write((short)property.MemberId);
+                //name
+                WriteUtf16String(property.MemberName, writer);
+            }
+
         }
 
         internal List<JsFieldDefinition> GetFields()
         {
-            return fields;
+            return this.fields;
         }
         internal List<JsMethodDefinition> GetMethods()
         {
-            return methods;
+            return this.methods;
         }
-
+        internal List<JsPropertyDefinition> GetProperties()
+        {
+            return this.props;
+        }
     }
     public abstract class JsTypeMemberDefinition
     {
@@ -161,6 +191,8 @@ namespace NativeV8
         Field,
         Method,
         Event,
+        Property,
+        Indexer,
         PropertyGet,
         PropertySet,
         IndexerGet,
@@ -176,6 +208,67 @@ namespace NativeV8
 
         }
     }
+
+    public class JsPropertyDefinition : JsTypeMemberDefinition
+    {
+        JsPropertyGetDefinition getter;
+        JsPropertyGetDefinition setter;
+
+        public JsPropertyDefinition(string name)
+            : base(name, JsMemberKind.Property)
+        {
+
+        }
+        public JsPropertyDefinition(string name, JsMethodCallDel getter, JsMethodCallDel setter)
+            : base(name, JsMemberKind.Property)
+        {
+
+            if (getter != null)
+            {
+                this.GetterMethod = new JsPropertyGetDefinition(name, getter);
+            }
+            if (setter != null)
+            {
+                this.SetterMethod = new JsPropertySetDefinition(name, setter);
+            }
+        }
+        public JsPropertyGetDefinition GetterMethod
+        {
+            get;
+            set;
+        }
+        public JsPropertySetDefinition SetterMethod
+        {
+            get;
+            set;
+        }
+        public bool IsIndexer { get; set; }
+    }
+
+    public class JsPropertyGetDefinition : JsMethodDefinition
+    {
+        public JsPropertyGetDefinition(string name)
+            : base(name)
+        {
+        }
+        public JsPropertyGetDefinition(string name, JsMethodCallDel getter)
+            : base(name, getter)
+        {
+        }
+    }
+    public class JsPropertySetDefinition : JsMethodDefinition
+    {
+        public JsPropertySetDefinition(string name)
+            : base(name)
+        {
+        }
+        public JsPropertySetDefinition(string name, JsMethodCallDel setter)
+            : base(name, setter)
+        {
+        }
+    }
+
+
 
     public delegate void JsMethodCallDel(ManagedMethodArgs args);
 
@@ -235,7 +328,6 @@ namespace NativeV8
         public JsMethodDefinition(string methodName, JsMethodCallDel methodCallDel)
             : base(methodName, JsMemberKind.Method)
         {
-
             SetCall(methodCallDel);
         }
         public void SetCall(JsMethodCallDel methodCallDel)
@@ -250,6 +342,12 @@ namespace NativeV8
             }
         }
     }
+
+
+
+
+
+
     public abstract class NativeObjectProxy
     {
         object wrapObject;
@@ -294,6 +392,8 @@ namespace NativeV8
             }
         }
     }
+
+
     class NativeObjectProxy<T> : NativeObjectProxy
         where T : class
     {
@@ -479,7 +579,7 @@ namespace NativeV8
         //static RelaseWrapper ReleaseWrapper;
         //-------------------------------------------------------------------------------
         static ManagedListenerDel engineListenerDel;
-        static ManageMethodCallDel engineMethodCallbackDel;
+        static ManagedMethodCallDel engineMethodCallbackDel;
         //public static EngineContextRunDel EngineContextRun;
         //-------------------------------------------------------------------------------
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
@@ -487,7 +587,7 @@ namespace NativeV8
         //static RegisterManagedCallBack RegisterManagedCallback;
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern unsafe IntPtr EngineRegisterTypeDefinition(
+        static extern unsafe IntPtr ContextRegisterTypeDefintion(
             IntPtr unmanagedEnginePtr, int mIndex,
             void* stream, int length);
 
@@ -565,12 +665,15 @@ namespace NativeV8
         //MY_DLL_EXPORT int ArgGetAttachDataAsInt32(const v8::Arguments* args,int index);
 
         static List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
+        static List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
+
         static NativeV8JsInterOp()
         {
             //prepare 
             engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
-            engineMethodCallbackDel = new ManageMethodCallDel(EngineListener_MethodCall);
-            registerMethods.Add(null);  //fisrt is null***
+            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
+            registerMethods.Add(null);  //first is null***
+            registerProperties.Add(null);  //first is null***
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -579,170 +682,22 @@ namespace NativeV8
                  System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mListenerDel),
                 (int)ManagedCallbackKind.Listener);
         }
-        static void RegisterManagedMethodCall(ManageMethodCallDel mMethodCall)
+        static void RegisterManagedMethodCall(ManagedMethodCallDel mMethodCall)
         {
 
             RegisterManagedCallback(
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
                 (int)ManagedCallbackKind.MethodCall);
         }
-        //public static JsContext CreateNewJsContext()
-        //{
-
-        //    JsContext nativeJsContext = new JsContext();
-        //    NativeObjectProxy<JsContext> wrapJsContext = new NativeObjectProxy<JsContext>(1, nativeJsContext);
-        //    IntPtr unmangedPtr = CreateEngineContext(wrapJsContext.ManagedIndex);
-        //    wrapJsContext.SetUnmanagedObjectPointer(unmangedPtr);
-        //    nativeJsContext.nativeEngineContextProxy = wrapJsContext;
-        //    return nativeJsContext;
-        //}
-        //public static void ReleaseJsContext(JsContext jsContext)
-        //{
-
-        //    ReleaseEngineContext(jsContext.nativeEngineContextProxy.UnmanagedPtr);
-        //    jsContext.nativeEngineContextProxy.SetUnmanagedObjectPointer(IntPtr.Zero);
-        //}
-
-        //public static void InvokeAction(string methodName, object[] parameters)
-        //{
-        //    NativeMethodMap foundMap;
-        //    if (importFuncs.TryGetValue(methodName, out foundMap))
-        //    {
-
-        //        foundMap.GetDelegate().DynamicInvoke(foundMap);
-
-        //    }
-        //}
-        //public static Delegate GetDelegate(string methodName)
-        //{
-        //    NativeMethodMap foundMap;
-        //    if (importFuncs.TryGetValue(methodName, out foundMap))
-        //    {
-        //        return foundMap.GetDelegate();
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //public static object InvokeFunction(string methodName, object[] parameters)
-        //{
-        //    NativeMethodMap foundMap;
-        //    if (importFuncs.TryGetValue(methodName, out foundMap))
-        //    {
-
-        //        return foundMap.GetDelegate().DynamicInvoke(parameters);
-        //    }
-        //    else
-        //    {
-
-        //        return null;
-        //    }
-        //}
-
         public static void LoadV8(string v8bridgeDll)
         {
 
             IntPtr v8mod = UnsafeMethods.LoadLibrary(v8bridgeDll);
             hModuleV8 = v8mod;
-
             if (v8mod == IntPtr.Zero)
             {
                 return;
             }
-            //--------------------------------------------------------
-            //store native address of specific funcs
-            //old technique***
-
-            //List<NativeMethodMap> requestFuncs = new List<NativeMethodMap>()
-            //{
-            //    //new NativeFunctionMap<TestMe>("TestMe"),
-            //    //new NativeFunctionMap<TestMe_WithScript>("TestMe_WithScript"),
-            //    new NativeActionMap<LibGetVersionDel>("LibGetVersion"), 
-            //    new NativeActionMap<CreateWrapperForManagedObject>("CreateWrapperForManagedObject"), 
-            //    new NativeFunctionMap<GetManagedIndex>("GetManagedIndex"),
-            //    new NativeFunctionMap<RelaseWrapper>("ReleaseWrapper"),
-            //    //----------------------------------------------------------------------
-            //    new NativeActionMap<RegisterManagedCallBack>("RegisterManagedCallback"),          
-            //    new NativeFunctionMap<EngineRegisterTypeDefinitionDel>("EngineRegisterTypeDefinition"),
-            //    //new NativeFunctionMap<CreateEngineContextDel>("CreateEngineContext"),
-            //    //new NativeActionMap<ReleaseEngineContextDel>("ReleaseEngineContext"),
-            //    ////----------------------------------------------------------------------
-            //    //new NativeActionMap<RegisterExternalParameter_int32Del>("RegisterExternalParameter_int32"),
-            //    //new NativeActionMap<RegisterExternalParameter_floatDel>("RegisterExternalParameter_float"),
-            //    //new NativeActionMap<RegisterExternalParameter_doubleDel>("RegisterExternalParameter_double"),
-            //    //new NativeActionMap<RegisterExternalParameter_stringDel>("RegisterExternalParameter_string"),
-            //    //new NativeActionMap<RegisterExternalParameter_ExternalManagedDel>("RegisterExternalParameter_External"),
-            //    ////----------------------------------------------------------------------
-            //    //new NativeFunctionMap<EngineContextRunDel>("EngineContextRun"),
-            //    //new NativeActionMap<EngineContextEnterDel>("EngineContextEnter"),
-            //    //new NativeActionMap<EngineContextExitDel>("EngineContextExit"),
-            //    //---------------------------------------------------------------------- 
-            //    new NativeFunctionMap<ArgGetAttachDataAsInt32Del>("ArgGetAttachDataAsInt32"),
-            //    new NativeFunctionMap<ArgGetInt32Del>("ArgGetInt32"),
-            //    new NativeFunctionMap<ArgGetStringDel>("ArgGetString"),
-            //    //---------------------------------------------------------------------- 
-            //    new NativeActionMap<ArgSetInt32Del>("ArgSetInt32"),
-            //    new NativeActionMap<ArgSetFloatDel>("ArgSetFloat"),
-            //    new NativeActionMap<ArgSetDoubleDel>("ArgSetDouble"),
-            //    new NativeActionMap<ArgSetStringDel>("ArgSetString"),
-            //    new NativeActionMap<ArgSetBoolDel>("ArgSetBool"),
-            //    new NativeActionMap<ArgSetNativeObjectDel>("ArgSetNativeObject"),
-            //};
-            //----------------------------------------------------------
-            //importFuncs = new Dictionary<string, NativeMethodMap>();
-
-            //int j = requestFuncs.Count;
-            //for (int i = 0; i < j; ++i)
-            //{
-            //    NativeMethodMap met = requestFuncs[i];
-            //    met.Resolve(v8mod);
-            //    importFuncs.Add(met.NativeMethodName, met);
-            //}
-            //CreateWrapperForManagedObject = (CreateWrapperForManagedObject)importFuncs["CreateWrapperForManagedObject"].GetDelegate();
-            //GetManagedIndex = (GetManagedIndex)importFuncs["GetManagedIndex"].GetDelegate();
-            //ReleaseWrapper = (RelaseWrapper)importFuncs["ReleaseWrapper"].GetDelegate();
-            //RegisterManagedCallback = (RegisterManagedCallBack)importFuncs["RegisterManagedCallback"].GetDelegate();
-
-            ////------------------------------------
-            ////
-            //RegisterTypeDefinition = (EngineRegisterTypeDefinitionDel)importFuncs["EngineRegisterTypeDefinition"].GetDelegate();
-            ////GCHandle.Alloc(RegisterTypeDefinition, GCHandleType.Pinned);
-            ////---------
-            ////engine
-            //CreateEngineContext = (CreateEngineContextDel)importFuncs["CreateEngineContext"].GetDelegate();
-            //ReleaseEngineContext = (ReleaseEngineContextDel)importFuncs["ReleaseEngineContext"].GetDelegate();
-            ////parameter
-            //RegParamInt32 = (RegisterExternalParameter_int32Del)importFuncs["RegisterExternalParameter_int32"].GetDelegate();
-            //RegParamFloat = (RegisterExternalParameter_floatDel)importFuncs["RegisterExternalParameter_float"].GetDelegate();
-            //RegParamDouble = (RegisterExternalParameter_doubleDel)importFuncs["RegisterExternalParameter_double"].GetDelegate();
-            //RegParamString = (RegisterExternalParameter_stringDel)importFuncs["RegisterExternalParameter_string"].GetDelegate();
-            //RegParamExternalManaged = (RegisterExternalParameter_ExternalManagedDel)importFuncs["RegisterExternalParameter_External"].GetDelegate();
-            ////---------
-            //EngineContextRun = (EngineContextRunDel)importFuncs["EngineContextRun"].GetDelegate();
-            //EngineContextEnter = (EngineContextEnterDel)importFuncs["EngineContextEnter"].GetDelegate();
-            //EngineContextExit = (EngineContextExitDel)importFuncs["EngineContextExit"].GetDelegate();
-            ////---------
-            //ArgGetInt32 = (ArgGetInt32Del)importFuncs["ArgGetInt32"].GetDelegate();
-            //ArgGetString = (ArgGetStringDel)importFuncs["ArgGetString"].GetDelegate();
-            //ArgGetAttachDataAsInt32 = (ArgGetAttachDataAsInt32Del)importFuncs["ArgGetAttachDataAsInt32"].GetDelegate();
-
-            ////---------
-            //ArgSetDouble = (ArgSetDoubleDel)importFuncs["ArgSetDouble"].GetDelegate();
-            //ArgSetFloat = (ArgSetFloatDel)importFuncs["ArgSetFloat"].GetDelegate();
-            //ArgSetString = (ArgSetStringDel)importFuncs["ArgSetString"].GetDelegate();
-            //ArgSetInt32 = (ArgSetInt32Del)importFuncs["ArgSetInt32"].GetDelegate();
-            //ArgSetBool = (ArgSetBoolDel)importFuncs["ArgSetBool"].GetDelegate();
-            //ArgSetNativeObject = (ArgSetNativeObjectDel)importFuncs["ArgSetNativeObject"].GetDelegate();
-
-            //LibGetVersion = (LibGetVersionDel)importFuncs["LibGetVersion"].GetDelegate();
-            //------------------
-            //built in listener
-            //------------------
-            //NativeV8JsInterOp.RegisterManagedListener(engineListenerDel);
-            //NativeV8JsInterOp.RegisterManagedMethodCall(engineMethodCallbackDel);
-            //-------------------
         }
         public static void RegisterCallBacks()
         {
@@ -769,25 +724,40 @@ namespace NativeV8
         {
 
         }
-
-
-        static void EngineListener_MethodCall(int mIndex, IntPtr args, IntPtr result)
+        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr args, IntPtr result)
         {
 
-            int data = NativeV8JsInterOp.ArgGetAttachDataAsInt32(args);
-            if (data == 0)
-            {
-                return;
-            }
-            JsMethodDefinition foundMet = registerMethods[data];
-            if (foundMet != null)
-            {
+            
 
-                foundMet.InvokeMethod(new ManagedMethodArgs(args, result));
+            switch (methodKind)
+            {
+                case 1:
+                    {
+                        //property get        
+                        if (mIndex == 0) return;
+                        //------------------------------------------
+                        JsPropertyDefinition property = registerProperties[mIndex];
+                        property.GetterMethod.InvokeMethod(new ManagedMethodArgs(args, result));
+
+                    } break;
+                case 2:
+                    {
+                        //property set
+                    } break;
+                default:
+                    {
+                        if (mIndex == 0) return;
+                        JsMethodDefinition foundMet = registerMethods[mIndex];
+                        if (foundMet != null)
+                        {
+                            foundMet.InvokeMethod(new ManagedMethodArgs(args, result));
+                        }
+                    } break;
             }
+
 
         }
-        static void CollectMethods(JsTypeDefinition jsTypeDefinition)
+        static void CollectMembers(JsTypeDefinition jsTypeDefinition)
         {
             List<JsMethodDefinition> methods = jsTypeDefinition.GetMethods();
             int j = methods.Count;
@@ -797,7 +767,17 @@ namespace NativeV8
                 met.SetMemberId(registerMethods.Count);
                 registerMethods.Add(met);
             }
+
+            List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
+            j = properties.Count;
+            for (int i = 0; i < j; ++i)
+            {
+                var p = properties[i];
+                p.SetMemberId(registerProperties.Count);
+                registerProperties.Add(p);
+            }
         }
+
         public static unsafe void RegisterTypeDef(JsContext2 context, JsTypeDefinition jsTypeDefinition)
         {
 
@@ -819,7 +799,7 @@ namespace NativeV8
                 //data...
 
                 //------------------------------------------------
-                CollectMethods(jsTypeDefinition);
+                CollectMembers(jsTypeDefinition);
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();
@@ -828,7 +808,7 @@ namespace NativeV8
                 {
                     //context.EnterContext();                     
                     proxObject.SetUnmanagedObjectPointer(
-                        EngineRegisterTypeDefinition(
+                        ContextRegisterTypeDefintion(
                         context.nativeEngineContextProxy.UnmanagedPtr,
                         0, tt, finalBuffer.Length));
                     //context.ExitContext(); 
@@ -866,4 +846,25 @@ namespace NativeV8
         //--------------------------------------------------------------------------
     }
 
+
+    public enum ManagedCallbackKind : int
+    {
+        Listener,
+        MethodCall,
+    }
+
+    static class UnsafeMethods
+    {
+
+        [DllImport("Kernel32.dll")]
+        public static extern IntPtr LoadLibrary(string libraryName);
+        [DllImport("Kernel32.dll")]
+        public static extern bool FreeLibrary(IntPtr hModule);
+        [DllImport("Kernel32.dll")]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+        [DllImport("Kernel32.dll")]
+        public static extern uint SetErrorMode(int uMode);
+        [DllImport("Kernel32.dll")]
+        public static extern uint GetLastError();
+    }
 }

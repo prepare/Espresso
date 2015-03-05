@@ -92,11 +92,12 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 
 		ExternalMethodReturnResult result;
 		memset(&result,0,sizeof(ExternalMethodReturnResult));
+
 		result.resultKind =0;//init  
 		result.length =0; //init      
 		int m_index =  ArgGetAttachDataAsInt32(&args);
 
-		managedJsBridge(m_index, &args,&result); 
+		managedJsBridge(m_index,0, &args,&result); 
 		switch(result.resultKind)
 		{
 
@@ -221,6 +222,17 @@ void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
 //}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//void GetterAccessor(Local<String> propName, const AccessorInfo& info)
+//{
+//
+//}
+//void SetterAccessor(Local<String> propName, const AccessorInfo& info)
+//{
+//
+//}
+
+
+
 
 Handle<Value>
 	Getter(Local<String> iName, const AccessorInfo &iInfo)
@@ -228,6 +240,7 @@ Handle<Value>
 	//name may be method or field 
 
 	wstring name = (wchar_t*) *String::Value(iName);
+	
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 
@@ -259,6 +272,108 @@ Handle<Value>
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+Handle<Value> 
+	DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
+{
+	int m_index  = info.Data()->Int32Value();	 
+	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
+	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
+
+	HandleScope h01; 
+	//if(managedListner)
+	//{
+	//	//for debug
+	//	managedListner(0,L"data",0);
+	//}  
+	if(managedJsBridge)
+	{  	   
+
+		ExternalMethodReturnResult result;
+		memset(&result,0,sizeof(ExternalMethodReturnResult)); 
+		result.resultKind =0;//init  
+		result.length =0; //init      
+
+		managedJsBridge(m_index,1,0,&result); 
+
+		switch(result.resultKind)
+		{
+
+		case mt_bool:
+			{
+				//boolean
+				return h01.Close(v8::Boolean::New(result.possibleValue.v_bool));
+			}break;
+		case mt_int32://int32
+			{	 
+				return h01.Close(v8::Int32::New(result.possibleValue.int32)); 
+			}		 
+		case mt_float:
+			{   //float
+				return h01.Close(v8::Number::New(result.possibleValue.fl32));
+			}break;
+		case mt_double:
+			{   //double
+				return h01.Close(v8::Number::New(result.possibleValue.fl64));
+			}break;		
+		case mt_int64:
+			{	//int64
+				return h01.Close(v8::Number::New(result.possibleValue.int64));
+			}
+		case mt_string:
+			{  
+				//string  wchar_t*			
+				//always send with null terminal char**				 
+				return h01.Close(v8::String::New((uint16_t*)result.possibleValue.str_value)); 
+			}break; 
+		case mt_externalObject:
+			{
+				////return v8::Persistent<v8::object>(result.pos
+				////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
+				//HandleScope handleScope;
+				//Handle<v8::Value> jsdata;
+				//auto obj = v8::Object::New();
+				//   jsdata= obj;				 
+				//   //return v8::Persistent<ExternalObject>::New(v8::Handle<ExternalObject>(0));
+				//return handleScope.Close(jsdata);				 
+				return v8::Number::New(0);
+			}break;
+		default:
+			{
+				return h01.Close(v8::Undefined());
+			}
+		} 
+	}
+	return h01.Close(v8::Undefined());
+
+
+
+
+
+
+
+
+
+	//then call back to managed code
+
+
+		//HandleScope scope;
+  // char buffer[512];
+  //uv_get_process_title(buffer, sizeof(buffer)); 
+  //return scope.Close(String::New(buffer));
+										
+   return Handle<Value>();
+}
+
+
+void DoSetterProperty(Local<String> propertyName,
+                               Local<Value> value,
+                               const AccessorInfo& info)
+{
+  //HandleScope scope;
+  //node::Utf8Value title(value);
+  //// TODO: protect with a lock
+  //uv_set_process_title(*title);
+}
 
 Handle<Value>
 	Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
@@ -328,8 +443,6 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//create new object template
 	Handle<ObjectTemplate> objTemplate = ObjectTemplate::New();  
 	objTemplate->SetInternalFieldCount(1);//store native instance
-	objTemplate->SetNamedPropertyHandler(Getter, Setter);
-	objTemplate->SetIndexedPropertyHandler(IndexGetter, IndexSetter);
 	
 	//--------------------------------------------------------------
 
@@ -352,10 +465,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//send type definition handler back to managed side
 
 	ExternalTypeDefinition* externalTypeDef= new ExternalTypeDefinition(mIndex);	
-	//1. type id
-	int type_id=  binReader.ReadInt16(); 
-	//2. typekind( 2 bytes)
+	//1.  typekind( 2 bytes)
 	int type_kind= binReader.ReadInt16();  
+	//2. typeid
+	int type_id=  binReader.ReadInt16(); 	
 	//--------------------------------------------------------------
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
@@ -364,37 +477,31 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 	//	managedListner(0,typeDefName.c_str() ,0);
 	//}
-	//4. num of fields
-	int nfields= binReader.ReadInt16();
+
+	//4. num of fields 
+	int nfields= binReader.ReadInt16(); 
+
 	for(int i=0;i< nfields;++i)
 	{
-		//in this version..
-		//field compose of..
-		//field name
-		//field type
-
-		int fieldId= binReader.ReadInt16();
+		
 		int flags= binReader.ReadInt16();
-		std::wstring fieldname= binReader.ReadUtf16String();
-		//if(managedListner){ //--if valid pointer 
-		//	fieldname.append(L"-field");
-		//	managedListner(0,fieldname.c_str() ,0);
-		//}  
+		int fieldId= binReader.ReadInt16();		
+		std::wstring fieldname= binReader.ReadUtf16String(); 
+		//field 
+		objTemplate->SetAccessor(String::New((uint16_t*)(fieldname.c_str())),
+			DoGetterProperty,
+			DoSetterProperty,
+			v8::Int32::New(fieldId));  
 	}   
 	//6. num of methods
 	int nMethods= binReader.ReadInt16();
 	for(int i=0;i<nMethods;++i)
-	{
-		//method name
-		//marker
-		//method flags
-
-		int methodId= binReader.ReadInt16();
+	{  
 		int flags= binReader.ReadInt16();
-		std::wstring metName= binReader.ReadUtf16String();
-		//auto a= v8::Int32::New(1); 
-		Handle<FunctionTemplate> funcTemplate=FunctionTemplate::New(JsFunctionBridge,v8::Int32::New(methodId));			 
-		//String::New(L"mm")); 
+		int methodId= binReader.ReadInt16(); 
+
+		std::wstring metName= binReader.ReadUtf16String(); 
+		Handle<FunctionTemplate> funcTemplate=FunctionTemplate::New(JsFunctionBridge,v8::Int32::New(methodId));	 
 		objTemplate->Set(String::New((uint16_t*)(metName.c_str())),funcTemplate);
 
 		//if(managedListner){ //--if valid pointer 
@@ -402,6 +509,25 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		//	managedListner(0,metName.c_str() ,0);
 		//}  
 	} 
+	
+	//7. properties and indexer
+
+	int nProperties = binReader.ReadInt16();
+	for(int i=0;i<nProperties;++i)
+	{
+		//read pair getter/setter
+		int flags_getter= binReader.ReadInt16();
+		int property_id= binReader.ReadInt16(); 
+		//name
+		std::wstring propName= binReader.ReadUtf16String(); 
+		objTemplate->SetAccessor(String::New((uint16_t*)(propName.c_str())),
+			DoGetterProperty,
+			DoSetterProperty,
+			v8::Int32::New(property_id)); 
+	} 
+
+	//objTemplate->SetNamedPropertyHandler(Getter, Setter);
+	//objTemplate->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
 
 	externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); 
 

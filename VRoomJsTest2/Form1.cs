@@ -127,13 +127,13 @@ namespace VRoomJsTest
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Start();
-                
-                TestMe1 t1 = new TestMe1(); 
+
+                TestMe1 t1 = new TestMe1();
                 var proxy = context2.CreateWrapper(t1, jstypedef);
 
                 for (int i = 2000; i >= 0; --i)
-                {                  
-                    context2.SetParameter("x", proxy); 
+                {
+                    context2.SetParameter("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
                 stwatch.Stop();
@@ -150,7 +150,7 @@ namespace VRoomJsTest
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
             //create js engine and context
-            
+
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
@@ -161,7 +161,7 @@ namespace VRoomJsTest
                 TestMe1 t1 = new TestMe1();
 
                 for (int i = 2000; i >= 0; --i)
-                {  
+                {
                     ctx.SetVariable("x", t1);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
@@ -169,9 +169,72 @@ namespace VRoomJsTest
                 Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
                 //Assert.That(result, Is.EqualTo(100)); 
             }
+        }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+            NativeV8JsInterOp.RegisterCallBacks();
+            NativeV8JsInterOp.TestCallBack();
 
+            JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
+            jstypedef.AddMember(new JsMethodDefinition("B", args =>
+            {
+                args.SetNativeObjResult(100);
+            }));
+            jstypedef.AddMember(new JsMethodDefinition("C", args =>
+            {
+                args.SetResult(true);
+            }));
+            jstypedef.AddMember(new JsPropertyDefinition("D",
+                args =>
+                {   //getter
+                    args.SetResult(true);
+                },
+                args =>
+                {
+                    //setter 
+                }));
+            jstypedef.AddMember(new JsPropertyDefinition("E",
+                args =>
+                {   //getter
+                    args.SetResult(true);
+                },
+                args =>
+                {
+                    //setter 
+                }));
 
+            //===============================================================
+            //create js engine and context
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                JsContext2 context2 = new JsContext2(ctx);
+                if (!jstypedef.IsRegisterd)
+                {
+                    context2.RegisterTypeDefinition(jstypedef);
+                }
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                TestMe1 t1 = new TestMe1();
+                var proxy = context2.CreateWrapper(t1, jstypedef);
+
+                //for (int i = 2000; i >= 0; --i)
+                //{
+                context2.SetParameter("x", proxy);
+                //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+                object result = ctx.Execute("(function(){if(x.E){return  x.B();}else{return 0;}})()");
+
+                //}
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+                //Assert.That(result, Is.EqualTo(100));
+            }
         }
     }
 }
