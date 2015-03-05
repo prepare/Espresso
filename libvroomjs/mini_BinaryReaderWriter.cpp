@@ -2,9 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include "vroomjs.h"
-#include "mini_bridge.h"
-
+#include "vroomjs.h" 
 
 using namespace v8;
 

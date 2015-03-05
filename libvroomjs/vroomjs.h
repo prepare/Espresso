@@ -56,6 +56,7 @@ using namespace v8;
 #define JSVALUE_TYPE_DICT           15
 #define JSVALUE_TYPE_ERROR          16
 #define JSVALUE_TYPE_FUNCTION       17
+#define JSVALUE_TYPE_JSTYPEDEF      18 //my extension
 
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
@@ -282,6 +283,8 @@ private:
 	keepalive_enumerate_properties_f keepalive_enumerate_properties_;
 };
 
+class ExternalTypeDefinition;
+class ExternalManagedHandler;
 
 class JsContext {
  public:
@@ -299,9 +302,13 @@ class JsContext {
     jsvalue SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value);
     jsvalue InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args);
     jsvalue InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args);
-     
-	void Dispose();
-     
+    void Dispose();
+
+	
+	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
+	ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
+
+      
 	inline int32_t GetId() {
 		return id_;
 	}
@@ -318,7 +325,8 @@ class JsContext {
 	int32_t id_;
     Isolate *isolate_;
 	JsEngine *engine_;
-	Persistent<Context> *context_;
+	Persistent<Context> *context_; 
+	 
 };
 
 
@@ -349,6 +357,54 @@ class ManagedRef {
 	int32_t contextId_;
 	JsEngine *engine_;
 	int32_t id_;
+};
+
+
+
+
+//------------------------------------------------------------
+class ExternalManagedHandler
+{
+public:
+	 
+	int managedIndex;
+	v8::Persistent<v8::Object> v8InstanceHandler;
+	ExternalManagedHandler(int mIndex);
+};
+
+class ExternalTypeMember
+{
+
+public:
+	int managedIndex; 
+	int memberkind; 
+};
+
+
+
+class BinaryStreamReader
+{
+
+public:
+	const char* stream;
+	int length;
+	int pos;
+
+	BinaryStreamReader(const char* stream,int length);
+	int ReadInt16();
+	int ReadInt32();
+	std::wstring ReadUtf16String();
+};
+
+class ExternalTypeDefinition 
+{
+
+public:		
+	int managedIndex; 
+	int memberkind; 
+	v8::Handle<v8::ObjectTemplate> handlerToJsObjectTemplate;
+	ExternalTypeDefinition(int mIndex);
+	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };
 
 #endif

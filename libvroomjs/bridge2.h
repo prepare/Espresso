@@ -7,8 +7,7 @@
 #include <string>
 #include <vector> 
 
-#include "vroomjs.h"
-#include "mini_bridge.h"
+#include "vroomjs.h" 
 
 
 using namespace v8; 
@@ -77,7 +76,7 @@ extern "C"{
 	  
 	EXPORT int GetMiniBridgeVersion();
 
-	EXPORT ExtManagedHandler* CreateWrapperForManagedObject(int mindex,ExternalTypeDef* extTypeDefinition);
+	EXPORT ExtManagedHandler* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDef* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ExtManagedHandler* externalManagedHandler);
 	EXPORT int GetManagedIndex(ExtManagedHandler* externalManagedHandler); 
     //---------------------------------------------------------------------

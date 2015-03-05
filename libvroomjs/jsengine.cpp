@@ -478,7 +478,11 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
     if (v.type == JSVALUE_TYPE_DATE) {
         return Date::New(v.value.num);
     }
-	
+	if(v.type == JSVALUE_TYPE_JSTYPEDEF)
+	{
+		ExternalManagedHandler* ext = (ExternalManagedHandler*)v.value.ptr;
+		return ext->v8InstanceHandler;
+	}
     // Arrays are converted to JS native arrays.
     
     if (v.type == JSVALUE_TYPE_ARRAY) {
@@ -488,6 +492,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
         }
         return a;        
     }
+	
         
     // This is an ID to a managed object that lives inside the JsContext keep-alive
     // cache. We just wrap it and the pointer to the engine inside an External. A

@@ -39,8 +39,5 @@
     <ClInclude Include="vroomjs.h">
       <Filter>Source_Files</Filter>
     </ClInclude>
-    <ClInclude Include="mini_bridge.h">
-      <Filter>Source_MiniBridge</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

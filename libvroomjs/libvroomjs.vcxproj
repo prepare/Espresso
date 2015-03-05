@@ -77,7 +77,6 @@
     <ClCompile Include="mini_BinaryReaderWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mini_bridge.h" />
     <ClInclude Include="vroomjs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

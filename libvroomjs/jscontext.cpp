@@ -294,6 +294,7 @@ jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>
 
 }
 
+
 jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args)
 {
     jsvalue v;
@@ -328,6 +329,10 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
     
     return v;
 }
+ 
+	
+
+
 
 
 

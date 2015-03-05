@@ -177,12 +177,15 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 };
 
 
-ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
+ExternalManagedHandler* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 
-	HandleScope handleScope;	
-	/*HandleScope handleScope2;	
-	HandleScope handleScope3;*/
+	Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+
+
+	HandleScope handleScope;	 
 	ExternalManagedHandler* handler= new ExternalManagedHandler(mIndex);
 
 	//create js from template
@@ -204,9 +207,17 @@ ExternalManagedHandler* CreateWrapperForManagedObject(int mIndex, ExternalTypeDe
 			Persistent<v8::Object>::New(externalTypeDef->handlerToJsObjectTemplate->NewInstance());
 		handler->v8InstanceHandler->SetInternalField(0,External::New(handler));
 	}
-
+	(*context_)->Exit();
 	return handler;
 };
+
+ExternalManagedHandler* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
+{ 
+	return engineContext->CreateWrapperForManagedObject(mIndex,externalTypeDef); 
+};
+
+
+
 int GetManagedIndex(ExternalManagedHandler* externalManagedHandler)
 {
 	return  ((ExternalManagedHandler*)externalManagedHandler)->managedIndex;
@@ -333,12 +344,22 @@ Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const AccessorIn
 	return Handle<Value>();
 }
 
-ExternalTypeDefinition* EngineRegisterTypeDefinition(
-	JsContext* engineContext, 
-	int mIndex,  //managed index of type
-	const char* stream,
-	int streamLength)
-{   
+ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char* stream,int streamLength)
+{
+
+	Locker locker(isolate_);
+    Isolate::Scope isolate_scope(isolate_);
+    (*context_)->Enter();
+
+	//entercontext
+ //   v8::Locker *locker = new v8::Locker(isolate);
+	//isolate->Enter();
+	//// We store the old context so that JavascriptContexts can be created and run
+	//// recursively.
+	//oldContext = sCurrentContext;
+	//sCurrentContext = this;
+	//(*mContext)->Enter();
+
 
 	//use 2 handle scopes ***, otherwise this will error	 
 
@@ -424,7 +445,20 @@ ExternalTypeDefinition* EngineRegisterTypeDefinition(
 	} 
 
 	externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); 
+
+
+	(*context_)->Exit();
+
 	return externalTypeDef; 
+} 
+
+ExternalTypeDefinition* EngineRegisterTypeDefinition(
+	JsContext* engineContext, 
+	int mIndex,  //managed index of type
+	const char* stream,
+	int streamLength)
+{   
+	return engineContext->RegisterTypeDefinition(mIndex,stream,streamLength); 
 } 
 //=====================================================
 //
