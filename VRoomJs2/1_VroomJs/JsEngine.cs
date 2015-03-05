@@ -16,13 +16,13 @@ namespace VroomJs
         delegate JsValue KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name);
         delegate JsValue KeepAliveEnumeratePropertiesDelegate(int context, int slot);
 
-        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void js_set_object_marshal_type(JsObjectMarshalType objectMarshalType);
 
-        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void js_dump_allocated_items();
 
-        [DllImport(JsBridgeLib.NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr jsengine_new(
             KeepaliveRemoveDelegate keepaliveRemove,
             KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
@@ -34,16 +34,16 @@ namespace VroomJs
             int maxYoungSpace, int maxOldSpace
         );
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_terminate_execution(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dump_heap_stats(HandleRef engine);
 
-        [DllImport("VroomJsNative", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose(HandleRef engine);
 
-        [DllImport("VroomJsNative")]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
 
         // Make sure the delegates we pass to the C++ engine won't fly away during a GC.

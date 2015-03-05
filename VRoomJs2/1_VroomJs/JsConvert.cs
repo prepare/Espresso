@@ -151,7 +151,8 @@ namespace VroomJs
         private JsObject JsDictionaryObject(JsValue v)
         {
             JsObject obj = new JsObject(this._context, v.Ptr);
-            for (int i = 0; i < (v.Length * 2); i += 2)
+            int len = v.Length * 2;
+            for (int i = 0; i < len; i += 2)
             {
                 var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
                 var value = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * (i + 1))), typeof(JsValue));
@@ -231,6 +232,17 @@ namespace VroomJs
             // because adding the same object more than one time acts more or less as
             // reference counting.
 
+
+
+            if (obj is NativeV8.NativeJsInstanceProxy)
+            {
+                //extension
+                NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
+                int keepAliveId = _context.KeepAliveAdd(obj);
+                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
+
+
+            }
             return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
     }

@@ -6,7 +6,9 @@ using System.Drawing;
 
 using System.Text;
 using System.Windows.Forms;
-
+using VroomJs;
+using NativeV8;
+using NUnit.Framework;
 
 namespace VRoomJsTest
 {
@@ -16,6 +18,9 @@ namespace VRoomJsTest
         {
             InitializeComponent();
 
+
+
+            //-----------------------------------------------------------------------            
             var asm = typeof(VroomJs.Tests.TestClass).Assembly;
             var testFixtureAttr = typeof(NUnit.Framework.TestFixtureAttribute);
             var testAttr = typeof(NUnit.Framework.TestAttribute);
@@ -23,8 +28,8 @@ namespace VRoomJsTest
             var tearDownAttr = typeof(NUnit.Framework.TearDownAttribute);
             var testCaseAttr = typeof(NUnit.Framework.TestCaseAttribute);
 
+            //-----------------------------------------------------------------------            
             List<TestCaseInstance> testCaseList = new List<TestCaseInstance>();
-
             foreach (var t in asm.GetTypes())
             {
                 var founds = t.GetCustomAttributes(testFixtureAttr, false);
@@ -78,6 +83,95 @@ namespace VRoomJsTest
                 //run test
                 testCaseMethod.RunTest();
             }
+        }
+
+        class TestMe1
+        {
+            public int B()
+            {
+                return 100;
+            }
+            public bool C()
+            {
+                return true;
+            }
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+            NativeV8JsInterOp.RegisterCallBacks();
+            NativeV8JsInterOp.TestCallBack();
+
+            JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
+            jstypedef.AddMember(new JsMethodDefinition("B", args =>
+            {
+                args.SetNativeObjResult(100);
+            }));
+            jstypedef.AddMember(new JsMethodDefinition("C", args =>
+            {
+                args.SetResult(true);
+            }));
+            //===============================================================
+            //create js engine and context
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                JsContext2 context2 = new JsContext2(ctx);
+                if (!jstypedef.IsRegisterd)
+                {
+                    context2.RegisterTypeDefinition(jstypedef);
+                }
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Start();
+                
+                TestMe1 t1 = new TestMe1(); 
+                var proxy = context2.CreateWrapper(t1, jstypedef);
+
+                for (int i = 2000; i >= 0; --i)
+                {                  
+                    context2.SetParameter("x", proxy); 
+                    object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+                }
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+                //Assert.That(result, Is.EqualTo(100));
+            }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+            NativeV8JsInterOp.RegisterCallBacks();
+            NativeV8JsInterOp.TestCallBack();
+            //create js engine and context
+            
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Start();
+
+                TestMe1 t1 = new TestMe1();
+
+                for (int i = 2000; i >= 0; --i)
+                {  
+                    ctx.SetVariable("x", t1);
+                    object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+                }
+                stwatch.Stop();
+                Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+                //Assert.That(result, Is.EqualTo(100)); 
+            }
+
+
+
         }
     }
 }

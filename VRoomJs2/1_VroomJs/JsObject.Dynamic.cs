@@ -102,6 +102,7 @@ namespace VroomJs
 
     }
 
+
     public class JsObject : DynamicObject, IDisposable
     {
         public JsObject(JsContext context, IntPtr ptr)
@@ -183,6 +184,18 @@ namespace VroomJs
         }
 
         #endregion
+    }
+
+
+    //---------------------------------------------------------------------------------------------
+    public class JsWrapObject : JsObject
+    {
+        NativeV8.JsTypeDefinition jsTypeDef;
+        public JsWrapObject(JsContext context, IntPtr ptr, NativeV8.JsTypeDefinition jsTypeDef)
+            : base(context, ptr)
+        {
+            this.jsTypeDef = jsTypeDef;
+        }
     }
 }
 
