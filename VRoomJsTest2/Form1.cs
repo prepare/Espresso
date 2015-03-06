@@ -119,7 +119,7 @@ namespace VRoomJsTest
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
-                 
+
                 if (!jstypedef.IsRegisterd)
                 {
                     ctx.RegisterTypeDefinition(jstypedef);
@@ -245,12 +245,15 @@ namespace VRoomJsTest
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
+                var argCount = args.ArgCount;
+
                 args.SetResult(100);
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>
             {
                 args.SetResult(true);
             }));
+
             //----------------------------------------------------- 
             jstypedef.AddMember(new JsPropertyDefinition("D",
                 args =>
@@ -258,6 +261,7 @@ namespace VRoomJsTest
                     //getter
                     TestMe1 t2 = new TestMe1();
                     args.SetResultObj(t2);
+
                 },
                 args =>
                 {
@@ -293,12 +297,14 @@ namespace VRoomJsTest
                 ctx.SetVariable("x", proxy);
 
                 //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
-                string testsrc = "(function(){if(x.D!= null){ x.E=300; return  x.B();}else{return 0;}})()";
+                //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
+                string testsrc = "x.B(x.D,15);";
+
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
-                //Assert.That(result, Is.EqualTo(100));
+
             }
         }
     }

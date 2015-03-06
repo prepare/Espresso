@@ -4,11 +4,11 @@
 #include <v8.h>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
-using namespace v8;
+using namespace v8; 
 #include "bridge2.h"
 
 del02 managedListner; //for debug 
-  
+
 
 void RegisterManagedCallback(void* funcPtr,int callbackKind)
 {	
@@ -20,10 +20,10 @@ void RegisterManagedCallback(void* funcPtr,int callbackKind)
 		}break;
 	case 1:
 		{
-			 
+
 		}break;
 	} 
-};
+} 
 
 int TestCallBack()
 {
@@ -31,119 +31,79 @@ int TestCallBack()
 	memset(&a,0,sizeof(MetCallingArgs));
 	managedListner(0,L"OKOK001",&a);
 	return 1;
-};
+} 
 
 void ResultSetBool(MetCallingArgs* callingArgs,bool value)
 {
-	callingArgs->resultKind = mt_bool;
-	callingArgs->possibleValue.v_bool = value;
-};
+	jsvalue result;
+	result.type = JSVALUE_TYPE_BOOLEAN;
+	result.value.i32 =  value ? 1: 0;
+	callingArgs->result =  result;
+} 
 void ResultSetInt32(MetCallingArgs* callingArgs,int value)
-{
-	callingArgs->resultKind =mt_int32;
-	callingArgs->possibleValue.int32 = value;
-};
+{  
+	jsvalue result;
+	result.type = JSVALUE_TYPE_INTEGER;
+	result.value.i32 =  value;
+	callingArgs->result =  result; 
+} 
 void ResultSetFloat(MetCallingArgs* callingArgs,float value)
-{	
-	callingArgs->resultKind =mt_float;
-	callingArgs->possibleValue.fl32 = value;
-};
+{		
+	jsvalue result;
+	result.type = JSVALUE_TYPE_NUMBER;
+	result.value.num =  value;
+	callingArgs->result =  result;  
+}
 void ResultSetDouble(MetCallingArgs* callingArgs,double value)
-{
-	callingArgs->resultKind =mt_double;
-	callingArgs->possibleValue.fl64 = value;
-};
+{ 
+	jsvalue result;
+	result.type = JSVALUE_TYPE_NUMBER;
+	result.value.num =  value;
+	callingArgs->result =  result; 
+}
 void ResultSetString(MetCallingArgs* callingArgs,wchar_t* value)
 {	
-	callingArgs->resultKind =mt_string;
-	callingArgs->possibleValue.str_value = value;
-};
+	jsvalue result;
+	result.type = JSVALUE_TYPE_STRING;
+	result.value.str =(uint16_t*)value;
+	callingArgs->result =  result;  
+} 
 void ResultSetNativeObject(MetCallingArgs* callingArgs,int proxyId)
 {
-	callingArgs->resultKind = mt_int32;
-	callingArgs->possibleValue.int32 = proxyId; 
-};
+	/*callingArgs->resultKind = JSVALUE_TYPE_JSTYPEDEF;
+	callingArgs->possibleValue.int32 = proxyId;*/
+}
+void ResultSetJsValue(MetCallingArgs* callingArgs,jsvalue value)
+{	
+	callingArgs->result =  value;   
+}
 
- 
 Handle<Value> DoMethodCall(const Arguments& args)
 {	 
-		//call to bridge with args  
-		HandleScope h01; 
-		//if(managedListner)
-		//{
-		//	//for debug
-		//	managedListner(0,L"data",0);
-		//}    
+	//call to bridge with args  
+	HandleScope h01; 
+	//if(managedListner)
+	//{
+	//	//for debug
+	//	managedListner(0,L"data",0);
+	//}    
 
-		MetCallingArgs callingArgs;
-		memset(&callingArgs,0,sizeof(MetCallingArgs));		 
-		callingArgs.args = &args;
-		
-        Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
-		CallingContext* cctx =  (CallingContext*)ext->Value();  
-		 
-		int m_index = cctx->mIndex;
-		
-		/*Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-		ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
-		*/
+	MetCallingArgs callingArgs;
+	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
+	callingArgs.args = &args;
 
+	Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
+	CallingContext* cctx =  (CallingContext*)ext->Value();  
 
-		cctx->ctx->myMangedCallBack(m_index,//method index
-			MET_, //method kind
-			&callingArgs); 
+	int m_index = cctx->mIndex;
+	 
 
-		switch(callingArgs.resultKind)
-		{	
-
-			case mt_bool:
-				{
-					//boolean
-					return h01.Close(v8::Boolean::New(callingArgs.possibleValue.v_bool));
-				}break;
-			case mt_int32://int32
-				{	 
-					return h01.Close(v8::Int32::New(callingArgs.possibleValue.int32)); 
-				}		 
-			case mt_float:
-				{   //float
-					return h01.Close(v8::Number::New(callingArgs.possibleValue.fl32));
-				}break;
-			case mt_double:
-				{   //double
-					return h01.Close(v8::Number::New(callingArgs.possibleValue.fl64));
-				}break;		
-			case mt_int64:
-				{	
-					//int64
-					return h01.Close(v8::Number::New(callingArgs.possibleValue.int64));
-				}
-			case mt_string:
-				{  
-					//string  wchar_t*			
-					//always send with null terminal char**				 
-					return h01.Close(v8::String::New((uint16_t*)callingArgs.possibleValue.str_value)); 
-				}break; 
-			case mt_externalObject:
-				{
-					////return v8::Persistent<v8::object>(result.pos
-					////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
-					//HandleScope handleScope;
-					//Handle<v8::Value> jsdata;
-					//auto obj = v8::Object::New();
-					//   jsdata= obj;				 
-					//   //return v8::Persistent<ExternalObject>::New(v8::Handle<ExternalObject>(0));
-					//return handleScope.Close(jsdata);				 
-					return v8::Number::New(0);
-				}break;
-			default:
-				{
-					return h01.Close(v8::Undefined());
-				}
-		} 
-	  
-	return h01.Close(v8::Undefined());
-};
+	cctx->ctx->myMangedCallBack(m_index,//method index
+		MET_, //method kind
+		&callingArgs); 
+	return cctx->ctx->AnyToV8(callingArgs.result);
+	 
+}
 
 
 ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
@@ -178,17 +138,17 @@ ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalType
 	}
 	(*context_)->Exit();
 	return handler;
-};
+}
 
 ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 	return engineContext->CreateWrapperForManagedObject(mIndex,externalTypeDef); 
-}; 
+} 
 
 int GetManagedIndex(ManagedObjRef* externalManagedHandler)
 {
 	return  ((ManagedObjRef*)externalManagedHandler)->managedIndex;
-};
+}
 void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
 {	
 	delete externalManagedHandler;
@@ -201,7 +161,7 @@ Handle<Value>
 	//name may be method or field 
 
 	wstring name = (wchar_t*) *String::Value(iName);
-	
+
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 
@@ -230,118 +190,65 @@ Handle<Value>
 	//if ((wrapper->GetOptions() & SetParameterOptions::RejectUnknownProperties) == SetParameterOptions::RejectUnknownProperties)
 	//	return v8::ThrowException(JavascriptInterop::ConvertToV8("Unknown member: " + gcnew System::String((wchar_t*) *String::Value(iName))));
 	return Handle<Value>();
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
 {
 
-	 HandleScope h01;  	
+	HandleScope h01;  	
 
-	 Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
-	 CallingContext* cctx =  (CallingContext*)ext->Value(); 
- 
-	 //int m_index  = info.Data()->Int32Value();	 
-	 int m_index = cctx->mIndex;
-	 Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-	 ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
+	Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
+	CallingContext* cctx =  (CallingContext*)ext->Value(); 
 
-		   	   
-		
+	//int m_index  = info.Data()->Int32Value();	 
+	int m_index = cctx->mIndex;
+	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
+	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();; 
 
-	 MetCallingArgs callingArgs;
-     memset(&callingArgs,0,sizeof(MetCallingArgs)); 
-		 
-	 
-	 cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
-
-		switch(callingArgs.resultKind)
-		{
-
-		case mt_bool:
-			{
-				//boolean
-				return h01.Close(v8::Boolean::New(callingArgs.possibleValue.v_bool));
-			}break;
-		case mt_int32://int32
-			{	 
-				return h01.Close(v8::Int32::New(callingArgs.possibleValue.int32)); 
-			}		 
-		case mt_float:
-			{   //float
-				return h01.Close(v8::Number::New(callingArgs.possibleValue.fl32));
-			}break;
-		case mt_double:
-			{   //double
-				return h01.Close(v8::Number::New(callingArgs.possibleValue.fl64));
-			}break;		
-		case mt_int64:
-			{	//int64
-				return h01.Close(v8::Number::New(callingArgs.possibleValue.int64));
-			}
-		case mt_string:
-			{  
-				//string  wchar_t*			
-				//always send with null terminal char**				 
-				return h01.Close(v8::String::New((uint16_t*)callingArgs.possibleValue.str_value)); 
-			}break; 
-		case mt_externalObject:
-			{
-				////return v8::Persistent<v8::object>(result.pos
-				////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
-				//HandleScope handleScope;
-				//Handle<v8::Value> jsdata;
-				//auto obj = v8::Object::New();
-				//   jsdata= obj;				 
-				//   //return v8::Persistent<ExternalObject>::New(v8::Handle<ExternalObject>(0));
-				//return handleScope.Close(jsdata);				 
-				return v8::Number::New(0);
-			}break;
-		default:
-			{
-				return h01.Close(v8::Undefined());
-			}
-		} 
-	 
-	return h01.Close(v8::Undefined()); 
+	MetCallingArgs callingArgs;
+	memset(&callingArgs,0,sizeof(MetCallingArgs));  
+	cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
+	
+	return cctx->ctx->AnyToV8(callingArgs.result); 
 }
- 
+
 void DoSetterProperty(Local<String> propertyName,
-                     Local<Value> value,
-                     const AccessorInfo& info)
+	Local<Value> value,
+	const AccessorInfo& info)
 {
 	jsvalue setvalue;
 	HandleScope h01;  
 
 	Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value(); 
- 
-	 //int m_index  = info.Data()->Int32Value();	 
+
+	//int m_index  = info.Data()->Int32Value();	 
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-    ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();
+	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();
 
 	////int m_index  = info.Data()->Int32Value();	 
 	//Handle<v8::External> external = Handle<v8::External>::Cast(info.Holder()->GetInternalField(0));
 	//ManagedObjRef* managedObjRef= (ManagedObjRef*)external->Value();;
 	//
-	 
-	  	  
-		//jsvalue setvalue;
-	 Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
-	 MetCallingArgs callingArgs;
-	 memset(&callingArgs,0,sizeof(MetCallingArgs));  
-	 setvalue= cctx->ctx->ConvAnyFromV8(value,obj); 
-	 
-	 callingArgs.v = &setvalue; 
-	 cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs);  
-	 
+
+
+	//jsvalue setvalue;
+	Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
+	MetCallingArgs callingArgs;
+	memset(&callingArgs,0,sizeof(MetCallingArgs));  
+	setvalue= cctx->ctx->ConvAnyFromV8(value,obj); 
+
+	callingArgs.result = setvalue; 
+	cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs);  
+
 }
 
 Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 {
 	//TODO: implement this ...
-	
+
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
@@ -407,7 +314,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//create new object template
 	Handle<ObjectTemplate> objTemplate = ObjectTemplate::New();  
 	objTemplate->SetInternalFieldCount(1);//store native instance
-	
+
 	//--------------------------------------------------------------
 
 	//read with stream
@@ -447,7 +354,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 	for(int i=0;i< nfields;++i)
 	{
-		
+
 		int flags= binReader.ReadInt16();
 		int fieldId= binReader.ReadInt16();		
 		std::wstring fieldname= binReader.ReadUtf16String(); 
@@ -464,7 +371,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		int flags= binReader.ReadInt16();
 		int methodId= binReader.ReadInt16();  
 		std::wstring metName= binReader.ReadUtf16String();  
-		 
+
 
 		CallingContext* callingContext= new CallingContext();		 
 		callingContext->ctx = this;
@@ -473,13 +380,13 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 		Handle<FunctionTemplate> funcTemplate= FunctionTemplate::New(DoMethodCall,wrap);	 
 		objTemplate->Set(String::New((uint16_t*)(metName.c_str())),funcTemplate);
- 
+
 		//if(managedListner){ //--if valid pointer 
 		//	metName.append(L"-met");
 		//	managedListner(0,metName.c_str() ,0);
 		//}  
 	} 
-	
+
 	//7. properties and indexer
 
 	int nProperties = binReader.ReadInt16();
@@ -495,7 +402,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		callingContext->ctx = this;
 		callingContext->mIndex = property_id;		
 		auto wrap = v8::External::New(callingContext);
-		  
+
 		objTemplate->SetAccessor(String::New((uint16_t*)(propName.c_str())),
 			DoGetterProperty,
 			DoSetterProperty,
@@ -572,5 +479,9 @@ ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
 }
 void ExternalTypeDefinition:: ReadTypeDefinitionFromStream(BinaryStreamReader* reader)
 { 
+}
+int ArgCount(MetCallingArgs* args)
+{
+	return args->args->Length();
 }
 //====================================================== 

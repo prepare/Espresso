@@ -241,8 +241,17 @@ namespace VroomJs
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
 
-            Type type = obj.GetType();
+            if (obj is NativeV8.NativeJsInstanceProxy)
+            {
+                //extension
+                NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
+                int keepAliveId = _context.KeepAliveAdd(obj);
+                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
+            }
 
+
+
+            Type type = obj.GetType();
             // Check for nullable types (we will cast the value out of the box later).
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -304,17 +313,8 @@ namespace VroomJs
             // _keepalives list, to make sure the GC won't collect it while still in
             // use by the unmanaged Javascript engine. We don't try to track duplicates
             // because adding the same object more than one time acts more or less as
-            // reference counting.
+            // reference counting. 
 
-
-
-            if (obj is NativeV8.NativeJsInstanceProxy)
-            {
-                //extension
-                NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
-                int keepAliveId = _context.KeepAliveAdd(obj);
-                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
-            }
             return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
     }

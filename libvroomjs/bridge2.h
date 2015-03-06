@@ -13,41 +13,20 @@
 using namespace v8; 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int mt_bool=1;
-const int mt_int32=2;
-const int mt_float=3;
-const int mt_double=4;
-const int mt_int64=5;
-const int mt_string=6; 
-const int mt_externalObject=7;
-//-----------------------------
+
 const int MET_=0;
 const int MET_GETTER=1;
 const int MET_SETTER=2;
 
 extern "C"{
 
-
-
- 
+	 
 	typedef struct MetCallingArgs{
 		
 		//-----------------------
 		//calling args 
-		const v8::Arguments* args;
-		//-----------------------
-		//return result 
-		int resultKind;
-		union{
-			bool v_bool;
-			int int32;
-			long long int64; 
-			double fl64;
-			float fl32;	 
-			wchar_t* str_value; 
-		}possibleValue;
-		int length;//str_length
-		jsvalue* v;
+		const v8::Arguments* args; 
+		struct jsvalue result;
 
 	} MetCallingArgs_;
 	   
@@ -91,6 +70,7 @@ extern "C"{
 	EXPORT void ContextRegisterManagedCallback(JsContext* jsContext,void* callback,int callBackKind);
 
 	//--------------------------------------------------------------------- 
+	EXPORT int ArgCount(MetCallingArgs* args);
 	EXPORT int ArgGetInt32(MetCallingArgs* args,int index);
 	EXPORT int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output);
 	EXPORT int ArgGetStringLen(MetCallingArgs* args,int index);
@@ -101,7 +81,8 @@ extern "C"{
 	EXPORT void ResultSetFloat(MetCallingArgs* result,float value);
 	EXPORT void ResultSetDouble(MetCallingArgs* result,double value);
 	EXPORT void ResultSetString(MetCallingArgs* result,wchar_t* value);
-	EXPORT void ResultSetNativeObject(MetCallingArgs* result,int proxyId);
+	EXPORT void ResultSetNativeObject(MetCallingArgs* result,int proxyId);	
+	EXPORT void ResultSetJsValue(MetCallingArgs* result,jsvalue value);
 	//--------------------------------------------------------------------- 
 
 

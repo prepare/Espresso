@@ -61,7 +61,9 @@ using namespace v8;
 #define JSVALUE_TYPE_DICT           15
 #define JSVALUE_TYPE_ERROR          16
 #define JSVALUE_TYPE_FUNCTION       17
+
 #define JSVALUE_TYPE_JSTYPEDEF      18 //my extension
+#define JSVALUE_TYPE_INTEGER64      19 //my extension
 
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
@@ -321,7 +323,7 @@ class JsContext {
 	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
 	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
-
+	Handle<Value> JsContext::AnyToV8(jsvalue v);
 
 	inline int32_t GetId() {
 		return id_;

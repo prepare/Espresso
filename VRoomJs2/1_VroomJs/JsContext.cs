@@ -110,6 +110,10 @@ namespace VroomJs
             proxyStore = new NativeObjectProxyStore(this);
 
         }
+        internal JsConvert Converter
+        {
+            get { return this._convert; }
+        }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
         {
 
@@ -917,7 +921,8 @@ namespace VroomJs
             jsvalue_dispose(b);
             // TODO: Check the result of the operation for errors.
         }
-
+        //------------------------------------------------------------------
+       
         public void SetVariable(string name, string value)
         {
             if (name == null)

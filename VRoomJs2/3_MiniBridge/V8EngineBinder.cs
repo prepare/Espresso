@@ -280,6 +280,14 @@ namespace NativeV8
         {
             this.context = context;
             this.metArgsPtr = metArgsPtr;
+        } 
+        public int ArgCount
+        {
+            get
+            {
+
+                return NativeV8JsInterOp.ArgCount(this.metArgsPtr);
+            }
         }
         public string GetArgAsString(int index)
         {
@@ -289,7 +297,9 @@ namespace NativeV8
         {
             return NativeV8JsInterOp.ArgGetInt32(this.metArgsPtr, index);
         }
-        //------------------------
+
+
+        //--------------------------------------------------------------------
         public void SetResult(bool value)
         {
             NativeV8JsInterOp.ResultSetBool(metArgsPtr, value);
@@ -310,13 +320,17 @@ namespace NativeV8
         {
             NativeV8JsInterOp.ResultSetFloat(metArgsPtr, value);
         }
-        public void SetResultObj(object result)
-        {
-
-            //NativeV8JsInterOp.ResultSetNativeObject(metArgsPtr, value);
+        public void SetResultNull()
+        { 
+            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr, 
+                this.context.Converter.ToJsValueNull()); 
         }
-
-        //------------------------
+        public void SetResultObj(object result)
+        {         
+            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
+                this.context.Converter.AnyToJsValue(result)); 
+        }
+        
     }
 
 
@@ -510,6 +524,10 @@ namespace NativeV8
             IntPtr unmanagedEnginePtr, int mIndex,
             void* stream, int length);
 
+        //---------------------------------------------------------------------------------
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ArgCount(IntPtr unmanaedArgPtr);
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ArgGetInt32(IntPtr unmanaedArgPtr, int argIndex);
 
@@ -531,8 +549,13 @@ namespace NativeV8
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetFloat(IntPtr unmageReturnResult, float value);
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetNativeObject(IntPtr unmageReturnResult, int proxyIndex);
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void ResultSetJsValue(IntPtr unmageReturnResult, JsValue jsvalue);
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReleaseWrapper(IntPtr externalManagedHandler);
