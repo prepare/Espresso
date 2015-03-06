@@ -82,11 +82,11 @@ namespace VroomJs
         static internal extern JsValue jscontext_invoke(HandleRef engine, IntPtr funcPtr, IntPtr thisPtr, JsValue args);
 
         readonly int _id;
-        readonly JsEngine _engine; 
-        readonly NativeV8.ManagedMethodCallDel engineMethodCallbackDel ;
+        readonly JsEngine _engine;
+        readonly NativeV8.ManagedMethodCallDel engineMethodCallbackDel;
 
-        static List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
-        static List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
+        List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
+        List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
 
 
 
@@ -129,7 +129,7 @@ namespace VroomJs
 
         }
 
-        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
+        void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
         {
             switch (methodKind)
             {

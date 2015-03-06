@@ -747,7 +747,8 @@ namespace NativeV8
                 //3. method
                 //4. indexer get/set   
                 binWriter.Write((short)1);//start marker
-                //data...
+                 
+
                 context.myjsContext.CollectionTypeMembers(jsTypeDefinition);
                 //------------------------------------------------
                  

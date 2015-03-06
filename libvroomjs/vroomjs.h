@@ -331,7 +331,7 @@ class JsContext {
 
 
 	
-
+	del_JsBridge myMangedCallBack;
  private:             
     inline JsContext() {
 		INCREMENT(js_mem_debug_context_count);
@@ -341,7 +341,7 @@ class JsContext {
     Isolate *isolate_;
 	JsEngine *engine_;
 	Persistent<Context> *context_;
-	del_JsBridge myMangedCallBack;
+	
 	
 };
 
@@ -381,7 +381,7 @@ class CallingContext
 {
 public:
 	int mIndex;
-	JsEngine* engine;
+	JsContext* ctx;
 };
 //------------------------------------------------------------
 class ManagedObjRef

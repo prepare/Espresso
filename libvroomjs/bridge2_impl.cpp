@@ -8,8 +8,7 @@ using namespace v8;
 #include "bridge2.h"
 
 del02 managedListner; //for debug 
-del_JsBridge managedJsBridge;
-//----------------- 
+  
 
 void RegisterManagedCallback(void* funcPtr,int callbackKind)
 {	
@@ -21,7 +20,7 @@ void RegisterManagedCallback(void* funcPtr,int callbackKind)
 		}break;
 	case 1:
 		{
-			managedJsBridge=  (del_JsBridge)funcPtr;
+			 
 		}break;
 	} 
 };
@@ -74,12 +73,9 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 	//{
 	//	//for debug
 	//	managedListner(0,L"data",0);
-	//}  
+	//}   
 
-
-
-	if(managedJsBridge)
-	{  	   
+	  	   
 
 		MetCallingArgs callingArgs;
 		memset(&callingArgs,0,sizeof(MetCallingArgs));		 
@@ -87,15 +83,16 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 		
         Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
 		CallingContext* cctx =  (CallingContext*)ext->Value(); 
- 
+		
 		 //int m_index  = info.Data()->Int32Value();	 
 		int m_index = cctx->mIndex;
+		
 		/*Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 		ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 		*/
 
 
-		managedJsBridge(m_index,//method index
+		cctx->ctx->myMangedCallBack(m_index,//method index
 			MET_, //method kind
 			&callingArgs); 
 
@@ -147,7 +144,7 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 					return h01.Close(v8::Undefined());
 				}
 		} 
-	}
+	  
 	return h01.Close(v8::Undefined());
 };
 
@@ -252,15 +249,14 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 	 Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	 ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 
-	
-	if(managedJsBridge)
-	{  	   
+		   	   
 		
 
-		MetCallingArgs callingArgs;
-		memset(&callingArgs,0,sizeof(MetCallingArgs)); 
+	 MetCallingArgs callingArgs;
+     memset(&callingArgs,0,sizeof(MetCallingArgs)); 
 		 
-		managedJsBridge(m_index,MET_GETTER, &callingArgs); 
+	 
+	 cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
 
 		switch(callingArgs.resultKind)
 		{
@@ -309,7 +305,7 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 				return h01.Close(v8::Undefined());
 			}
 		} 
-	}
+	 
 	return h01.Close(v8::Undefined()); 
 }
 
@@ -481,16 +477,16 @@ void DoSetterProperty(Local<String> propertyName,
 	//Handle<v8::External> external = Handle<v8::External>::Cast(info.Holder()->GetInternalField(0));
 	//ManagedObjRef* managedObjRef= (ManagedObjRef*)external->Value();;
 	//
-	if(managedJsBridge)
-	{  	  
+	 
+	  	  
 		//jsvalue setvalue;
-		Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
-		MetCallingArgs callingArgs;
-		memset(&callingArgs,0,sizeof(MetCallingArgs));  
-		setvalue= ConvAnyFromV8(value,obj); 
-		callingArgs.v = &setvalue; 
-		managedJsBridge(m_index,MET_SETTER, &callingArgs);  
-	} 
+	 Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
+	 MetCallingArgs callingArgs;
+	 memset(&callingArgs,0,sizeof(MetCallingArgs));  
+	 setvalue= ConvAnyFromV8(value,obj); 
+	 callingArgs.v = &setvalue; 
+	 cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs);  
+	 
 }
 
 Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
@@ -622,7 +618,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		 
 
 		CallingContext* callingContext= new CallingContext();		 
-		callingContext->engine = this->engine_;
+		callingContext->ctx = this;
 		callingContext->mIndex = methodId;		
 		auto wrap = v8::External::New(callingContext);
 
@@ -647,7 +643,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		std::wstring propName= binReader.ReadUtf16String(); 
 
 		CallingContext* callingContext= new CallingContext();		 
-		callingContext->engine = this->engine_;
+		callingContext->ctx = this;
 		callingContext->mIndex = property_id;		
 		auto wrap = v8::External::New(callingContext);
 		  
