@@ -74,8 +74,7 @@ extern "C"{
 	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
 
-	EXPORT int GetMiniBridgeVersion();
-
+	 
 	EXPORT ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ManagedObjRef* managedObjRef);
 	EXPORT int GetManagedIndex(ManagedObjRef* managedObjRef); 

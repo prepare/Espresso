@@ -559,8 +559,7 @@ namespace NativeV8
         static ManagedMethodCallDel engineMethodCallbackDel;
 
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetMiniBridgeVersion();
+        
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();

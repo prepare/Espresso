@@ -101,7 +101,7 @@ namespace VRoomJsTest
         private void button1_Click(object sender, EventArgs e)
         {
 
-            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+            
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
 
@@ -146,7 +146,7 @@ namespace VRoomJsTest
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+            
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
             //create js engine and context
@@ -173,7 +173,7 @@ namespace VRoomJsTest
 
         private void button3_Click(object sender, EventArgs e)
         {
-            var libVersion = NativeV8JsInterOp.GetMiniBridgeVersion();
+             
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
 
