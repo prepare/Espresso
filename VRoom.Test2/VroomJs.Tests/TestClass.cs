@@ -27,8 +27,38 @@ namespace VroomJs.Tests
 {
     public class TestClass
     {
-        public int Int32Property { get; set; }
-        public string StringProperty { get; set; }
+        int intProp;
+        string strProp;
+        bool boolProp;
+
+        public int Int32Property
+        {
+            get
+            {
+                return this.intProp;
+            }
+            set
+            {
+                this.intProp = value;
+            }
+        }
+        public string StringProperty
+        {
+            get { return this.strProp; }
+            set
+            {
+                this.strProp = value;
+            }
+        }
+        public bool BoolProperty
+        {
+            get { return this.boolProp; }
+            set
+            {
+                this.boolProp = value;
+            }
+        }
+
         public TestClass NestedObject { get; set; }
 
         public TestClass Method1(int i, string s)

@@ -81,7 +81,32 @@ namespace VroomJs.Tests
         [TestCase]
         public void SimpleExpressionDate()
         {
-            Assert.That(js.Execute("new Date(1971, 10, 19, 0, 42, 59)"), Is.EqualTo(new DateTime(1971, 10, 19, 0, 42, 59)));
+
+            //DateTime d1 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            //var d2 = d1.ToLocalTime();
+            //var ticks_ms = d1.Ticks / 10000;
+
+            //DateTime d3 = new DateTime(1970, 1, 1, 0, 0, 0);
+            //var d4 = d3.ToLocalTime();
+
+
+            Assert.That(js.Execute(
+                  "new Date('2014-01-01')"),//utc
+                  Is.EqualTo(new DateTime(2014, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+
+            Assert.That(js.Execute(
+                 "new Date(2014,1,1)"),//utc
+                 Is.EqualTo(new DateTime(2014, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+
+
+            //Assert.That(js.Execute("new Date('1971-10-19')"),
+            //               Is.EqualTo(new DateTime(1971, 10, 19, 0, 0, 0, DateTimeKind.Utc)));
+            //Assert.That(js.Execute("new Date(1971, 10, 19, 0, 42, 59)"),
+            //    Is.EqualTo(new DateTime(1971, 10, 19, 0, 42, 59, DateTimeKind.Utc)));
+        }
+        static DateTime FromJsDateTime(long jsMs)
+        {
+            return new DateTime(jsMs * 10000, DateTimeKind.Utc);
         }
 
         [TestCase]
@@ -146,14 +171,14 @@ namespace VroomJs.Tests
         [TestCase]
         public void SetGetVariableNull()
         {
-            js.SetVariable("foo", null);
+            js.SetVariableNull("foo");
             Assert.That(js.GetVariable("foo"), Is.Null);
         }
 
         [TestCase]
         public void SetGetVariableBoolean()
         {
-            js.SetVariable("foo", true);
+            js.SetVariableFromAny("foo", true);
             Assert.That(js.GetVariable("foo"), Is.EqualTo(true));
         }
 
@@ -190,7 +215,7 @@ namespace VroomJs.Tests
         public void SetGetVariableArray()
         {
             var v = new object[] { "foobar", 3.14159, 42 };
-            js.SetVariable("foo", v);
+            js.SetVariableFromAny("foo", v);
             js.Execute("foo[1] += 2.71828");
             object r = js.GetVariable("foo");
             Assert.That(r, Is.AssignableTo<object[]>());
@@ -209,8 +234,8 @@ namespace VroomJs.Tests
             // than what we created.
             var dt = new TestClass();
             for (int i = 0; i < 100000; i++)
-                js.SetVariable("foo", dt);
-            js.SetVariable("foo", null);
+                js.SetVariableFromAny("foo", dt);
+            js.SetVariableNull("foo");
             js.Flush();
             Assert.That(js.GetStats().KeepAliveUsedSlots, Is.LessThan(80000));
         }

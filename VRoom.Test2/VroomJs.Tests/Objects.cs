@@ -51,11 +51,21 @@ namespace VroomJs.Tests
             var t = new TestClass { Int32Property = v };
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 Assert.That(js.Execute("o.Int32Property"), Is.EqualTo(v));
             }
         }
-
+        [Test]
+        public void GetManagedBoolProperty()
+        {
+            var v = 42;
+            var t = new TestClass { BoolProperty = true, Int32Property = 30 };
+            using (JsContext js = jsEngine.CreateContext())
+            {
+                js.SetVariableFromAny("o", t);
+                Assert.That(js.Execute("(function(){if(o.BoolProperty){return 10; }else{ return 20;}})()"), Is.EqualTo(10));
+            }
+        }
         [Test]
         public void GetManagedStringProperty()
         {
@@ -63,7 +73,7 @@ namespace VroomJs.Tests
             var t = new TestClass { StringProperty = v };
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 Assert.That(js.Execute("o.StringProperty"), Is.EqualTo(v));
             }
         }
@@ -75,7 +85,7 @@ namespace VroomJs.Tests
             var t = new TestClass { NestedObject = new TestClass { StringProperty = v } };
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 Assert.That(js.Execute("o.NestedObject.StringProperty"), Is.EqualTo(v));
             }
         }
@@ -86,7 +96,7 @@ namespace VroomJs.Tests
             var t = new TestClass();
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 js.Execute("o.Int32Property = 42");
                 Assert.That(t.Int32Property, Is.EqualTo(42));
             }
@@ -98,7 +108,7 @@ namespace VroomJs.Tests
             var t = new TestClass();
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 js.Execute("o.StringProperty = 'This was set from Javascript!'");
                 Assert.That(t.StringProperty, Is.EqualTo("This was set from Javascript!"));
             }
@@ -111,8 +121,8 @@ namespace VroomJs.Tests
             var n = new TestClass();
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
-                js.SetVariable("n", n);
+                js.SetVariableFromAny("o", t);
+                js.SetVariableFromAny("n", n);
                 js.Execute("o.NestedObject = n; o.NestedObject.Int32Property = 42");
                 Assert.That(t.NestedObject, Is.EqualTo(n));
                 Assert.That(n.Int32Property, Is.EqualTo(42));
@@ -125,7 +135,7 @@ namespace VroomJs.Tests
             var t = new TestClass { Int32Property = 13, StringProperty = "Wow" };
             using (JsContext js = jsEngine.CreateContext())
             {
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 js.Execute("var r = o.Method1(29, '!')");
                 object r = js.GetVariable("r");
                 Assert.That(r, Is.AssignableTo<TestClass>());
@@ -167,7 +177,7 @@ namespace VroomJs.Tests
             using (JsContext js = jsEngine.CreateContext())
             {
                 var t = new TestClass();
-                js.SetVariable("o", t);
+                js.SetVariableFromAny("o", t);
                 js.Execute("var x = { nested: o }; x.nested.Int32Property = 42");
                 dynamic x = js.GetVariable("x");
 #if NET40
@@ -206,6 +216,9 @@ namespace VroomJs.Tests
 #endif
             }
         }
+
+
+
 
         [Test]
         public void CallJsProperty()

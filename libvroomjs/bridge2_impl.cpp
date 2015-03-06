@@ -445,7 +445,7 @@ int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output
 		{  
 			copyLen= outputLen;
 		}	
-		//str01->WriteUtf8(output,copyLen);
+		 
 		str01->Write(output,0,copyLen);
 		return strLen;	    
 	}  

@@ -347,28 +347,12 @@ class JsContext {
 	Persistent<Context> *context_;
 	
 	
-};
-
-////------------------------------------------------------------
-//class ManagedRef
-//{
-//public:
-//	 
-//	int managedIndex;
-//	v8::Persistent<v8::Object> v8InstanceHandler;
-//	ManagedRef(int mIndex);
-//}; 
+}; 
 
 class ManagedRef {
  public:
 
-    /*inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) :
-		engine_(engine), 
-		contextId_(contextId), 
-		id_(id) 
-	{
-		INCREMENT(js_mem_debug_managedref_count);
-	}*/
+    
     inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id, bool isJsTypeDef) :
 		engine_(engine), 
 		contextId_(contextId), 
@@ -443,10 +427,6 @@ public:
 	ExternalTypeDefinition(int mIndex);
 	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };
-
-
-
-
-
+ 
 
 #endif
