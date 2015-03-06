@@ -52,9 +52,9 @@ extern "C"{
 	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
 	
 	 
-	EXPORT ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
-	EXPORT void ReleaseWrapper(ManagedObjRef* managedObjRef);
-	EXPORT int GetManagedIndex(ManagedObjRef* managedObjRef); 
+	EXPORT ManagedRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
+	EXPORT void ReleaseWrapper(ManagedRef* managedObjRef);
+	EXPORT int GetManagedIndex(ManagedRef* managedObjRef); 
 	//---------------------------------------------------------------------
 	//for managed code to register its callback method
 	EXPORT void RegisterManagedCallback(void* callback,int callBackKind);   
@@ -77,7 +77,8 @@ extern "C"{
 	EXPORT int ArgGetInt32(MetCallingArgs* args,int index);
 	EXPORT int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output);
 	EXPORT int ArgGetStringLen(MetCallingArgs* args,int index);
-	EXPORT jsvalue ArgGetObject(MetCallingArgs* args,int index);
+	EXPORT jsvalue ArgGetThis(MetCallingArgs* args);
+	EXPORT jsvalue ArgGetObject(MetCallingArgs* args);
 	//--------------------------------------------------------------------- 
 	EXPORT void ResultSetBool(MetCallingArgs* result,bool value); 
 	EXPORT void ResultSetInt32(MetCallingArgs* result,int value);

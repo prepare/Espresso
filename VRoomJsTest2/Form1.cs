@@ -245,8 +245,10 @@ namespace VRoomJsTest
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
-                var argCount = args.ArgCount;
-                var arg0 = args.GetArgAsObject(0);
+                var argCount = args.ArgCount; 
+                var thisArg = args.GetThisArg();
+                var arg0 = args.GetArgAsObject(0); 
+
                 args.SetResult(100);
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>

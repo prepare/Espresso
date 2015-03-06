@@ -297,7 +297,7 @@ private:
 };
 
 class ExternalTypeDefinition;
-class ManagedObjRef;
+class ManagedRef;
 
 class JsContext {
  public:
@@ -320,7 +320,7 @@ class JsContext {
 	 
 	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
 	void RegisterManagedCallback(void* callback,int callBackKind);	
-	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
+	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
 	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
 	Handle<Value> JsContext::AnyToV8(jsvalue v);
@@ -349,35 +349,47 @@ class JsContext {
 	
 };
 
-//------------------------------------------------------------
-class ManagedObjRef
-{
-public:
-	 
-	int managedIndex;
-	v8::Persistent<v8::Object> v8InstanceHandler;
-	ManagedObjRef(int mIndex);
-}; 
+////------------------------------------------------------------
+//class ManagedRef
+//{
+//public:
+//	 
+//	int managedIndex;
+//	v8::Persistent<v8::Object> v8InstanceHandler;
+//	ManagedRef(int mIndex);
+//}; 
 
 class ManagedRef {
  public:
 
-    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) :
+    /*inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) :
 		engine_(engine), 
 		contextId_(contextId), 
 		id_(id) 
 	{
 		INCREMENT(js_mem_debug_managedref_count);
+	}*/
+    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id, bool isJsTypeDef) :
+		engine_(engine), 
+		contextId_(contextId), 
+		id_(id),
+		isJsTypeDef_(isJsTypeDef)
+	{	
+
+		INCREMENT(js_mem_debug_managedref_count);
 	}
-    
     inline int32_t Id() { return id_; }
-    
+    inline bool IsJsTypeDef() { return isJsTypeDef_; }
+
     Handle<Value> GetPropertyValue(Local<String> name);
     Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
 	Handle<Value> GetValueOf();
     Handle<Value> Invoke(const Arguments& args);
     Handle<Boolean> DeleteProperty(Local<String> name);
 	Handle<Array> EnumerateProperties();
+
+	v8::Persistent<v8::Object> v8InstanceHandler;
+	
 
     ~ManagedRef() 
 	{ 
@@ -393,6 +405,7 @@ class ManagedRef {
 	int32_t contextId_;
 	JsEngine *engine_;
 	int32_t id_;
+	bool isJsTypeDef_;
 };
 
 

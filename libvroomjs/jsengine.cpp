@@ -343,7 +343,8 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
     
 	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
     ManagedRef* ref = (ManagedRef*)wrap->Value();
-	v.type = JSVALUE_TYPE_MANAGED;
+	 
+	v.type = ref->IsJsTypeDef() ? JSVALUE_TYPE_JSTYPEDEF : JSVALUE_TYPE_MANAGED;	
     v.length = ref->Id();
     v.value.str = 0;
 
@@ -475,7 +476,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 			return Date::New(v.value.num);
 		case JSVALUE_TYPE_JSTYPEDEF:
 			{
-				ManagedObjRef* ext = (ManagedObjRef*)v.value.ptr;
+				ManagedRef* ext = (ManagedRef*)v.value.ptr;
 				return ext->v8InstanceHandler;
 			}
 		case JSVALUE_TYPE_ARRAY:
@@ -493,7 +494,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 				// cache. We just wrap it and the pointer to the engine inside an External. A
 				// managed error is still a CLR object so it is wrapped exactly as a normal
 				// managed object.
-				ManagedRef* ref = new ManagedRef(this, contextId, v.length);
+				ManagedRef* ref = new ManagedRef(this, contextId, v.length,false);
 				Local<Object> object = (*(managed_template_))->InstanceTemplate()->NewInstance();
 				if (object.IsEmpty()) {
 					return Null();

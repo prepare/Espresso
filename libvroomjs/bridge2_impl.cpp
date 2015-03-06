@@ -101,7 +101,7 @@ Handle<Value> DoMethodCall(const Arguments& args)
 }
 
 
-ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
+ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 
 	Locker locker(isolate_);
@@ -110,7 +110,7 @@ ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalType
 
 
 	HandleScope handleScope;	 
-	ManagedObjRef* handler= new ManagedObjRef(mIndex);
+	ManagedRef* handler= new ManagedRef(this->engine_,this->id_,mIndex,true);
 
 	//create js from template
 	if(externalTypeDef)
@@ -135,16 +135,16 @@ ManagedObjRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalType
 	return handler;
 }
 
-ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
+ManagedRef* CreateWrapperForManagedObject(JsContext* engineContext,int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
 	return engineContext->CreateWrapperForManagedObject(mIndex,externalTypeDef); 
 } 
 
-int GetManagedIndex(ManagedObjRef* externalManagedHandler)
+int GetManagedIndex(ManagedRef* externalManagedHandler)
 {
-	return  ((ManagedObjRef*)externalManagedHandler)->managedIndex;
+	return  ((ManagedRef*)externalManagedHandler)->Id();
 }
-void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
+void ReleaseWrapper(ManagedRef* externalManagedHandler)
 {	
 	delete externalManagedHandler;
 } 
@@ -158,7 +158,7 @@ Handle<Value>
 	wstring name = (wchar_t*) *String::Value(iName);
 
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
+	ManagedRef* extHandler=(ManagedRef*)external->Value();;
 
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 	//Handle<Function> function;
@@ -199,7 +199,7 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 	//int m_index  = info.Data()->Int32Value();	 
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();; 
+	ManagedRef* extHandler=(ManagedRef*)external->Value();; 
 
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));  
@@ -221,11 +221,11 @@ void DoSetterProperty(Local<String> propertyName,
 	//int m_index  = info.Data()->Int32Value();	 
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();
+	ManagedRef* extHandler=(ManagedRef*)external->Value();
 
 	////int m_index  = info.Data()->Int32Value();	 
 	//Handle<v8::External> external = Handle<v8::External>::Cast(info.Holder()->GetInternalField(0));
-	//ManagedObjRef* managedObjRef= (ManagedObjRef*)external->Value();;
+	//ManagedRef* managedObjRef= (ManagedRef*)external->Value();;
 	//
 
 
@@ -247,7 +247,7 @@ Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInf
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-	//Noesis::Javascript::ManagedObjRef* exH = (Noesis::Javascript::ManagedObjRef*)external->Value();
+	//Noesis::Javascript::ManagedRef* exH = (Noesis::Javascript::ManagedRef*)external->Value();
 
 	return Handle<Value>();
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
@@ -461,6 +461,15 @@ jsvalue ArgGetObject(MetCallingArgs* args,int index)
 	return cctx->ctx->ConvAnyFromV8(arg,obj);
 
 }
+jsvalue ArgGetThis(MetCallingArgs* args)
+{	
+	Local<v8::External> ext= Local<v8::External>::Cast( args->args->Data());
+	CallingContext* cctx =  (CallingContext*)ext->Value(); 
+		
+	Handle<Object> obj= Handle<Object>::Cast(args->args->This());
+	return cctx->ctx->ConvAnyFromV8(obj,obj);
+
+}
 int ArgGetStringLen(MetCallingArgs* args,int index)
 {	
 	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
@@ -471,12 +480,7 @@ int ArgGetStringLen(MetCallingArgs* args,int index)
 	}  
 	return 0;
 }
-//======================================================
-ManagedObjRef::ManagedObjRef(int mIndex)
-{
-	this->managedIndex = mIndex;
-}
-
+ 
 //====================================================== 
 ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
 {

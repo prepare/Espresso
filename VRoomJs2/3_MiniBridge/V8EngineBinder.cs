@@ -296,7 +296,19 @@ namespace NativeV8
         {
             return NativeV8JsInterOp.ArgGetInt32(this.metArgsPtr, index);
         }
+        public object GetThisArg()
+        {
+            var value = NativeV8JsInterOp.ArgGetThis(this.metArgsPtr);
+            switch (value.Type)
+            {
+                case JsValueType.Managed:
+                    return this.context.KeepAliveGet(value.Index);
+                case JsValueType.JsTypeWrap:
+                    return this.context.GetObjectProxy(value.Index);
+            }
 
+            return null;
+        }
         public object GetArgAsObject(int index)
         {
             var value = NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index);
@@ -305,7 +317,7 @@ namespace NativeV8
                 case JsValueType.Managed:
                     return this.context.KeepAliveGet(value.Index);
                 case JsValueType.JsTypeWrap:
-                    return null;
+                    return this.context.GetObjectProxy(value.Index);
             }
 
             return null;
@@ -551,36 +563,40 @@ namespace NativeV8
 
         //---------------------------------------------------------------------------------
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ArgCount(IntPtr unmanaedArgPtr);
+        public static extern int ArgCount(IntPtr callingArgsPtr);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ArgGetInt32(IntPtr unmanaedArgPtr, int argIndex);
+        internal static extern JsValue ArgGetThis(IntPtr callingArgsPtr);
+
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ArgGetInt32(IntPtr callingArgsPtr, int argIndex);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static extern string ArgGetString(IntPtr unmanaedArgPtr, int argIndex);
+        public static extern string ArgGetString(IntPtr callingArgsPtr, int argIndex);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern JsValue ArgGetObject(IntPtr unmanaedArgPtr, int index);
+        internal static extern JsValue ArgGetObject(IntPtr callingArgsPtr, int index);
         //---------------------------------------------------------------------------------
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetString(IntPtr unmageReturnResult, [MarshalAs(UnmanagedType.LPWStr)] string value);
+        public static extern void ResultSetString(IntPtr callingArgsPtr, [MarshalAs(UnmanagedType.LPWStr)] string value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetBool(IntPtr unmageReturnResult, bool value);
+        public static extern void ResultSetBool(IntPtr callingArgsPtr, bool value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetInt32(IntPtr unmageReturnResult, int value);
+        public static extern void ResultSetInt32(IntPtr callingArgsPtr, int value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetDouble(IntPtr unmageReturnResult, double value);
+        public static extern void ResultSetDouble(IntPtr callingArgsPtr, double value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetFloat(IntPtr unmageReturnResult, float value);
- 
+        public static extern void ResultSetFloat(IntPtr callingArgsPtr, float value);
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void ResultSetJsValue(IntPtr unmageReturnResult, JsValue jsvalue);
+        internal static extern void ResultSetJsValue(IntPtr callingArgsPtr, JsValue jsvalue);
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
