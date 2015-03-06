@@ -25,10 +25,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Timers;
+using NativeV8;
 
 namespace VroomJs
 {
@@ -80,12 +82,13 @@ namespace VroomJs
         static internal extern JsValue jscontext_invoke(HandleRef engine, IntPtr funcPtr, IntPtr thisPtr, JsValue args);
 
         readonly int _id;
-        readonly JsEngine _engine;
+        readonly JsEngine _engine; 
+        readonly NativeV8.ManagedMethodCallDel engineMethodCallbackDel ;
 
-        public JsEngine Engine
-        {
-            get { return _engine; }
-        }
+        static List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
+        static List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
+
+
 
         internal JsContext(int id, JsEngine engine, HandleRef engineHandle, Action<int> notifyDispose)
         {
@@ -96,8 +99,81 @@ namespace VroomJs
             _keepalives = new KeepAliveDictionaryStore();
             _context = new HandleRef(this, jscontext_new(id, engineHandle));
             _convert = new JsConvert(this);
+
+            engineMethodCallbackDel = new NativeV8.ManagedMethodCallDel(EngineListener_MethodCall);
+            NativeV8.NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
+            registerMethods.Add(null);//first is null
+            registerProperties.Add(null); //first is null
+
+        }
+        internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
+        {
+
+            List<JsMethodDefinition> methods = jsTypeDefinition.GetMethods();
+            int j = methods.Count;
+            for (int i = 0; i < j; ++i)
+            {
+                JsMethodDefinition met = methods[i];
+                met.SetMemberId(registerMethods.Count);
+                registerMethods.Add(met);
+            }
+
+            List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
+            j = properties.Count;
+            for (int i = 0; i < j; ++i)
+            {
+                var p = properties[i];
+                p.SetMemberId(registerProperties.Count);
+                registerProperties.Add(p);
+            }
+
         }
 
+        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
+        {
+            switch (methodKind)
+            {
+                case 1:
+                    {
+                        //property get        
+                        if (mIndex == 0) return;
+                        //------------------------------------------
+                        JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
+
+                        if (getterMethod != null)
+                        {
+                            getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        }
+
+                    } break;
+                case 2:
+                    {
+                        //property set
+                        if (mIndex == 0) return;
+                        //------------------------------------------
+                        JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
+                        if (setterMethod != null)
+                        {
+                            setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        }
+                    } break;
+                default:
+                    {
+                        if (mIndex == 0) return;
+                        JsMethodDefinition foundMet = registerMethods[mIndex];
+                        if (foundMet != null)
+                        {
+                            foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        }
+                    } break;
+            }
+
+
+        }
+        public JsEngine Engine
+        {
+            get { return _engine; }
+        }
         readonly HandleRef _context;
 
         public HandleRef Handle
@@ -200,7 +276,7 @@ namespace VroomJs
 
                 int ver = getVersion();
                 JsValue v = jscontext_execute(_context, code, name ?? "<Unnamed Script>");
-                
+
                 watch2.Stop();
                 res = _convert.FromJsValue(v);
 #if DEBUG_TRACE_API

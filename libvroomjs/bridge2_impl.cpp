@@ -543,6 +543,11 @@ Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const AccessorIn
 	return Handle<Value>();
 }
 
+void JsContext::RegisterManagedCallback(void* callback,int callBackKind)
+{
+	this->myMangedCallBack = (del_JsBridge)callback; 
+}
+
 ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char* stream,int streamLength)
 {
 
@@ -663,14 +668,18 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	return externalTypeDef; 
 } 
 
-ExternalTypeDefinition* ContextRegisterTypeDefintion(
-	JsContext* context, 
+ExternalTypeDefinition* ContextRegisterTypeDefinition(
+	JsContext* jsContext, 
 	int mIndex,  //managed index of type
 	const char* stream,
 	int streamLength)
 {   
-	return context->RegisterTypeDefinition(mIndex,stream,streamLength); 
+	return jsContext->RegisterTypeDefinition(mIndex,stream,streamLength); 
 }  
+void ContextRegisterManagedCallback(JsContext* jsContext,void* callback,int callBackKind)
+{
+	jsContext->RegisterManagedCallback(callback,callBackKind);
+}
 
 int ArgGetInt32(MetCallingArgs* args,int index)
 {	

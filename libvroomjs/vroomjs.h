@@ -89,8 +89,14 @@ extern long js_mem_debug_context_count;
 extern long js_mem_debug_managedref_count;
 extern long js_mem_debug_script_count;
 
+class MetCallingArgs;
+
 extern "C" 
-{
+{	
+	
+	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
+	//-------------------------------------------------------------------------------------------
+
     struct jsvalue
     {
         // 8 bytes is the maximum CLR alignment; by putting the union first and a
@@ -311,6 +317,8 @@ class JsContext {
 
 	 
 	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
+	void RegisterManagedCallback(void* callback,int callBackKind);
+
 	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 	
 	inline int32_t GetId() {
@@ -321,6 +329,9 @@ class JsContext {
 		DECREMENT(js_mem_debug_context_count);
 	}
 
+
+	
+
  private:             
     inline JsContext() {
 		INCREMENT(js_mem_debug_context_count);
@@ -329,8 +340,9 @@ class JsContext {
 	int32_t id_;
     Isolate *isolate_;
 	JsEngine *engine_;
-	Persistent<Context> *context_; 
-	 
+	Persistent<Context> *context_;
+	del_JsBridge myMangedCallBack;
+	
 };
 
 

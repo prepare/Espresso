@@ -231,7 +231,9 @@ namespace VroomJs
         {
             CheckDisposed();
             int id = Interlocked.Increment(ref _currentContextId);
-            JsContext ctx = new JsContext(id, this, _engine, ContextDisposed);
+
+            JsContext ctx = new JsContext(id, this, _engine, ContextDisposed);  
+
             _aliveContexts.Add(id, ctx);
             return ctx;
         }

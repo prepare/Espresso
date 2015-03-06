@@ -556,10 +556,9 @@ namespace NativeV8
         //basic 
         static IntPtr hModuleV8;
         static ManagedListenerDel engineListenerDel;
-        static ManagedMethodCallDel engineMethodCallbackDel;
+       
 
 
-        
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();
@@ -577,9 +576,11 @@ namespace NativeV8
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
         static extern void RegisterManagedCallback(IntPtr funcPointer, int callBackKind);
 
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
+        static extern void ContextRegisterManagedCallback(IntPtr contextPtr, IntPtr funcPointer, int callBackKind);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern unsafe IntPtr ContextRegisterTypeDefintion(
+        static extern unsafe IntPtr ContextRegisterTypeDefinition(
             IntPtr unmanagedEnginePtr, int mIndex,
             void* stream, int length);
 
@@ -610,17 +611,11 @@ namespace NativeV8
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReleaseWrapper(IntPtr externalManagedHandler);
 
-
-        static List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
-        static List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
-
+         
         static NativeV8JsInterOp()
         {
             //prepare 
-            engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
-            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
-            registerMethods.Add(null);  //first is null***
-            registerProperties.Add(null);  //first is null***
+            engineListenerDel = new ManagedListenerDel(EngineListener_Listen);  
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -629,10 +624,11 @@ namespace NativeV8
                  System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mListenerDel),
                 (int)ManagedCallbackKind.Listener);
         }
-        static void RegisterManagedMethodCall(ManagedMethodCallDel mMethodCall)
-        {
 
-            RegisterManagedCallback(
+        internal static void CtxRegisterManagedMethodCall(JsContext jsContext, ManagedMethodCallDel mMethodCall)
+        {
+            ContextRegisterManagedCallback(
+                jsContext.Handle.Handle,
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
                 (int)ManagedCallbackKind.MethodCall);
         }
@@ -652,7 +648,7 @@ namespace NativeV8
             //built in listener
             //------------------
             NativeV8JsInterOp.RegisterManagedListener(engineListenerDel);
-            NativeV8JsInterOp.RegisterManagedMethodCall(engineMethodCallbackDel);
+            //NativeV8JsInterOp.RegisterManagedMethodCall(engineMethodCallbackDel);
         }
         public static int GetLibVersion()
         {
@@ -671,70 +667,67 @@ namespace NativeV8
         {
 
         }
-        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
-        {
+        //static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
+        //{  
+        //    switch (methodKind)
+        //    {
+        //        case 1:
+        //            {
+        //                //property get        
+        //                if (mIndex == 0) return;
+        //                //------------------------------------------
+        //                JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
+
+        //                if (getterMethod != null)
+        //                {
+        //                    getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+        //                }
+
+        //            } break;
+        //        case 2:
+        //            {
+        //                //property set
+        //                if (mIndex == 0) return;
+        //                //------------------------------------------
+        //                JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
+        //                if (setterMethod != null)
+        //                {
+        //                    setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+        //                }
+        //            } break;
+        //        default:
+        //            {
+        //                if (mIndex == 0) return;
+        //                JsMethodDefinition foundMet = registerMethods[mIndex];
+        //                if (foundMet != null)
+        //                {
+        //                    foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
+        //                }
+        //            } break;
+        //    }
 
 
+        //}
+        //static void CollectMembers(JsTypeDefinition jsTypeDefinition)
+        //{
+        //    List<JsMethodDefinition> methods = jsTypeDefinition.GetMethods();
+        //    int j = methods.Count;
+        //    for (int i = 0; i < j; ++i)
+        //    {
+        //        JsMethodDefinition met = methods[i];
+        //        met.SetMemberId(registerMethods.Count);
+        //        registerMethods.Add(met);
+        //    }
 
-            switch (methodKind)
-            {
-                case 1:
-                    {
-                        //property get        
-                        if (mIndex == 0) return;
-                        //------------------------------------------
-                        JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
-
-                        if(getterMethod !=null)
-                        {
-                            getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
-                        }
-
-                    } break;
-                case 2:
-                    {
-                        //property set
-                        if (mIndex == 0) return;
-                        //------------------------------------------
-                        JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod; 
-                        if (setterMethod != null)
-                        {
-                            setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
-                        }
-                    } break;
-                default:
-                    {
-                        if (mIndex == 0) return;
-                        JsMethodDefinition foundMet = registerMethods[mIndex];
-                        if (foundMet != null)
-                        {
-                            foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
-                        }
-                    } break;
-            }
-
-
-        }
-        static void CollectMembers(JsTypeDefinition jsTypeDefinition)
-        {
-            List<JsMethodDefinition> methods = jsTypeDefinition.GetMethods();
-            int j = methods.Count;
-            for (int i = 0; i < j; ++i)
-            {
-                JsMethodDefinition met = methods[i];
-                met.SetMemberId(registerMethods.Count);
-                registerMethods.Add(met);
-            }
-
-            List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
-            j = properties.Count;
-            for (int i = 0; i < j; ++i)
-            {
-                var p = properties[i];
-                p.SetMemberId(registerProperties.Count);
-                registerProperties.Add(p);
-            }
-        }
+        //    List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
+        //    j = properties.Count;
+        //    for (int i = 0; i < j; ++i)
+        //    {
+        //        var p = properties[i];
+        //        p.SetMemberId(registerProperties.Count);
+        //        registerProperties.Add(p);
+        //    }
+        //}
 
         public static unsafe void RegisterTypeDef(JsContext2 context, JsTypeDefinition jsTypeDefinition)
         {
@@ -755,9 +748,9 @@ namespace NativeV8
                 //4. indexer get/set   
                 binWriter.Write((short)1);//start marker
                 //data...
-
+                context.myjsContext.CollectionTypeMembers(jsTypeDefinition);
                 //------------------------------------------------
-                CollectMembers(jsTypeDefinition);
+                 
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();
@@ -766,7 +759,7 @@ namespace NativeV8
                 {
 
                     proxObject.SetUnmanagedObjectPointer(
-                        ContextRegisterTypeDefintion(
+                        ContextRegisterTypeDefinition(
                         context.nativeEngineContextProxy.UnmanagedPtr,
                         0, tt, finalBuffer.Length));
                 }

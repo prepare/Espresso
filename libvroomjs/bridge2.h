@@ -71,9 +71,7 @@ extern "C"{
 
 
 	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
-	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
-	//-------------------------------------------------------------------------------------------
-
+	
 	 
 	EXPORT ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ManagedObjRef* managedObjRef);
@@ -85,11 +83,13 @@ extern "C"{
 	 
 	//create object template for describing managed type
 	//then return type definition handler to managed code
-	EXPORT ExternalTypeDefinition* ContextRegisterTypeDefintion(
-		JsContext* engineContext,
+	EXPORT ExternalTypeDefinition* ContextRegisterTypeDefinition(
+		JsContext* jsContext,
 		int mIndex, 
 		const char* stream,
 		int streamLength); 
+	EXPORT void ContextRegisterManagedCallback(JsContext* jsContext,void* callback,int callBackKind);
+
 	//--------------------------------------------------------------------- 
 	EXPORT int ArgGetInt32(MetCallingArgs* args,int index);
 	EXPORT int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output);
