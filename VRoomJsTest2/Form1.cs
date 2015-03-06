@@ -198,7 +198,7 @@ namespace VRoomJsTest
             jstypedef.AddMember(new JsPropertyDefinition("E",
                 args =>
                 {   //getter
-                    args.SetResult(true);
+                    args.SetResult(250);
                 },
                 args =>
                 {
@@ -227,7 +227,7 @@ namespace VRoomJsTest
                 //{
                 context2.SetParameter("x", proxy);
                 //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
-                object result = ctx.Execute("(function(){if(x.E){return  x.B();}else{return 0;}})()");
+                object result = ctx.Execute("(function(){if(x.D){ x.E=300; return  x.B();}else{return 0;}})()");
 
                 //}
                 stwatch.Stop();

@@ -312,8 +312,7 @@ class JsContext {
 	 
 	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
 	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
-	
-      
+	 
 	inline int32_t GetId() {
 		return id_;
 	}

@@ -237,8 +237,7 @@ Handle<Value>
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-Handle<Value> 
-	DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
+Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
 {
 
 	HandleScope h01;  
@@ -308,32 +307,182 @@ Handle<Value>
 }
 
 
+jsvalue ConvStringFromV8(Handle<Value> value)
+{
+    jsvalue v;
+    
+    Local<String> s = value->ToString();
+    v.length = s->Length();
+    v.value.str = new uint16_t[v.length+1];
+    if (v.value.str != NULL) {
+        s->Write(v.value.str);
+        v.type = JSVALUE_TYPE_STRING;
+    }
+
+    return v;
+}   
+
+jsvalue ConvWrappedFromV8(Handle<Object> obj)
+{
+    jsvalue v;
+       
+	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
+		v.type = JSVALUE_TYPE_WRAPPED;
+		v.length = 0;
+        // A Persistent<Object> is exactly the size of an IntPtr, right?
+		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
+		// We should even cast it to void* because C++ doesn't allow to put
+		// it in a union: going scary and scarier here.    
+		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
+	} else {
+
+		v.type = JSVALUE_TYPE_WRAPPED;
+		v.length = 0;
+        // A Persistent<Object> is exactly the size of an IntPtr, right?
+		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
+		// We should even cast it to void* because C++ doesn't allow to put
+		// it in a union: going scary and scarier here.    
+		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
+
+
+		//-------------------------------------------------------------------------
+		/*v.type = JSVALUE_TYPE_DICT;
+		Local<Array> names = obj->GetOwnPropertyNames();
+		v.length = names->Length();
+		jsvalue* values = new jsvalue[v.length * 2];
+		if (values != NULL) {
+			for(int i = 0; i < v.length; i++) {
+				int indx = (i * 2);
+				Local<Value> key = names->Get(i);
+				values[indx] = AnyFromV8(key);
+				values[indx+1] = AnyFromV8(obj->Get(key));
+			}
+			v.value.arr = values;
+		}*/
+	}
+
+	return v;
+} 
+
+jsvalue ConvManagedFromV8(Handle<Object> obj)
+{
+    jsvalue v;
+    
+	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
+    ManagedRef* ref = (ManagedRef*)wrap->Value();
+	v.type = JSVALUE_TYPE_MANAGED;
+    v.length = ref->Id();
+    v.value.str = 0;
+
+    return v;
+}
+
+
+jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
+{	
+    jsvalue v;
+    // Initialize to a generic error.
+    v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
+    v.length = 0;
+    v.value.str = 0;
+    
+    if (value->IsNull() || value->IsUndefined()) {
+        v.type = JSVALUE_TYPE_NULL;
+    }                
+    else if (value->IsBoolean()) {
+        v.type = JSVALUE_TYPE_BOOLEAN;
+        v.value.i32 = value->BooleanValue() ? 1 : 0;
+    }
+    else if (value->IsInt32()) {
+        v.type = JSVALUE_TYPE_INTEGER;
+        v.value.i32 = value->Int32Value();            
+    }
+    else if (value->IsUint32()) {
+        v.type = JSVALUE_TYPE_INDEX;
+        v.value.i64 = value->Uint32Value();            
+    }
+    else if (value->IsNumber()) {
+        v.type = JSVALUE_TYPE_NUMBER;
+        v.value.num = value->NumberValue();
+    }
+    else if (value->IsString()) {
+        v = ConvStringFromV8(value);
+    }
+    else if (value->IsDate()) {
+        v.type = JSVALUE_TYPE_DATE;
+        //v.value.num = value->NumberValue();		
+		v.value.i64 = value->IntegerValue();
+    }
+    else if (value->IsArray()) {
+        Handle<Array> object = Handle<Array>::Cast(value->ToObject());
+        v.length = object->Length();
+        jsvalue* arr = new jsvalue[v.length];
+        if (arr != NULL) {
+            for(int i = 0; i < v.length; i++) {
+                arr[i] = ConvAnyFromV8(object->Get(i),thisArg);
+            }
+            v.type = JSVALUE_TYPE_ARRAY;
+            v.value.arr = arr;
+        }
+    }
+    else if (value->IsFunction()) {
+		Handle<Function> function = Handle<Function>::Cast(value);
+		jsvalue* arr = new jsvalue[2];
+        if (arr != NULL) { 
+			arr[0].value.ptr = new Persistent<Object>(Persistent<Function>::New(function));
+			arr[0].length = 0;
+			arr[0].type = JSVALUE_TYPE_WRAPPED;
+			if (!thisArg.IsEmpty()) {
+				arr[1].value.ptr = new Persistent<Object>(Persistent<Object>::New(thisArg));
+				arr[1].length = 0;
+				arr[1].type = JSVALUE_TYPE_WRAPPED;
+			} else {
+				arr[1].value.ptr = NULL;
+				arr[1].length = 0;
+				arr[1].type = JSVALUE_TYPE_NULL;
+			}
+	        v.type = JSVALUE_TYPE_FUNCTION;
+            v.value.arr = arr;
+        }
+    }
+    else if (value->IsObject()) {
+        Handle<Object> obj = Handle<Object>::Cast(value);
+        if (obj->InternalFieldCount() == 1)
+            v = ConvManagedFromV8(obj);
+        else
+            v = ConvWrappedFromV8(obj);
+    } 
+	return v;
+}
+
+
 void DoSetterProperty(Local<String> propertyName,
                      Local<Value> value,
                      const AccessorInfo& info)
 {
+	jsvalue setvalue;
 	HandleScope h01;  
 
 	int m_index  = info.Data()->Int32Value();	 
-	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
-	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
+	Handle<v8::External> external = Handle<v8::External>::Cast(info.Holder()->GetInternalField(0));
+	ManagedObjRef* managedObjRef=(ManagedObjRef*)external->Value();;
 	
 	if(managedJsBridge)
-	{  	   
-
+	{  	  
+		//jsvalue setvalue;
+		Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
 		MetCallingArgs callingArgs;
-		memset(&callingArgs,0,sizeof(MetCallingArgs)); 
-		 
-		
-		managedJsBridge(m_index,MET_SETTER, &callingArgs); 
+		memset(&callingArgs,0,sizeof(MetCallingArgs));  
+		setvalue= ConvAnyFromV8(value,obj); 
+		callingArgs.v = &setvalue; 
+		managedJsBridge(m_index,MET_SETTER, &callingArgs);  
 	} 
 }
 
-Handle<Value>
-Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
+Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 {
-
-
+	//TODO: implement this ...
+	
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
@@ -349,10 +498,9 @@ Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Handle<Value>
-	IndexGetter(uint32_t iIndex, const AccessorInfo &iInfo)
+Handle<Value> IndexGetter(uint32_t iIndex, const AccessorInfo &iInfo)
 {
-
+	//TODO: implement this ...
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 	//Handle<Value> value;
@@ -364,10 +512,8 @@ Handle<Value>
 
 	// member not found
 	return Handle<Value>();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
+} 
+//////////////////////////////////////////////////////////////////////////////////////////////////// 
 Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const AccessorInfo &iInfo)
 {
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));

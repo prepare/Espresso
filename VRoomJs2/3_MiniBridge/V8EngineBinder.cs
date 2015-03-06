@@ -684,13 +684,24 @@ namespace NativeV8
                         //property get        
                         if (mIndex == 0) return;
                         //------------------------------------------
-                        JsPropertyDefinition property = registerProperties[mIndex];
-                        property.GetterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
+
+                        if(getterMethod !=null)
+                        {
+                            getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        }
 
                     } break;
                 case 2:
                     {
                         //property set
+                        if (mIndex == 0) return;
+                        //------------------------------------------
+                        JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod; 
+                        if (setterMethod != null)
+                        {
+                            setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                        }
                     } break;
                 default:
                     {
@@ -785,7 +796,7 @@ namespace NativeV8
         public static int GetManagedIndexFromNativePart(NativeObjectProxy proxyObj)
         {
             return GetManagedIndex(proxyObj.UnmanagedPtr);
-        } 
+        }
     }
 
 

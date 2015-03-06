@@ -47,7 +47,7 @@ extern "C"{
 			wchar_t* str_value; 
 		}possibleValue;
 		int length;//str_length
-
+		jsvalue* v;
 
 	} MetCallingArgs_;
 	   
