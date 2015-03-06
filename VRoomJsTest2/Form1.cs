@@ -133,7 +133,7 @@ namespace VRoomJsTest
 
                 for (int i = 2000; i >= 0; --i)
                 {
-                    ctx.SetVariable("x", proxy);
+                    ctx.SetVariableFromAny("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
                 stwatch.Stop();
@@ -162,7 +162,7 @@ namespace VRoomJsTest
 
                 for (int i = 2000; i >= 0; --i)
                 {
-                    ctx.SetVariable("x", t1);
+                    ctx.SetVariableFromAny("x", t1);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
                 stwatch.Stop();
@@ -224,7 +224,7 @@ namespace VRoomJsTest
 
                 //for (int i = 2000; i >= 0; --i)
                 //{
-                ctx.SetVariable("x", proxy);
+                ctx.SetVariableFromAny("x", proxy);
                 //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 object result = ctx.Execute("(function(){if(x.D){ x.E=300; return  x.B();}else{return 0;}})()");
 

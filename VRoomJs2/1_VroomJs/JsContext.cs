@@ -88,7 +88,7 @@ namespace VroomJs
         List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
         List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
 
-      
+
         NativeObjectProxyStore proxyStore;
 
         internal JsContext(int id, JsEngine engine, HandleRef engineHandle, Action<int> notifyDispose)
@@ -346,22 +346,7 @@ namespace VroomJs
             return res;
         }
 
-        public void SetVariable(string name, object value)
-        {
-            if (name == null)
-                throw new ArgumentNullException("name");
 
-            CheckDisposed();
-
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
-#if DEBUG_TRACE_API
-			Console.WriteLine("Cleaning up return value from set variable");
-#endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
-            // TODO: Check the result of the operation for errors.
-        }
 
         public void SetFunction(string name, Delegate func)
         {
@@ -374,7 +359,7 @@ namespace VroomJs
             {
                 del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
             }
-            SetVariable(name, del);
+            this.SetVariableFromAny(name, del);
         }
 
         public void Flush()
@@ -541,7 +526,7 @@ namespace VroomJs
                 if (dictionary.Contains(name))
                 {
                     result = dictionary[name];
-                    value = _convert.ToJsValue(result);
+                    value = _convert.AnyToJsValue(result);
                 }
                 else
                 {
@@ -565,7 +550,7 @@ namespace VroomJs
             if (pi != null)
             {
                 result = pi.GetValue(obj, null);
-                value = _convert.ToJsValue(result);
+                value = _convert.AnyToJsValue(result);
                 return true;
             }
 
@@ -574,7 +559,7 @@ namespace VroomJs
             if (fi != null)
             {
                 result = fi.GetValue(obj);
-                value = _convert.ToJsValue(result);
+                value = _convert.AnyToJsValue(result);
                 return true;
             }
 
@@ -597,7 +582,7 @@ namespace VroomJs
                     {
                         result = new WeakDelegate(obj, name);
                     }
-                    value = _convert.ToJsValue(result);
+                    value = _convert.AnyToJsValue(result);
                     return true;
                 }
             }
@@ -694,9 +679,9 @@ namespace VroomJs
                 if (mi != null)
                 {
                     object result = mi.Invoke(obj, new object[0]);
-                    return _convert.ToJsValue(result);
+                    return _convert.AnyToJsValue(result);
                 }
-                return _convert.ToJsValue(obj);
+                return _convert.AnyToJsValue(obj);
             }
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
@@ -719,7 +704,7 @@ namespace VroomJs
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
                     object[] constructorArgs = (object[])_convert.FromJsValue(args);
-                    return _convert.ToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
+                    return _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
                 }
 
                 WeakDelegate func = obj as WeakDelegate;
@@ -768,7 +753,7 @@ namespace VroomJs
                 try
                 {
                     object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                    return _convert.ToJsValue(result);
+                    return _convert.AnyToJsValue(result);
                 }
                 catch (TargetInvocationException e)
                 {
@@ -887,7 +872,7 @@ namespace VroomJs
             JsValue a = JsValue.Null; // Null value unless we're given args.
             if (args != null)
             {
-                a = _convert.ToJsValue(args);
+                a = _convert.AnyToJsValue(args);
             }
 
 
@@ -910,5 +895,136 @@ namespace VroomJs
         {
             proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
+
+
+
+
+
+        //------------------------------------------------------------------
+        public void SetVariableFromAny(string name, object value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.AnyToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+            // TODO: Check the result of the operation for errors.
+        }
+
+        public void SetVariable(string name, string value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        public void SetVariable(string name, int value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        public void SetVariable(string name, double value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        public void SetVariable(string name, long value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        public void SetVariable(string name, DateTime value)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(value);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        public void SetVariable(string name, NativeJsInstanceProxy proxy)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValue(proxy);
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+            // TODO: Check the result of the operation for errors.
+        }
+        public void SetVariableNull(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            JsValue a = _convert.ToJsValueNull();
+            JsValue b = jscontext_set_variable(_context, name, a);
+#if DEBUG_TRACE_API
+			Console.WriteLine("Cleaning up return value from set variable");
+#endif
+            jsvalue_dispose(a);
+            jsvalue_dispose(b);
+        }
+        //------------------------------------------------------------------
+
     }
 }

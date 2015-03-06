@@ -162,7 +162,81 @@ namespace VroomJs
         }
 #endif
 
-        public JsValue ToJsValue(object obj)
+
+        public JsValue ToJsValue(int value)
+        {
+            return new JsValue { Type = JsValueType.Integer, I32 = value };
+        }
+        public JsValue ToJsValue(long value)
+        {
+            return new JsValue { Type = JsValueType.Integer, I64 = value };
+        }
+        public JsValue ToJsValue(string value)
+        {  // We need to allocate some memory on the other side; will be free'd by unmanaged code.
+            return JsContext.jsvalue_alloc_string(value);
+        }
+        public JsValue ToJsValue(char c)
+        {
+            // We need to allocate some memory on the other side; will be free'd by unmanaged code.
+            return JsContext.jsvalue_alloc_string(c.ToString());
+        }
+        public JsValue ToJsValue(double value)
+        {
+            return new JsValue { Type = JsValueType.Number, Num = value };
+        }
+        public JsValue ToJsValue(float value)
+        {
+            return new JsValue { Type = JsValueType.Number, Num = value };
+        }
+        public JsValue ToJsValue(decimal value)
+        {
+            //data loss
+            return new JsValue { Type = JsValueType.Number, Num = (double)value };
+        }
+        public JsValue ToJsValue(bool value)
+        {
+            return new JsValue { Type = JsValueType.Boolean, I32 = value ? 1 : 0 };
+        }
+        public JsValue ToJsValue(DateTime dtm)
+        {
+            return new JsValue
+            {
+                Type = JsValueType.Date,
+                Num = Convert.ToInt64(dtm.Subtract(EPOCH).TotalMilliseconds)
+                /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
+            };
+        }
+
+        public JsValue ToJsValue(NativeV8.NativeJsInstanceProxy jsInstance)
+        {
+
+            //extension 
+            int keepAliveId = _context.KeepAliveAdd(jsInstance);
+            return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = jsInstance.UnmanagedPtr, Index = keepAliveId };
+
+        }
+        public JsValue ToJsValue(object[] arr)
+        {
+            int len = arr.Length;
+            JsValue v = JsContext.jsvalue_alloc_array(len);
+
+            if (v.Length != len)
+            {
+                throw new JsInteropException("can't allocate memory on the unmanaged side");
+            }
+
+            for (int i = 0; i < len; i++)
+            {
+                Marshal.StructureToPtr(AnyToJsValue(arr[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
+            }
+            return v;
+        }
+        public JsValue ToJsValueNull()
+        {
+            return new JsValue { Type = JsValueType.Null };
+        }
+
+        public JsValue AnyToJsValue(object obj)
         {
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
@@ -222,7 +296,7 @@ namespace VroomJs
                 if (v.Length != array.Length)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
                 for (int i = 0; i < array.Length; i++)
-                    Marshal.StructureToPtr(ToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
+                    Marshal.StructureToPtr(AnyToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
                 return v;
             }
 
@@ -240,8 +314,6 @@ namespace VroomJs
                 NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
                 int keepAliveId = _context.KeepAliveAdd(obj);
                 return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
-
-
             }
             return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }

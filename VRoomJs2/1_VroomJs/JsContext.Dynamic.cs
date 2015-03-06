@@ -82,7 +82,7 @@ namespace VroomJs
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsValue a = _convert.ToJsValue(value);
+            JsValue a = _convert.AnyToJsValue(value);
             JsValue v = jscontext_set_property_value(_context, obj.Handle, name, a);
             object res = _convert.FromJsValue(v);
             jsvalue_dispose(v);
@@ -107,7 +107,7 @@ namespace VroomJs
 
             JsValue a = JsValue.Null; // Null value unless we're given args.
             if (args != null)
-                a = _convert.ToJsValue(args);
+                a = _convert.AnyToJsValue(args);
 
             JsValue v = jscontext_invoke_property(_context, obj.Handle, name, a);
             object res = _convert.FromJsValue(v);
