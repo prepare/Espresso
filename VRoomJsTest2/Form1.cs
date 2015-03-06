@@ -119,21 +119,21 @@ namespace VRoomJsTest
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
-                JsContext2 context2 = new JsContext2(ctx);
+                 
                 if (!jstypedef.IsRegisterd)
                 {
-                    context2.RegisterTypeDefinition(jstypedef);
+                    ctx.RegisterTypeDefinition(jstypedef);
                 }
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Start();
 
                 TestMe1 t1 = new TestMe1();
-                var proxy = context2.CreateWrapper(t1, jstypedef);
+                var proxy = ctx.CreateWrapper(t1, jstypedef);
 
                 for (int i = 2000; i >= 0; --i)
                 {
-                    context2.SetParameter("x", proxy);
+                    ctx.SetVariable("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
                 stwatch.Stop();
@@ -211,8 +211,8 @@ namespace VRoomJsTest
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
-                JsContext2 context2 = new JsContext2(ctx); 
-                context2.RegisterTypeDefinition(jstypedef);
+
+                ctx.RegisterTypeDefinition(jstypedef);
 
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
@@ -220,11 +220,11 @@ namespace VRoomJsTest
                 stwatch.Start();
 
                 TestMe1 t1 = new TestMe1();
-                var proxy = context2.CreateWrapper(t1, jstypedef);
+                var proxy = ctx.CreateWrapper(t1, jstypedef);
 
                 //for (int i = 2000; i >= 0; --i)
                 //{
-                context2.SetParameter("x", proxy);
+                ctx.SetVariable("x", proxy);
                 //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 object result = ctx.Execute("(function(){if(x.D){ x.E=300; return  x.B();}else{return 0;}})()");
 
@@ -251,12 +251,10 @@ namespace VRoomJsTest
             {
                 args.SetResult(true);
             }));
-            
-
-
+            //----------------------------------------------------- 
             jstypedef.AddMember(new JsPropertyDefinition("D",
                 args =>
-                {   
+                {
                     //getter
                     TestMe1 t2 = new TestMe1();
                     args.SetResultObj(t2);
@@ -280,8 +278,8 @@ namespace VRoomJsTest
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
-                JsContext2 context2 = new JsContext2(ctx);
-                context2.RegisterTypeDefinition(jstypedef);
+
+                ctx.RegisterTypeDefinition(jstypedef);
 
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
@@ -289,15 +287,14 @@ namespace VRoomJsTest
                 stwatch.Start();
 
                 TestMe1 t1 = new TestMe1();
-                var proxy = context2.CreateWrapper(t1, jstypedef);
+                NativeJsInstanceProxy proxy = ctx.CreateWrapper(t1, jstypedef);
 
-                //for (int i = 2000; i >= 0; --i)
-                //{
-                context2.SetParameter("x", proxy);
-                //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
-                object result = ctx.Execute("(function(){if(x.D!= null){ x.E=300; return  x.B();}else{return 0;}})()");
 
-                //}
+                ctx.SetVariable("x", proxy);
+
+                //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
+                string testsrc = "(function(){if(x.D!= null){ x.E=300; return  x.B();}else{return 0;}})()";
+                object result = ctx.Execute(testsrc);
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());

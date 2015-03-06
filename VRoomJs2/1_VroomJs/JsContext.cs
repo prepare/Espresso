@@ -88,7 +88,8 @@ namespace VroomJs
         List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
         List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
 
-
+      
+        NativeObjectProxyStore proxyStore;
 
         internal JsContext(int id, JsEngine engine, HandleRef engineHandle, Action<int> notifyDispose)
         {
@@ -104,6 +105,9 @@ namespace VroomJs
             NativeV8.NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
             registerMethods.Add(null);//first is null
             registerProperties.Add(null); //first is null
+
+
+            proxyStore = new NativeObjectProxyStore(this);
 
         }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
@@ -142,7 +146,7 @@ namespace VroomJs
 
                         if (getterMethod != null)
                         {
-                            getterMethod.InvokeMethod(new ManagedMethodArgs(this,metArgs));
+                            getterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
 
                     } break;
@@ -896,6 +900,15 @@ namespace VroomJs
             if (e != null)
                 throw e;
             return res;
+        }
+
+        public NativeJsInstanceProxy CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
+        {
+            return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
+        }
+        public void RegisterTypeDefinition(JsTypeDefinition jsTypeDefinition)
+        {
+            proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
     }
 }

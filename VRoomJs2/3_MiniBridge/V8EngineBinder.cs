@@ -312,10 +312,10 @@ namespace NativeV8
         }
         public void SetResultObj(object result)
         {
-            //similar
 
             //NativeV8JsInterOp.ResultSetNativeObject(metArgsPtr, value);
         }
+
         //------------------------
     }
 
@@ -430,8 +430,8 @@ namespace NativeV8
     class NativeObjectProxyStore
     {
         List<NativeObjectProxy> exportList = new List<NativeObjectProxy>();
-        JsContext2 ownerContext;
-        public NativeObjectProxyStore(JsContext2 ownerContext)
+        JsContext ownerContext;
+        public NativeObjectProxyStore(JsContext ownerContext)
         {
             this.ownerContext = ownerContext;
         }
@@ -445,7 +445,7 @@ namespace NativeV8
             exportList.Add(proxyObject);
 
             //register
-            NativeV8JsInterOp.CreateNativePart(ownerContext.myjsContext, proxyObject);
+            NativeV8JsInterOp.CreateNativePart(ownerContext, proxyObject);
             return proxyObject;
         }
         public NativeObjectProxy CreateProxyForTypeDefinition(JsTypeDefinition jsTypeDefinition)
@@ -474,84 +474,6 @@ namespace NativeV8
     }
 
 
-
-    public class JsContext2
-    {
-        internal NativeObjectProxy nativeEngineContextProxy;
-        NativeObjectProxyStore proxyStore;
-        Stack<IntPtr> v8ContextLock = new Stack<IntPtr>();
-
-        internal JsContext myjsContext;
-        public JsContext2(JsContext myjsContext)
-        {
-            this.myjsContext = myjsContext;
-            this.proxyStore = new NativeObjectProxyStore(this);
-            NativeObjectProxy<JsContext> wrapJsContext = new NativeObjectProxy<JsContext>(1, myjsContext);
-            wrapJsContext.SetUnmanagedObjectPointer(myjsContext.Handle.Handle);
-            this.nativeEngineContextProxy = wrapJsContext;
-        }
-        public void SetParameter(string parname, object value)
-        {
-            this.myjsContext.SetVariable(parname, value);
-        }
-        public NativeJsInstanceProxy CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
-        {
-            return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
-        }
-
-        //public void SetParameter(string parname, int arg)
-        //{
-        //    NativeV8JsInterOp.RegParamInt32(nativeEngineContextProxy.UnmanagedPtr, parname, arg);
-        //}
-        //public void SetParameter(string parname, float arg)
-        //{
-        //    NativeV8JsInterOp.RegParamFloat(nativeEngineContextProxy.UnmanagedPtr, parname, arg);
-        //}
-        //public void SetParameter(string parname, double arg)
-        //{
-        //    NativeV8JsInterOp.RegParamDouble(nativeEngineContextProxy.UnmanagedPtr, parname, arg);
-        //}
-        //public void SetParameter(string parname, string arg)
-        //{
-        //    NativeV8JsInterOp.RegParamString(nativeEngineContextProxy.UnmanagedPtr, parname, arg);
-        //}
-        //public void SetParameter(string parname, NativeObjectProxy mobject)
-        //{
-
-        //    //assign parameters and native object proxy
-        //    //this.EnterContext();
-        //    NativeV8JsInterOp.RegParamExternalManaged(
-        //        nativeEngineContextProxy.UnmanagedPtr,
-        //        parname,
-        //        mobject.UnmanagedPtr);
-        //    // this.ExitContext();
-        //}
-
-        public void RegisterTypeDefinition(JsTypeDefinition jsTypeDefinition)
-        {
-            proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
-        }
-        //public void EnterContext()
-        //{
-        //    this.v8ContextLock.Push(NativeV8JsInterOp.EngineContextEnter(this.nativeEngineContextProxy.UnmanagedPtr));
-        //}
-        //public void ExitContext()
-        //{
-        //    NativeV8JsInterOp.EngineContextExit(this.nativeEngineContextProxy.UnmanagedPtr, this.v8ContextLock.Pop());
-        //}
-
-        public void Close()
-        {
-            this.proxyStore.Dispose();
-            // NativeV8JsInterOp.ReleaseJsContext(this);
-
-        }
-        //public void Run(string striptSource)
-        //{
-        //    int runResult = NativeV8JsInterOp.EngineContextRun(nativeEngineContextProxy.UnmanagedPtr, striptSource);
-
-        //}
-    }
 
 
 
@@ -733,7 +655,7 @@ namespace NativeV8
         //    }
         //}
 
-        public static unsafe void RegisterTypeDef(JsContext2 context, JsTypeDefinition jsTypeDefinition)
+        public static unsafe void RegisterTypeDef(JsContext context, JsTypeDefinition jsTypeDefinition)
         {
 
             NativeObjectProxy proxObject = jsTypeDefinition.nativeProxy;
@@ -753,7 +675,7 @@ namespace NativeV8
                 binWriter.Write((short)1);//start marker
 
 
-                context.myjsContext.CollectionTypeMembers(jsTypeDefinition);
+                context.CollectionTypeMembers(jsTypeDefinition);
                 //------------------------------------------------
 
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
@@ -762,12 +684,12 @@ namespace NativeV8
 
                 fixed (byte* tt = &finalBuffer[0])
                 {
-
                     proxObject.SetUnmanagedObjectPointer(
                         ContextRegisterTypeDefinition(
-                        context.nativeEngineContextProxy.UnmanagedPtr,
+                        context.Handle.Handle,
                         0, tt, finalBuffer.Length));
                 }
+
                 ms.Close();
             }
         }

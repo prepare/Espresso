@@ -67,15 +67,13 @@ void ResultSetNativeObject(MetCallingArgs* callingArgs,int proxyId)
  
 Handle<Value> DoMethodCall(const Arguments& args)
 {	 
-	//call to bridge with args  
-	HandleScope h01; 
-	//if(managedListner)
-	//{
-	//	//for debug
-	//	managedListner(0,L"data",0);
-	//}   
-
-	  	   
+		//call to bridge with args  
+		HandleScope h01; 
+		//if(managedListner)
+		//{
+		//	//for debug
+		//	managedListner(0,L"data",0);
+		//}    
 
 		MetCallingArgs callingArgs;
 		memset(&callingArgs,0,sizeof(MetCallingArgs));		 
