@@ -3,7 +3,7 @@
 // Author:
 //     Federico Di Gregorio <fog@initd.org>
 //
-// Copyright (c) 2013 
+// Copyright © 2013 Federico Di Gregorio <fog@initd.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,48 +23,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace VroomJs.Tests
+using System;
+using System.Runtime.InteropServices;
+
+namespace VroomJs
 {
-    public class TestClass
+    enum JsValueType
     {
-        int intProp;
-        string strProp;
-        bool boolProp;
+        UnknownError = -1,
+        Empty = 0,
+        Null = 1,
+        Boolean = 2,
+        Integer = 3,
+        Number = 4,
+        String = 5,
+        Date = 6,
+        Index = 7,
+        Array = 10,
+        StringError = 11,
+        Managed = 12,
+        ManagedError = 13,
+        Wrapped = 14,
+        Dictionary = 15,
+        Error = 16,
+        Function = 17,
 
-        public int Int32Property
-        {
-            get
-            {
-                return this.intProp;
-            }
-            set
-            {
-                this.intProp = value;
-            }
-        }
-        public string StringProperty
-        {
-            get { return this.strProp; }
-            set
-            {
-                this.strProp = value;
-            }
-        }
-        public bool BoolProperty
-        {
-            get { return this.boolProp; }
-            set
-            {
-                this.boolProp = value;
-            }
-        }
-
-        public TestClass NestedObject { get; set; }
-
-        public TestClass Method1(int i, string s)
-        {
-            return new TestClass { Int32Property = this.Int32Property + i, StringProperty = this.StringProperty + s };
-        }
+        //---------------
+        //my extension
+        JsTypeWrap = 18
     }
 }
-

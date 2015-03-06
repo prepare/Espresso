@@ -93,7 +93,7 @@ namespace Sandbox
                     {
                         //context.SetVariable("dbg", dbg);
                         //object result = context.Execute("dbg.Write(dbg.valueOf());");
-                        context.SetVariable("Debug", typeof(debugtest));
+                        context.SetVariableFromAny("Debug", typeof(debugtest));
 
                         object result = context.Execute("Debug.BoolTest(3,4);");
 

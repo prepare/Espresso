@@ -34,7 +34,7 @@ extern "C"
 {	
 	EXPORT int getVersion()
 	{
-		return 1;
+		return 4;
 	}
 	 
 
