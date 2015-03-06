@@ -329,8 +329,11 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
     
     return v;
 }
- 
-	
+jsvalue JsContext::ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
+{
+  return this->engine_->AnyFromV8(value,thisArg);
+}
+
 
 
 

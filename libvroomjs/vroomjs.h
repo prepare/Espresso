@@ -317,10 +317,12 @@ class JsContext {
 
 	 
 	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
-	void RegisterManagedCallback(void* callback,int callBackKind);
-
+	void RegisterManagedCallback(void* callback,int callBackKind);	
 	ManagedObjRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
-	
+
+	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
+
+
 	inline int32_t GetId() {
 		return id_;
 	}

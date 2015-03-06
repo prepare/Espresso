@@ -275,8 +275,10 @@ namespace NativeV8
     public struct ManagedMethodArgs
     {
         IntPtr metArgsPtr;
-        public ManagedMethodArgs(IntPtr metArgsPtr)
+        JsContext context;
+        public ManagedMethodArgs(JsContext context, IntPtr metArgsPtr)
         {
+            this.context = context;
             this.metArgsPtr = metArgsPtr;
         }
         public string GetArgAsString(int index)
@@ -308,9 +310,11 @@ namespace NativeV8
         {
             NativeV8JsInterOp.ResultSetFloat(metArgsPtr, value);
         }
-        public void SetNativeObjResult(int value)
+        public void SetResultObj(object result)
         {
-            NativeV8JsInterOp.ResultSetNativeObject(metArgsPtr, value);
+            //similar
+
+            //NativeV8JsInterOp.ResultSetNativeObject(metArgsPtr, value);
         }
         //------------------------
     }
@@ -556,7 +560,7 @@ namespace NativeV8
         //basic 
         static IntPtr hModuleV8;
         static ManagedListenerDel engineListenerDel;
-       
+
 
 
 
@@ -611,11 +615,11 @@ namespace NativeV8
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReleaseWrapper(IntPtr externalManagedHandler);
 
-         
+
         static NativeV8JsInterOp()
         {
             //prepare 
-            engineListenerDel = new ManagedListenerDel(EngineListener_Listen);  
+            engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -747,11 +751,11 @@ namespace NativeV8
                 //3. method
                 //4. indexer get/set   
                 binWriter.Write((short)1);//start marker
-                 
+
 
                 context.myjsContext.CollectionTypeMembers(jsTypeDefinition);
                 //------------------------------------------------
-                 
+
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();

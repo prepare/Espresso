@@ -142,7 +142,7 @@ namespace VroomJs
 
                         if (getterMethod != null)
                         {
-                            getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                            getterMethod.InvokeMethod(new ManagedMethodArgs(this,metArgs));
                         }
 
                     } break;
@@ -154,7 +154,7 @@ namespace VroomJs
                         JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
                         if (setterMethod != null)
                         {
-                            setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
+                            setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
                     } break;
                 default:
@@ -163,7 +163,7 @@ namespace VroomJs
                         JsMethodDefinition foundMet = registerMethods[mIndex];
                         if (foundMet != null)
                         {
-                            foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
+                            foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
                     } break;
             }

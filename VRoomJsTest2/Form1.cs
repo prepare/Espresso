@@ -101,14 +101,14 @@ namespace VRoomJsTest
         private void button1_Click(object sender, EventArgs e)
         {
 
-            
+
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
-                args.SetNativeObjResult(100);
+                args.SetResult(100);
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>
             {
@@ -146,7 +146,7 @@ namespace VRoomJsTest
 
         private void button2_Click(object sender, EventArgs e)
         {
-            
+
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
             //create js engine and context
@@ -173,19 +173,20 @@ namespace VRoomJsTest
 
         private void button3_Click(object sender, EventArgs e)
         {
-             
+
             NativeV8JsInterOp.RegisterCallBacks();
             NativeV8JsInterOp.TestCallBack();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
-                args.SetNativeObjResult(100);
+                args.SetResult(100);
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>
             {
                 args.SetResult(true);
             }));
+
             jstypedef.AddMember(new JsPropertyDefinition("D",
                 args =>
                 {   //getter
@@ -210,11 +211,9 @@ namespace VRoomJsTest
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext())
             {
-                JsContext2 context2 = new JsContext2(ctx);
-                if (!jstypedef.IsRegisterd)
-                {
-                    context2.RegisterTypeDefinition(jstypedef);
-                }
+                JsContext2 context2 = new JsContext2(ctx); 
+                context2.RegisterTypeDefinition(jstypedef);
+
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Reset();
@@ -228,6 +227,75 @@ namespace VRoomJsTest
                 context2.SetParameter("x", proxy);
                 //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 object result = ctx.Execute("(function(){if(x.D){ x.E=300; return  x.B();}else{return 0;}})()");
+
+                //}
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+                //Assert.That(result, Is.EqualTo(100));
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+            NativeV8JsInterOp.RegisterCallBacks();
+            NativeV8JsInterOp.TestCallBack();
+
+            JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
+            jstypedef.AddMember(new JsMethodDefinition("B", args =>
+            {
+                args.SetResult(100);
+            }));
+            jstypedef.AddMember(new JsMethodDefinition("C", args =>
+            {
+                args.SetResult(true);
+            }));
+            
+
+
+            jstypedef.AddMember(new JsPropertyDefinition("D",
+                args =>
+                {   
+                    //getter
+                    TestMe1 t2 = new TestMe1();
+                    args.SetResultObj(t2);
+                },
+                args =>
+                {
+                    //setter 
+                }));
+            jstypedef.AddMember(new JsPropertyDefinition("E",
+                args =>
+                {   //getter
+                    args.SetResult(250);
+                },
+                args =>
+                {
+                    //setter 
+                }));
+
+            //===============================================================
+            //create js engine and context
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                JsContext2 context2 = new JsContext2(ctx);
+                context2.RegisterTypeDefinition(jstypedef);
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                TestMe1 t1 = new TestMe1();
+                var proxy = context2.CreateWrapper(t1, jstypedef);
+
+                //for (int i = 2000; i >= 0; --i)
+                //{
+                context2.SetParameter("x", proxy);
+                //object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+                object result = ctx.Execute("(function(){if(x.D!= null){ x.E=300; return  x.B();}else{return 0;}})()");
 
                 //}
                 stwatch.Stop();

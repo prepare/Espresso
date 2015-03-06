@@ -65,7 +65,7 @@ void ResultSetNativeObject(MetCallingArgs* callingArgs,int proxyId)
 };
 
  
-Handle<Value> JsFunctionBridge(const Arguments& args)
+Handle<Value> DoMethodCall(const Arguments& args)
 {	 
 	//call to bridge with args  
 	HandleScope h01; 
@@ -82,9 +82,8 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 		callingArgs.args = &args;
 		
         Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
-		CallingContext* cctx =  (CallingContext*)ext->Value(); 
-		
-		 //int m_index  = info.Data()->Int32Value();	 
+		CallingContext* cctx =  (CallingContext*)ext->Value();  
+		 
 		int m_index = cctx->mIndex;
 		
 		/*Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
@@ -308,156 +307,7 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 	 
 	return h01.Close(v8::Undefined()); 
 }
-
-
-jsvalue ConvStringFromV8(Handle<Value> value)
-{
-    jsvalue v;
-    
-    Local<String> s = value->ToString();
-    v.length = s->Length();
-    v.value.str = new uint16_t[v.length+1];
-    if (v.value.str != NULL) {
-        s->Write(v.value.str);
-        v.type = JSVALUE_TYPE_STRING;
-    }
-
-    return v;
-}   
-
-jsvalue ConvWrappedFromV8(Handle<Object> obj)
-{
-    jsvalue v;
-       
-	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
-		v.type = JSVALUE_TYPE_WRAPPED;
-		v.length = 0;
-        // A Persistent<Object> is exactly the size of an IntPtr, right?
-		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
-		// We should even cast it to void* because C++ doesn't allow to put
-		// it in a union: going scary and scarier here.    
-		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
-	} else {
-
-		v.type = JSVALUE_TYPE_WRAPPED;
-		v.length = 0;
-        // A Persistent<Object> is exactly the size of an IntPtr, right?
-		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
-		// We should even cast it to void* because C++ doesn't allow to put
-		// it in a union: going scary and scarier here.    
-		v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
-
-
-		//-------------------------------------------------------------------------
-		/*v.type = JSVALUE_TYPE_DICT;
-		Local<Array> names = obj->GetOwnPropertyNames();
-		v.length = names->Length();
-		jsvalue* values = new jsvalue[v.length * 2];
-		if (values != NULL) {
-			for(int i = 0; i < v.length; i++) {
-				int indx = (i * 2);
-				Local<Value> key = names->Get(i);
-				values[indx] = AnyFromV8(key);
-				values[indx+1] = AnyFromV8(obj->Get(key));
-			}
-			v.value.arr = values;
-		}*/
-	}
-
-	return v;
-} 
-
-jsvalue ConvManagedFromV8(Handle<Object> obj)
-{
-    jsvalue v;
-    
-	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
-    ManagedRef* ref = (ManagedRef*)wrap->Value();
-	v.type = JSVALUE_TYPE_MANAGED;
-    v.length = ref->Id();
-    v.value.str = 0;
-
-    return v;
-}
-
-
-jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
-{	
-    jsvalue v;
-    // Initialize to a generic error.
-    v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
-    v.length = 0;
-    v.value.str = 0;
-    
-    if (value->IsNull() || value->IsUndefined()) {
-        v.type = JSVALUE_TYPE_NULL;
-    }                
-    else if (value->IsBoolean()) {
-        v.type = JSVALUE_TYPE_BOOLEAN;
-        v.value.i32 = value->BooleanValue() ? 1 : 0;
-    }
-    else if (value->IsInt32()) {
-        v.type = JSVALUE_TYPE_INTEGER;
-        v.value.i32 = value->Int32Value();            
-    }
-    else if (value->IsUint32()) {
-        v.type = JSVALUE_TYPE_INDEX;
-        v.value.i64 = value->Uint32Value();            
-    }
-    else if (value->IsNumber()) {
-        v.type = JSVALUE_TYPE_NUMBER;
-        v.value.num = value->NumberValue();
-    }
-    else if (value->IsString()) {
-        v = ConvStringFromV8(value);
-    }
-    else if (value->IsDate()) {
-        v.type = JSVALUE_TYPE_DATE;
-        //v.value.num = value->NumberValue();		
-		v.value.i64 = value->IntegerValue();
-    }
-    else if (value->IsArray()) {
-        Handle<Array> object = Handle<Array>::Cast(value->ToObject());
-        v.length = object->Length();
-        jsvalue* arr = new jsvalue[v.length];
-        if (arr != NULL) {
-            for(int i = 0; i < v.length; i++) {
-                arr[i] = ConvAnyFromV8(object->Get(i),thisArg);
-            }
-            v.type = JSVALUE_TYPE_ARRAY;
-            v.value.arr = arr;
-        }
-    }
-    else if (value->IsFunction()) {
-		Handle<Function> function = Handle<Function>::Cast(value);
-		jsvalue* arr = new jsvalue[2];
-        if (arr != NULL) { 
-			arr[0].value.ptr = new Persistent<Object>(Persistent<Function>::New(function));
-			arr[0].length = 0;
-			arr[0].type = JSVALUE_TYPE_WRAPPED;
-			if (!thisArg.IsEmpty()) {
-				arr[1].value.ptr = new Persistent<Object>(Persistent<Object>::New(thisArg));
-				arr[1].length = 0;
-				arr[1].type = JSVALUE_TYPE_WRAPPED;
-			} else {
-				arr[1].value.ptr = NULL;
-				arr[1].length = 0;
-				arr[1].type = JSVALUE_TYPE_NULL;
-			}
-	        v.type = JSVALUE_TYPE_FUNCTION;
-            v.value.arr = arr;
-        }
-    }
-    else if (value->IsObject()) {
-        Handle<Object> obj = Handle<Object>::Cast(value);
-        if (obj->InternalFieldCount() == 1)
-            v = ConvManagedFromV8(obj);
-        else
-            v = ConvWrappedFromV8(obj);
-    } 
-	return v;
-}
-
+ 
 void DoSetterProperty(Local<String> propertyName,
                      Local<Value> value,
                      const AccessorInfo& info)
@@ -483,7 +333,8 @@ void DoSetterProperty(Local<String> propertyName,
 	 Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
 	 MetCallingArgs callingArgs;
 	 memset(&callingArgs,0,sizeof(MetCallingArgs));  
-	 setvalue= ConvAnyFromV8(value,obj); 
+	 setvalue= cctx->ctx->ConvAnyFromV8(value,obj); 
+	 
 	 callingArgs.v = &setvalue; 
 	 cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs);  
 	 
@@ -622,7 +473,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 		callingContext->mIndex = methodId;		
 		auto wrap = v8::External::New(callingContext);
 
-		Handle<FunctionTemplate> funcTemplate= FunctionTemplate::New(JsFunctionBridge,wrap);	 
+		Handle<FunctionTemplate> funcTemplate= FunctionTemplate::New(DoMethodCall,wrap);	 
 		objTemplate->Set(String::New((uint16_t*)(metName.c_str())),funcTemplate);
  
 		//if(managedListner){ //--if valid pointer 
