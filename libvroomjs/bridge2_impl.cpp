@@ -68,11 +68,7 @@ void ResultSetString(MetCallingArgs* callingArgs,wchar_t* value)
 	result.value.str =(uint16_t*)value;
 	callingArgs->result =  result;  
 } 
-void ResultSetNativeObject(MetCallingArgs* callingArgs,int proxyId)
-{
-	/*callingArgs->resultKind = JSVALUE_TYPE_JSTYPEDEF;
-	callingArgs->possibleValue.int32 = proxyId;*/
-}
+ 
 void ResultSetJsValue(MetCallingArgs* callingArgs,jsvalue value)
 {	
 	callingArgs->result =  value;   
@@ -87,7 +83,6 @@ Handle<Value> DoMethodCall(const Arguments& args)
 	//	//for debug
 	//	managedListner(0,L"data",0);
 	//}    
-
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
 	callingArgs.args = &args;
@@ -95,12 +90,12 @@ Handle<Value> DoMethodCall(const Arguments& args)
 	Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value();  
 
-	int m_index = cctx->mIndex;
-	 
+	int m_index = cctx->mIndex; 
 
 	cctx->ctx->myMangedCallBack(m_index,//method index
 		MET_, //method kind
 		&callingArgs); 
+
 	return cctx->ctx->AnyToV8(callingArgs.result);
 	 
 }
@@ -455,6 +450,16 @@ int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output
 		return strLen;	    
 	}  
 	return 0;
+}
+jsvalue ArgGetObject(MetCallingArgs* args,int index)
+{	
+	Local<v8::External> ext= Local<v8::External>::Cast( args->args->Data());
+	CallingContext* cctx =  (CallingContext*)ext->Value(); 
+
+	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
+	Handle<Object> obj= Handle<Object>::Cast(args->args->This());
+	return cctx->ctx->ConvAnyFromV8(arg,obj);
+
 }
 int ArgGetStringLen(MetCallingArgs* args,int index)
 {	

@@ -280,12 +280,11 @@ namespace NativeV8
         {
             this.context = context;
             this.metArgsPtr = metArgsPtr;
-        } 
+        }
         public int ArgCount
         {
             get
             {
-
                 return NativeV8JsInterOp.ArgCount(this.metArgsPtr);
             }
         }
@@ -298,7 +297,19 @@ namespace NativeV8
             return NativeV8JsInterOp.ArgGetInt32(this.metArgsPtr, index);
         }
 
+        public object GetArgAsObject(int index)
+        {
+            var value = NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index);
+            switch (value.Type)
+            {
+                case JsValueType.Managed:
+                    return this.context.KeepAliveGet(value.Index);
+                case JsValueType.JsTypeWrap:
+                    return null;
+            }
 
+            return null;
+        }
         //--------------------------------------------------------------------
         public void SetResult(bool value)
         {
@@ -321,16 +332,27 @@ namespace NativeV8
             NativeV8JsInterOp.ResultSetFloat(metArgsPtr, value);
         }
         public void SetResultNull()
-        { 
-            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr, 
-                this.context.Converter.ToJsValueNull()); 
+        {
+            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
+                this.context.Converter.ToJsValueNull());
         }
         public void SetResultObj(object result)
-        {         
+        {
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
-                this.context.Converter.AnyToJsValue(result)); 
+                this.context.Converter.AnyToJsValue(result));
         }
-        
+        public void SetResultObj(object result, JsTypeDefinition jsTypeDef)
+        {
+            if (!jsTypeDef.IsRegisterd)
+            {
+                this.context.RegisterTypeDefinition(jsTypeDef);
+            }
+            var proxy = this.context.CreateWrapper(result, jsTypeDef);
+            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
+               this.context.Converter.ToJsValue(proxy));
+            //NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
+            //    this.context.Converter.AnyToJsValue(result));
+        }
     }
 
 
@@ -484,7 +506,10 @@ namespace NativeV8
             }
             exportList.Clear();
         }
-
+        public NativeObjectProxy GetProxyObject(int index)
+        {
+            return this.exportList[index];
+        }
     }
 
 
@@ -536,6 +561,10 @@ namespace NativeV8
         public static extern string ArgGetString(IntPtr unmanaedArgPtr, int argIndex);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern JsValue ArgGetObject(IntPtr unmanaedArgPtr, int index);
+        //---------------------------------------------------------------------------------
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetString(IntPtr unmageReturnResult, [MarshalAs(UnmanagedType.LPWStr)] string value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -549,10 +578,7 @@ namespace NativeV8
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetFloat(IntPtr unmageReturnResult, float value);
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetNativeObject(IntPtr unmageReturnResult, int proxyIndex);
-
+ 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void ResultSetJsValue(IntPtr unmageReturnResult, JsValue jsvalue);
 

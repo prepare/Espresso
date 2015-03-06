@@ -110,6 +110,11 @@ namespace VroomJs
             proxyStore = new NativeObjectProxyStore(this);
 
         }
+        internal NativeObjectProxy GetObjectProxy(int index)
+        {
+            return this.proxyStore.GetProxyObject(index);
+        }
+            
         internal JsConvert Converter
         {
             get { return this._convert; }

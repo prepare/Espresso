@@ -246,7 +246,7 @@ namespace VRoomJsTest
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
                 var argCount = args.ArgCount;
-
+                var arg0 = args.GetArgAsObject(0);
                 args.SetResult(100);
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>
@@ -260,7 +260,7 @@ namespace VRoomJsTest
                 {
                     //getter
                     TestMe1 t2 = new TestMe1();
-                    args.SetResultObj(t2);
+                    args.SetResultObj(t2, jstypedef);
 
                 },
                 args =>

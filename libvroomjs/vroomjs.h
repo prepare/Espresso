@@ -349,10 +349,24 @@ class JsContext {
 	
 };
 
+//------------------------------------------------------------
+class ManagedObjRef
+{
+public:
+	 
+	int managedIndex;
+	v8::Persistent<v8::Object> v8InstanceHandler;
+	ManagedObjRef(int mIndex);
+}; 
 
 class ManagedRef {
  public:
-    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) : engine_(engine), contextId_(contextId), id_(id) {
+
+    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) :
+		engine_(engine), 
+		contextId_(contextId), 
+		id_(id) 
+	{
 		INCREMENT(js_mem_debug_managedref_count);
 	}
     
@@ -365,13 +379,15 @@ class ManagedRef {
     Handle<Boolean> DeleteProperty(Local<String> name);
 	Handle<Array> EnumerateProperties();
 
-    ~ManagedRef() { 
+    ~ManagedRef() 
+	{ 
 		engine_->CallRemove(contextId_, id_); 
 		DECREMENT(js_mem_debug_managedref_count);
 	}
     
  private:
-    ManagedRef() {
+    ManagedRef()
+	{
 		INCREMENT(js_mem_debug_managedref_count);
 	}
 	int32_t contextId_;
@@ -387,15 +403,6 @@ public:
 	int mIndex;
 	JsContext* ctx;
 };
-//------------------------------------------------------------
-class ManagedObjRef
-{
-public:
-	 
-	int managedIndex;
-	v8::Persistent<v8::Object> v8InstanceHandler;
-	ManagedObjRef(int mIndex);
-}; 
 
 
 
