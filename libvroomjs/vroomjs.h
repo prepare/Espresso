@@ -1,3 +1,5 @@
+//MIT 2015, WinterDev
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -22,6 +24,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
+
+
 
 #ifndef LIBVROOMJS_H
 #define LIBVROOMJS_H 
@@ -57,6 +62,9 @@ using namespace v8;
 #define JSVALUE_TYPE_ERROR          16
 #define JSVALUE_TYPE_FUNCTION       17
 
+#define JSVALUE_TYPE_JSTYPEDEF      18 //my extension
+#define JSVALUE_TYPE_INTEGER64      19 //my extension
+
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
 #else 
@@ -65,10 +73,12 @@ using namespace v8;
 
 #ifdef _WIN32
 #include "Windows.h"
-#define CALLINGCONVENTION __stdcall
+#define CALLCONV
+#define CALLINGCONVENTION __stdcall 
 #define INCREMENT(x) InterlockedIncrement(&x)
 #define DECREMENT(x) InterlockedDecrement(&x)
 #else 
+#define CALLCONV
 #define CALLINGCONVENTION
 #define INCREMENT(x) __sync_fetch_and_add(&x, 1)
 #define DECREMENT(x) __sync_fetch_and_add(&x, -1)
@@ -81,8 +91,14 @@ extern long js_mem_debug_context_count;
 extern long js_mem_debug_managedref_count;
 extern long js_mem_debug_script_count;
 
+class MetCallingArgs;
+
 extern "C" 
-{
+{	
+	
+	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
+	//-------------------------------------------------------------------------------------------
+
     struct jsvalue
     {
         // 8 bytes is the maximum CLR alignment; by putting the union first and a
@@ -113,7 +129,7 @@ extern "C"
 		jsvalue exception;
 	};
 	
-	EXPORT void CALLINGCONVENTION jsvalue_dispose(jsvalue value);
+	EXPORT void CALLCONV jsvalue_dispose(jsvalue value);
 }
 
 class JsEngine;
@@ -181,7 +197,7 @@ public:
     inline jsvalue CallGetPropertyValue(int32_t context, int32_t id, uint16_t* name) {
 		if (keepalive_get_property_value_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_get_property_value_(context, id, name);
@@ -190,7 +206,7 @@ public:
     inline jsvalue CallSetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue value) {
 		if (keepalive_set_property_value_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_set_property_value_(context, id, name, value); 
@@ -198,7 +214,7 @@ public:
 	inline jsvalue CallValueOf(int32_t context, int32_t id) { 
 		if (keepalive_valueof_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_valueof_(context, id); 
@@ -206,7 +222,7 @@ public:
     inline jsvalue CallInvoke(int32_t context, int32_t id, jsvalue args) { 
 		if (keepalive_invoke_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		return keepalive_invoke_(context, id, args); 
@@ -214,7 +230,7 @@ public:
 	inline jsvalue CallDeleteProperty(int32_t context, int32_t id, uint16_t* name) {
 		if (keepalive_delete_property_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_delete_property_(context, id, name);
@@ -223,7 +239,7 @@ public:
 	inline jsvalue CallEnumerateProperties(int32_t context, int32_t id) {
 		if (keepalive_enumerate_properties_ == NULL) {
 			jsvalue v;
-			v.type == JSVALUE_TYPE_NULL;
+			v.type = JSVALUE_TYPE_NULL;
 			return v;
 		}
 		jsvalue value = keepalive_enumerate_properties_(context, id);
@@ -280,6 +296,8 @@ private:
 	keepalive_enumerate_properties_f keepalive_enumerate_properties_;
 };
 
+class ExternalTypeDefinition;
+class ManagedRef;
 
 class JsContext {
  public:
@@ -297,9 +315,16 @@ class JsContext {
     jsvalue SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value);
     jsvalue InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args);
     jsvalue InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args);
-     
-	void Dispose();
-     
+    void Dispose();
+
+	 
+	ExternalTypeDefinition* RegisterTypeDefinition(int mIndex,const char* stream,int streamLength);
+	void RegisterManagedCallback(void* callback,int callBackKind);	
+	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
+
+	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
+	Handle<Value> JsContext::AnyToV8(jsvalue v);
+
 	inline int32_t GetId() {
 		return id_;
 	}
@@ -308,6 +333,9 @@ class JsContext {
 		DECREMENT(js_mem_debug_context_count);
 	}
 
+
+	
+	del_JsBridge myMangedCallBack;
  private:             
     inline JsContext() {
 		INCREMENT(js_mem_debug_context_count);
@@ -317,17 +345,26 @@ class JsContext {
     Isolate *isolate_;
 	JsEngine *engine_;
 	Persistent<Context> *context_;
-};
-
+	
+	
+}; 
 
 class ManagedRef {
  public:
-    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id) : engine_(engine), contextId_(contextId), id_(id) {
+
+    
+    inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id, bool isJsTypeDef) :
+		engine_(engine), 
+		contextId_(contextId), 
+		id_(id),
+		isJsTypeDef_(isJsTypeDef)
+	{	
+
 		INCREMENT(js_mem_debug_managedref_count);
 	}
-    
     inline int32_t Id() { return id_; }
-    
+    inline bool IsJsTypeDef() { return isJsTypeDef_; }
+
     Handle<Value> GetPropertyValue(Local<String> name);
     Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
 	Handle<Value> GetValueOf();
@@ -335,18 +372,61 @@ class ManagedRef {
     Handle<Boolean> DeleteProperty(Local<String> name);
 	Handle<Array> EnumerateProperties();
 
-    ~ManagedRef() { 
+	v8::Persistent<v8::Object> v8InstanceHandler;
+	
+
+    ~ManagedRef() 
+	{ 
 		engine_->CallRemove(contextId_, id_); 
 		DECREMENT(js_mem_debug_managedref_count);
 	}
     
  private:
-    ManagedRef() {
+    ManagedRef()
+	{
 		INCREMENT(js_mem_debug_managedref_count);
 	}
 	int32_t contextId_;
 	JsEngine *engine_;
 	int32_t id_;
+	bool isJsTypeDef_;
 };
+
+
+
+class CallingContext
+{
+public:
+	int mIndex;
+	JsContext* ctx;
+};
+
+
+
+class BinaryStreamReader
+{
+
+public:
+	const char* stream;
+	int length;
+	int pos;
+
+	BinaryStreamReader(const char* stream,int length);
+	int ReadInt16();
+	int ReadInt32();
+	std::wstring ReadUtf16String();
+};
+
+class ExternalTypeDefinition 
+{
+
+public:		
+	int managedIndex; 
+	int memberkind; 
+	v8::Handle<v8::ObjectTemplate> handlerToJsObjectTemplate;
+	ExternalTypeDefinition(int mIndex);
+	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
+};
+ 
 
 #endif
