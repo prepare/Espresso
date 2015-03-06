@@ -39,45 +39,44 @@ void RegisterManagedCallback(void* funcPtr,int callbackKind)
 
 int TestCallBack()
 {
-	MethodCallingArgs a;
+	MetCallingArgs a;
+	memset(&a,0,sizeof(MetCallingArgs));
 	managedListner(0,L"OKOK001",&a);
 	return 1;
 };
 
-void ArgSetBool(MyExternalMethodReturnResult* result,bool value)
+void ResultSetBool(MetCallingArgs* callingArgs,bool value)
 {
-	result->resultKind = mt_bool;
-	result->possibleValue.v_bool = value;
+	callingArgs->resultKind = mt_bool;
+	callingArgs->possibleValue.v_bool = value;
 };
-void ArgSetInt32(MyExternalMethodReturnResult* result,int value)
+void ResultSetInt32(MetCallingArgs* callingArgs,int value)
 {
-	result->resultKind =mt_int32;
-	result->possibleValue.int32 = value;
+	callingArgs->resultKind =mt_int32;
+	callingArgs->possibleValue.int32 = value;
 };
-void ArgSetFloat(MyExternalMethodReturnResult* result,float value)
+void ResultSetFloat(MetCallingArgs* callingArgs,float value)
 {	
-	result->resultKind =mt_float;
-	result->possibleValue.fl32 = value;
+	callingArgs->resultKind =mt_float;
+	callingArgs->possibleValue.fl32 = value;
 };
-void ArgSetDouble(MyExternalMethodReturnResult* result,double value)
+void ResultSetDouble(MetCallingArgs* callingArgs,double value)
 {
-	result->resultKind =mt_double;
-	result->possibleValue.fl64 = value;
+	callingArgs->resultKind =mt_double;
+	callingArgs->possibleValue.fl64 = value;
 };
-void ArgSetString(MyExternalMethodReturnResult* result,wchar_t* value)
+void ResultSetString(MetCallingArgs* callingArgs,wchar_t* value)
 {	
-	result->resultKind =mt_string;
-	result->possibleValue.str_value = value;
+	callingArgs->resultKind =mt_string;
+	callingArgs->possibleValue.str_value = value;
 };
-void ArgSetNativeObject(MyExternalMethodReturnResult* result,int proxyId)
+void ResultSetNativeObject(MetCallingArgs* callingArgs,int proxyId)
 {
-	result->resultKind = mt_int32;
-	result->possibleValue.int32 = proxyId; 
+	callingArgs->resultKind = mt_int32;
+	callingArgs->possibleValue.int32 = proxyId; 
 };
 
-
-//Persistent<ObjectTemplate> 	createObjectTemplate(){
-
+ 
 Handle<Value> JsFunctionBridge(const Arguments& args)
 {	 
 	//call to bridge with args  
@@ -90,60 +89,61 @@ Handle<Value> JsFunctionBridge(const Arguments& args)
 	if(managedJsBridge)
 	{  	   
 
-		ExternalMethodReturnResult result;
-		memset(&result,0,sizeof(ExternalMethodReturnResult));
+		MetCallingArgs callingArgs;
+		memset(&callingArgs,0,sizeof(MetCallingArgs));		 
+		callingArgs.args = &args;
+		 
+		managedJsBridge(args.Data()->Int32Value(),//method index
+			MET_, //method kind
+			&callingArgs); 
 
-		result.resultKind =0;//init  
-		result.length =0; //init      
-		int m_index =  ArgGetAttachDataAsInt32(&args);
+		switch(callingArgs.resultKind)
+		{	
 
-		managedJsBridge(m_index,0, &args,&result); 
-		switch(result.resultKind)
-		{
-
-		case mt_bool:
-			{
-				//boolean
-				return h01.Close(v8::Boolean::New(result.possibleValue.v_bool));
-			}break;
-		case mt_int32://int32
-			{	 
-				return h01.Close(v8::Int32::New(result.possibleValue.int32)); 
-			}		 
-		case mt_float:
-			{   //float
-				return h01.Close(v8::Number::New(result.possibleValue.fl32));
-			}break;
-		case mt_double:
-			{   //double
-				return h01.Close(v8::Number::New(result.possibleValue.fl64));
-			}break;		
-		case mt_int64:
-			{	//int64
-				return h01.Close(v8::Number::New(result.possibleValue.int64));
-			}
-		case mt_string:
-			{  
-				//string  wchar_t*			
-				//always send with null terminal char**				 
-				return h01.Close(v8::String::New((uint16_t*)result.possibleValue.str_value)); 
-			}break; 
-		case mt_externalObject:
-			{
-				////return v8::Persistent<v8::object>(result.pos
-				////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
-				//HandleScope handleScope;
-				//Handle<v8::Value> jsdata;
-				//auto obj = v8::Object::New();
-				//   jsdata= obj;				 
-				//   //return v8::Persistent<ExternalObject>::New(v8::Handle<ExternalObject>(0));
-				//return handleScope.Close(jsdata);				 
-				return v8::Number::New(0);
-			}break;
-		default:
-			{
-				return h01.Close(v8::Undefined());
-			}
+			case mt_bool:
+				{
+					//boolean
+					return h01.Close(v8::Boolean::New(callingArgs.possibleValue.v_bool));
+				}break;
+			case mt_int32://int32
+				{	 
+					return h01.Close(v8::Int32::New(callingArgs.possibleValue.int32)); 
+				}		 
+			case mt_float:
+				{   //float
+					return h01.Close(v8::Number::New(callingArgs.possibleValue.fl32));
+				}break;
+			case mt_double:
+				{   //double
+					return h01.Close(v8::Number::New(callingArgs.possibleValue.fl64));
+				}break;		
+			case mt_int64:
+				{	
+					//int64
+					return h01.Close(v8::Number::New(callingArgs.possibleValue.int64));
+				}
+			case mt_string:
+				{  
+					//string  wchar_t*			
+					//always send with null terminal char**				 
+					return h01.Close(v8::String::New((uint16_t*)callingArgs.possibleValue.str_value)); 
+				}break; 
+			case mt_externalObject:
+				{
+					////return v8::Persistent<v8::object>(result.pos
+					////return v8::Handle<ExternalObject>( result.possibleValue.externalObjectPtr);
+					//HandleScope handleScope;
+					//Handle<v8::Value> jsdata;
+					//auto obj = v8::Object::New();
+					//   jsdata= obj;				 
+					//   //return v8::Persistent<ExternalObject>::New(v8::Handle<ExternalObject>(0));
+					//return handleScope.Close(jsdata);				 
+					return v8::Number::New(0);
+				}break;
+			default:
+				{
+					return h01.Close(v8::Undefined());
+				}
 		} 
 	}
 	return h01.Close(v8::Undefined());
@@ -196,42 +196,7 @@ int GetManagedIndex(ManagedObjRef* externalManagedHandler)
 void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
 {	
 	delete externalManagedHandler;
-};
-
-//
-// 
-//int GetManagedIndex(ManagedObjRef* externalManagedHandler)
-//{
-//	return  ((ManagedObjRef*)externalManagedHandler)->managedIndex;
-//}
-//void ReleaseWrapper(ManagedObjRef* externalManagedHandler)
-//{	
-//	delete externalManagedHandler;
-//}
-
-
-//void CallManagedMethod(int mindex,const wchar_t* methodName)
-//{	
-//	MethodCallingArgs args;
-//	args.numArgs =2;
-//	managedCallBackPath(mindex,methodName,&args);
-//}
-//void CallManagedMethodWithArgs(int mindex,const wchar_t* methodName,MethodCallingArgs* args)
-//{	 
-//	managedCallBackPath(mindex,methodName,args);
-//}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//void GetterAccessor(Local<String> propName, const AccessorInfo& info)
-//{
-//
-//}
-//void SetterAccessor(Local<String> propName, const AccessorInfo& info)
-//{
-//
-//}
-
-
+} 
 
 
 Handle<Value>
@@ -275,55 +240,51 @@ Handle<Value>
 Handle<Value> 
 	DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
 {
+
+	HandleScope h01;  
+
 	int m_index  = info.Data()->Int32Value();	 
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
 
-	HandleScope h01; 
-	//if(managedListner)
-	//{
-	//	//for debug
-	//	managedListner(0,L"data",0);
-	//}  
+	
 	if(managedJsBridge)
 	{  	   
 
-		ExternalMethodReturnResult result;
-		memset(&result,0,sizeof(ExternalMethodReturnResult)); 
-		result.resultKind =0;//init  
-		result.length =0; //init      
+		MetCallingArgs callingArgs;
+		memset(&callingArgs,0,sizeof(MetCallingArgs)); 
+		 
+		managedJsBridge(m_index,MET_GETTER, &callingArgs); 
 
-		managedJsBridge(m_index,1,0,&result); 
-
-		switch(result.resultKind)
+		switch(callingArgs.resultKind)
 		{
 
 		case mt_bool:
 			{
 				//boolean
-				return h01.Close(v8::Boolean::New(result.possibleValue.v_bool));
+				return h01.Close(v8::Boolean::New(callingArgs.possibleValue.v_bool));
 			}break;
 		case mt_int32://int32
 			{	 
-				return h01.Close(v8::Int32::New(result.possibleValue.int32)); 
+				return h01.Close(v8::Int32::New(callingArgs.possibleValue.int32)); 
 			}		 
 		case mt_float:
 			{   //float
-				return h01.Close(v8::Number::New(result.possibleValue.fl32));
+				return h01.Close(v8::Number::New(callingArgs.possibleValue.fl32));
 			}break;
 		case mt_double:
 			{   //double
-				return h01.Close(v8::Number::New(result.possibleValue.fl64));
+				return h01.Close(v8::Number::New(callingArgs.possibleValue.fl64));
 			}break;		
 		case mt_int64:
 			{	//int64
-				return h01.Close(v8::Number::New(result.possibleValue.int64));
+				return h01.Close(v8::Number::New(callingArgs.possibleValue.int64));
 			}
 		case mt_string:
 			{  
 				//string  wchar_t*			
 				//always send with null terminal char**				 
-				return h01.Close(v8::String::New((uint16_t*)result.possibleValue.str_value)); 
+				return h01.Close(v8::String::New((uint16_t*)callingArgs.possibleValue.str_value)); 
 			}break; 
 		case mt_externalObject:
 			{
@@ -343,40 +304,33 @@ Handle<Value>
 			}
 		} 
 	}
-	return h01.Close(v8::Undefined());
-
-
-
-
-
-
-
-
-
-	//then call back to managed code
-
-
-		//HandleScope scope;
-  // char buffer[512];
-  //uv_get_process_title(buffer, sizeof(buffer)); 
-  //return scope.Close(String::New(buffer));
-										
-   return Handle<Value>();
+	return h01.Close(v8::Undefined()); 
 }
 
 
 void DoSetterProperty(Local<String> propertyName,
-                               Local<Value> value,
-                               const AccessorInfo& info)
+                     Local<Value> value,
+                     const AccessorInfo& info)
 {
-  //HandleScope scope;
-  //node::Utf8Value title(value);
-  //// TODO: protect with a lock
-  //uv_set_process_title(*title);
+	HandleScope h01;  
+
+	int m_index  = info.Data()->Int32Value();	 
+	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
+	ManagedObjRef* extHandler=(ManagedObjRef*)external->Value();;
+	
+	if(managedJsBridge)
+	{  	   
+
+		MetCallingArgs callingArgs;
+		memset(&callingArgs,0,sizeof(MetCallingArgs)); 
+		 
+		
+		managedJsBridge(m_index,MET_SETTER, &callingArgs); 
+	} 
 }
 
 Handle<Value>
-	Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
+Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 {
 
 
@@ -544,84 +498,16 @@ ExternalTypeDefinition* ContextRegisterTypeDefintion(
 	int streamLength)
 {   
 	return context->RegisterTypeDefinition(mIndex,stream,streamLength); 
-} 
-//=====================================================
-//
-//Noesis::Javascript::JavascriptContext* CreateEngineContext(int mIndex)
-//{
-//	
-//	JavascriptContext* jsContext = new JavascriptContext();
-//	return jsContext;
-//}
-//void ReleaseEngineContext(Noesis::Javascript::JavascriptContext* engineContext)
-//{
-//	//please release unused engine, otherwise-> mem leak	  
-//	delete engineContext;
-//}
-//
-//v8::Locker* EngineContextEnter(JsContext* engineContext)
-//{	
-//	return engineContext->Ent
-//}
-//void EngineContextExit(JsContext* engineContext,v8::Locker* locker)
-//{
-//	engineContext->Exit(locker);
-//}
-//
-//int EngineContextRun(Noesis::Javascript::JavascriptContext* engineContext,
-//	const wchar_t* scriptsource)
-//{
-//	//send parameters  and run	
-//	SystemOutputObject output; 
-//	memset(&output,0,sizeof(SystemOutputObject)); 
-//	engineContext->Run2(scriptsource,&output);	 
-//
-//	return output.int32value;  
-//}
-//
-//void RegisterExternalParameter_int32(JsContext* engineContext,const wchar_t* name,int arg)
-//{	 
-//	(engineContext)->SetParameter_int32(name,arg);
-//}
-//void RegisterExternalParameter_double(JsContext* engineContext,const wchar_t* name,double arg)
-//{
-//	(engineContext)->SetParameter_double(name,arg);
-//}
-//void RegisterExternalParameter_float(JsContext* engineContext,const wchar_t* name,float arg)
-//{
-//	(engineContext)->SetParameter_float(name,arg);
-//}
-//void RegisterExternalParameter_int64(JsContext* engineContext,const wchar_t* name,long long arg)
-//{
-//	//((JavascriptContext*)engineContext)->SetParameter_int32(name,arg);
-//}
-//void RegisterExternalParameter_string(JsContext* engineContext,const wchar_t* name,const wchar_t* arg)
-//{
-//	(engineContext)->SetParameter_string(name,arg);
-//}
-////RegisterExternalParameter_External
-//void RegisterExternalParameter_External(JsContext* engineContext,
-//	const wchar_t* name,ManagedObjRef* arg)
-//{
-//	(engineContext)->SetParameter_External(name,arg);
-//}
+}  
 
-
-//=====================================================
-int ArgGetAttachDataAsInt32(const v8::Arguments* args)
-{
-
-	return args->Data()->Int32Value();	 
-}
-
-int ArgGetInt32(const v8::Arguments* args,int index)
+int ArgGetInt32(MetCallingArgs* args,int index)
 {	
-	return  ((*args)[index])->Int32Value();
+	return  ((*(args->args))[index])->Int32Value();
 }
-int ArgGetString(const v8::Arguments* args,int index, int outputLen, uint16_t* output)
+int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output)
 {	
 
-	Local<v8::Value> arg= (Local<v8::Value>)(*args)[index];  
+	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
 	if(arg->IsString())
 	{		
 		auto str01=  arg->ToString();	    
@@ -637,9 +523,9 @@ int ArgGetString(const v8::Arguments* args,int index, int outputLen, uint16_t* o
 	}  
 	return 0;
 }
-int ArgGetStringLen(const v8::Arguments* args,int index)
+int ArgGetStringLen(MetCallingArgs* args,int index)
 {	
-	Local<v8::Value> arg= (Local<v8::Value>)(*args)[index];  
+	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
 	if(arg->IsString())
 	{		
 		auto str01= arg->ToString();	 

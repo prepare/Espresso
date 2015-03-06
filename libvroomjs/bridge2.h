@@ -20,18 +20,23 @@ const int mt_double=4;
 const int mt_int64=5;
 const int mt_string=6; 
 const int mt_externalObject=7;
-
+//-----------------------------
+const int MET_=0;
+const int MET_GETTER=1;
+const int MET_SETTER=2;
 
 extern "C"{
 
 
 
-	typedef struct MethodCallingArgs{ 
-		int numArgs;  
-	} MyMethodCallingArgs; 
-
-
-	typedef struct ExternalMethodReturnResult{
+ 
+	typedef struct MetCallingArgs{
+		
+		//-----------------------
+		//calling args 
+		const v8::Arguments* args;
+		//-----------------------
+		//return result 
 		int resultKind;
 		union{
 			bool v_bool;
@@ -41,13 +46,11 @@ extern "C"{
 			float fl32;	 
 			wchar_t* str_value; 
 		}possibleValue;
-		int length;
-	}MyExternalMethodReturnResult;
+		int length;//str_length
 
-	 
-	//typedef  ExternalTypeDefinition ExternalTypeDef;
-	typedef  ManagedObjRef ExtManagedHandler;
-	typedef v8::Locker v8Locker;
+
+	} MetCallingArgs_;
+	   
 
 
 	typedef void (__stdcall *del01)();
@@ -67,15 +70,15 @@ extern "C"{
 	//-------------------------------------------------------------------------------------------
 
 
-	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MethodCallingArgs* args);
-	typedef void (__stdcall *del_JsBridge)(int oIndex,int methodKind,const v8::Arguments* args,ExternalMethodReturnResult* result);
+	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
+	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
 
 	EXPORT int GetMiniBridgeVersion();
 
-	EXPORT ExtManagedHandler* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
-	EXPORT void ReleaseWrapper(ExtManagedHandler* externalManagedHandler);
-	EXPORT int GetManagedIndex(ExtManagedHandler* externalManagedHandler); 
+	EXPORT ManagedObjRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
+	EXPORT void ReleaseWrapper(ManagedObjRef* managedObjRef);
+	EXPORT int GetManagedIndex(ManagedObjRef* managedObjRef); 
 	//---------------------------------------------------------------------
 	//for managed code to register its callback method
 	EXPORT void RegisterManagedCallback(void* callback,int callBackKind);   
@@ -84,20 +87,22 @@ extern "C"{
 	//create object template for describing managed type
 	//then return type definition handler to managed code
 	EXPORT ExternalTypeDefinition* ContextRegisterTypeDefintion(
-		JsContext* engineContext,int mIndex, const char* stream,int streamLength); 
+		JsContext* engineContext,
+		int mIndex, 
+		const char* stream,
+		int streamLength); 
 	//--------------------------------------------------------------------- 
-	EXPORT int ArgGetInt32(const v8::Arguments* args,int index);
-	EXPORT int ArgGetString(const v8::Arguments* args,int index, int outputLen, uint16_t* output);
-	EXPORT int ArgGetStringLen(const v8::Arguments* args,int index);
-
-	EXPORT int ArgGetAttachDataAsInt32(const v8::Arguments* args);
+	EXPORT int ArgGetInt32(MetCallingArgs* args,int index);
+	EXPORT int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output);
+	EXPORT int ArgGetStringLen(MetCallingArgs* args,int index);
+	 
 	//--------------------------------------------------------------------- 
-	EXPORT void ArgSetBool(MyExternalMethodReturnResult* result,bool value); 
-	EXPORT void ArgSetInt32(MyExternalMethodReturnResult* result,int value);
-	EXPORT void ArgSetFloat(MyExternalMethodReturnResult* result,float value);
-	EXPORT void ArgSetDouble(MyExternalMethodReturnResult* result,double value);
-	EXPORT void ArgSetString(MyExternalMethodReturnResult* result,wchar_t* value);
-	EXPORT void ArgSetNativeObject(MyExternalMethodReturnResult* result,int proxyId);
+	EXPORT void ResultSetBool(MetCallingArgs* result,bool value); 
+	EXPORT void ResultSetInt32(MetCallingArgs* result,int value);
+	EXPORT void ResultSetFloat(MetCallingArgs* result,float value);
+	EXPORT void ResultSetDouble(MetCallingArgs* result,double value);
+	EXPORT void ResultSetString(MetCallingArgs* result,wchar_t* value);
+	EXPORT void ResultSetNativeObject(MetCallingArgs* result,int proxyId);
 	//--------------------------------------------------------------------- 
 
 

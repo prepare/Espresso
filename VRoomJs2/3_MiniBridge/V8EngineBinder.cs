@@ -18,7 +18,7 @@ namespace NativeV8
 
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void ManagedMethodCallDel(int mIndex, int hint, IntPtr args, IntPtr result);
+    public delegate void ManagedMethodCallDel(int mIndex, int hint, IntPtr metArgs);
 
 
 
@@ -274,45 +274,43 @@ namespace NativeV8
 
     public struct ManagedMethodArgs
     {
-        IntPtr nativeArgPtr;
-        IntPtr nativeResultPtr;
-        public ManagedMethodArgs(IntPtr nativeArgPtr, IntPtr nativeResultPtr)
+        IntPtr metArgsPtr;
+        public ManagedMethodArgs(IntPtr metArgsPtr)
         {
-            this.nativeArgPtr = nativeArgPtr;
-            this.nativeResultPtr = nativeResultPtr;
+            this.metArgsPtr = metArgsPtr;
         }
         public string GetArgAsString(int index)
         {
-            return NativeV8JsInterOp.ArgGetString(this.nativeArgPtr, index);
+            return NativeV8JsInterOp.ArgGetString(this.metArgsPtr, index);
         }
         public int GetArgAsInt32(int index)
         {
-            return NativeV8JsInterOp.ArgGetInt32(this.nativeArgPtr, index);
+            return NativeV8JsInterOp.ArgGetInt32(this.metArgsPtr, index);
         }
         //------------------------
         public void SetResult(bool value)
         {
-            NativeV8JsInterOp.ArgSetBool(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetBool(metArgsPtr, value);
         }
         public void SetResult(int value)
         {
-            NativeV8JsInterOp.ArgSetInt32(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetInt32(metArgsPtr, value);
         }
         public void SetResult(string value)
         {
-            NativeV8JsInterOp.ArgSetString(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetString(metArgsPtr, value);
         }
         public void SetResult(double value)
         {
-            NativeV8JsInterOp.ArgSetDouble(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetDouble(metArgsPtr, value);
         }
         public void SetResult(float value)
         {
-            NativeV8JsInterOp.ArgSetFloat(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetFloat(metArgsPtr, value);
         }
         public void SetNativeObjResult(int value)
         {
-            NativeV8JsInterOp.ArgSetNativeObject(nativeResultPtr, value);
+            NativeV8JsInterOp.ResultSetNativeObject(metArgsPtr, value);
         }
         //------------------------
     }
@@ -555,19 +553,19 @@ namespace NativeV8
 
     public static class NativeV8JsInterOp
     {
-        //-------------------------------------------------------------------------------
         //basic 
         static IntPtr hModuleV8;
-        //static Dictionary<string, NativeMethodMap> importFuncs;
+        static ManagedListenerDel engineListenerDel;
+        static ManagedMethodCallDel engineMethodCallbackDel;
 
-        //-------------------------------------------------------------------------------
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetMiniBridgeVersion();
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();
 
-        //static CreateWrapperForManagedObject CreateWrapperForManagedObject;
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr CreateWrapperForManagedObject(IntPtr unmanagedEnginePtr, int mIndex, IntPtr rtTypeDefinition);
 
@@ -576,93 +574,43 @@ namespace NativeV8
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern int RelaseWrapper(IntPtr unmanagedPtr);
-        //static RelaseWrapper ReleaseWrapper;
-        //-------------------------------------------------------------------------------
-        static ManagedListenerDel engineListenerDel;
-        static ManagedMethodCallDel engineMethodCallbackDel;
-        //public static EngineContextRunDel EngineContextRun;
-        //-------------------------------------------------------------------------------
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
         static extern void RegisterManagedCallback(IntPtr funcPointer, int callBackKind);
-        //static RegisterManagedCallBack RegisterManagedCallback;
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern unsafe IntPtr ContextRegisterTypeDefintion(
             IntPtr unmanagedEnginePtr, int mIndex,
             void* stream, int length);
 
-
-        //static EngineRegisterTypeDefinitionDel RegisterTypeDefinition;
-        //static CreateEngineContextDel CreateEngineContext;
-        //static ReleaseEngineContextDel ReleaseEngineContext;
-
-        //public static RegisterExternalParameter_int32Del RegParamInt32;
-        //public static RegisterExternalParameter_floatDel RegParamFloat;
-        //public static RegisterExternalParameter_doubleDel RegParamDouble;
-        //public static RegisterExternalParameter_stringDel RegParamString;
-        //public static RegisterExternalParameter_ExternalManagedDel RegParamExternalManaged;
-
-        //public static EngineContextEnterDel EngineContextEnter;
-        //public static EngineContextExitDel EngineContextExit;
-
-        //----------------------------------------------------------------------------
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ArgGetAttachDataAsInt32(IntPtr unmanaedArgPtr);
-        //public static ArgGetAttachDataAsInt32Del ArgGetAttachDataAsInt32;
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ArgGetInt32(IntPtr unmanaedArgPtr, int argIndex);
-        // public static ArgGetInt32Del ArgGetInt32;
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static extern string ArgGetString(IntPtr unmanaedArgPtr, int argIndex);
 
-
-        //----------------------------------------------------------------------------
-
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetString(IntPtr unmageReturnResult, [MarshalAs(UnmanagedType.LPWStr)] string value);
+        public static extern void ResultSetString(IntPtr unmageReturnResult, [MarshalAs(UnmanagedType.LPWStr)] string value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetBool(IntPtr unmageReturnResult, bool value);
+        public static extern void ResultSetBool(IntPtr unmageReturnResult, bool value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetInt32(IntPtr unmageReturnResult, int value);
+        public static extern void ResultSetInt32(IntPtr unmageReturnResult, int value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetDouble(IntPtr unmageReturnResult, double value);
+        public static extern void ResultSetDouble(IntPtr unmageReturnResult, double value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetFloat(IntPtr unmageReturnResult, float value);
+        public static extern void ResultSetFloat(IntPtr unmageReturnResult, float value);
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ArgSetNativeObject(IntPtr unmageReturnResult, int proxyIndex);
+        public static extern void ResultSetNativeObject(IntPtr unmageReturnResult, int proxyIndex);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReleaseWrapper(IntPtr externalManagedHandler);
 
-
-
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetStringDel(IntPtr unmageReturnResult, [MarshalAs(UnmanagedType.LPWStr)] string value);
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetInt32Del(IntPtr unmageReturnResult, int value);
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetBoolDel(IntPtr unmageReturnResult, bool value);
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetDoubleDel(IntPtr unmageReturnResult, double value);
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetFloatDel(IntPtr unmageReturnResult, float value);
-
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        //public delegate void ArgSetNativeObjectDel(IntPtr unmageReturnResult, int proxyIndex);
-        ////==================================================
-
-
-        //public static LibGetVersionDel LibGetVersion;
-        //----------------------------------------------------------------------------
-        //MY_DLL_EXPORT int ArgGetInt32(const v8::Arguments* args,int index);
-        //MY_DLL_EXPORT wchar_t* ArgGetString(const v8::Arguments* args,int index);
-        //MY_DLL_EXPORT int ArgGetAttachDataAsInt32(const v8::Arguments* args,int index);
 
         static List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
         static List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
@@ -724,10 +672,10 @@ namespace NativeV8
         {
 
         }
-        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr args, IntPtr result)
+        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
         {
 
-            
+
 
             switch (methodKind)
             {
@@ -737,7 +685,7 @@ namespace NativeV8
                         if (mIndex == 0) return;
                         //------------------------------------------
                         JsPropertyDefinition property = registerProperties[mIndex];
-                        property.GetterMethod.InvokeMethod(new ManagedMethodArgs(args, result));
+                        property.GetterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
 
                     } break;
                 case 2:
@@ -750,7 +698,7 @@ namespace NativeV8
                         JsMethodDefinition foundMet = registerMethods[mIndex];
                         if (foundMet != null)
                         {
-                            foundMet.InvokeMethod(new ManagedMethodArgs(args, result));
+                            foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
                         }
                     } break;
             }
@@ -806,12 +754,11 @@ namespace NativeV8
 
                 fixed (byte* tt = &finalBuffer[0])
                 {
-                    //context.EnterContext();                     
+
                     proxObject.SetUnmanagedObjectPointer(
                         ContextRegisterTypeDefintion(
                         context.nativeEngineContextProxy.UnmanagedPtr,
                         0, tt, finalBuffer.Length));
-                    //context.ExitContext(); 
                 }
                 ms.Close();
             }
@@ -820,14 +767,11 @@ namespace NativeV8
         {
             if (!proxyObj.HasNativeWrapperPart)
             {
-
-                //context.EnterContext();                 
                 proxyObj.SetUnmanagedObjectPointer(
                     CreateWrapperForManagedObject(
                         context.Handle.Handle,
                         proxyObj.ManagedIndex,
                         proxyObj.JsTypeDefinition.nativeProxy.UnmanagedPtr));
-                //context.ExitContext();
             }
         }
         public static void UnRegisterNativePart(NativeObjectProxy proxyObj)
@@ -841,9 +785,7 @@ namespace NativeV8
         public static int GetManagedIndexFromNativePart(NativeObjectProxy proxyObj)
         {
             return GetManagedIndex(proxyObj.UnmanagedPtr);
-        }
-
-        //--------------------------------------------------------------------------
+        } 
     }
 
 
