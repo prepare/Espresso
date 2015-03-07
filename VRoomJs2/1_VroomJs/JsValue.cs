@@ -39,8 +39,14 @@ namespace VroomJs
         // See JsValueType, marshaled as integer.
         [FieldOffset(8)] public JsValueType Type;
 
-        // Length of array or string or managed object keepalive index.
+        
+        /// <summary>
+        ///  Length of array or string or managed object keepalive index. 
+        /// </summary>
         [FieldOffset(12)] public int Length;
+        /// <summary>
+        /// Length of array or string or managed object keepalive index. 
+        /// </summary>
         [FieldOffset(12)] public int Index;
 
         public static JsValue Null {

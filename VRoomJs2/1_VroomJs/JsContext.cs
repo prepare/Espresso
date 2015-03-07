@@ -88,6 +88,7 @@ namespace VroomJs
         List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
         List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
 
+        Dictionary<Type, JsTypeDefinition> mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
 
         NativeObjectProxyStore proxyStore;
 
@@ -110,11 +111,14 @@ namespace VroomJs
             proxyStore = new NativeObjectProxyStore(this);
 
         }
+
+
+
         internal NativeObjectProxy GetObjectProxy(int index)
         {
             return this.proxyStore.GetProxyObject(index);
         }
-            
+
         internal JsConvert Converter
         {
             get { return this._convert; }
@@ -904,12 +908,6 @@ namespace VroomJs
         {
             proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
-
-
-
-
-
-        //------------------------------------------------------------------
         public void SetVariableFromAny(string name, object value)
         {
             if (name == null)
@@ -926,8 +924,7 @@ namespace VroomJs
             jsvalue_dispose(b);
             // TODO: Check the result of the operation for errors.
         }
-        //------------------------------------------------------------------
-       
+
         public void SetVariable(string name, string value)
         {
             if (name == null)
@@ -1034,7 +1031,25 @@ namespace VroomJs
             jsvalue_dispose(a);
             jsvalue_dispose(b);
         }
+
+
         //------------------------------------------------------------------
 
+        public JsTypeDefinition GetJsTypeDefinition<T>(T t)
+            where T : class,new()
+        {
+            Type type = typeof(T);
+            JsTypeDefinition found;
+            if (this.mappingJsTypeDefinition.TryGetValue(type, out found))
+                return found;
+
+            //if not found
+            //just create it
+            found = JsTypeDefinitionBuilder.BuildTypeDefinition(type);
+            this.mappingJsTypeDefinition.Add(type, found); 
+            this.RegisterTypeDefinition(found);
+
+            return found;
+        }
     }
 }

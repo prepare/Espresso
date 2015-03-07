@@ -74,31 +74,7 @@ void ResultSetJsValue(MetCallingArgs* callingArgs,jsvalue value)
 	callingArgs->result =  value;   
 }
 
-Handle<Value> DoMethodCall(const Arguments& args)
-{	 
-	//call to bridge with args  
-	HandleScope h01; 
-	//if(managedListner)
-	//{
-	//	//for debug
-	//	managedListner(0,L"data",0);
-	//}    
-	MetCallingArgs callingArgs;
-	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
-	callingArgs.args = &args;
 
-	Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
-	CallingContext* cctx =  (CallingContext*)ext->Value();  
-
-	int m_index = cctx->mIndex; 
-
-	cctx->ctx->myMangedCallBack(m_index,//method index
-		MET_, //method kind
-		&callingArgs); 
-
-	return cctx->ctx->AnyToV8(callingArgs.result);
-	 
-}
 
 
 ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
@@ -188,11 +164,39 @@ Handle<Value>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+Handle<Value> DoMethodCall(const Arguments& args)
+{	 
+	//call to bridge with args  
+	HandleScope h01; 
+	//if(managedListner)
+	//{
+	//	//for debug
+	//	managedListner(0,L"data",0);
+	//}    
+
+	MetCallingArgs callingArgs;
+	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
+	callingArgs.args = &args;
+	callingArgs.methodCallKind = MET_;
+
+	Local<v8::External> ext= Local<v8::External>::Cast( args.Data());
+	CallingContext* cctx =  (CallingContext*)ext->Value();  
+
+	int m_index = cctx->mIndex; 
+
+	cctx->ctx->myMangedCallBack(m_index,//method index
+		MET_, //method kind
+		&callingArgs); 
+
+	return cctx->ctx->AnyToV8(callingArgs.result);
+	 
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
 Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& info) 
 {
 
 	HandleScope h01;  	
-
+	wstring name = (wchar_t*) *String::Value(propertyName);
 	Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value(); 
 
@@ -203,6 +207,8 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));  
+	callingArgs.accessorInfo = &info;
+	callingArgs.methodCallKind = MET_GETTER; 
 	cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
 	
 	return cctx->ctx->AnyToV8(callingArgs.result); 
@@ -212,7 +218,7 @@ void DoSetterProperty(Local<String> propertyName,
 	Local<Value> value,
 	const AccessorInfo& info)
 {
-	jsvalue setvalue;
+	 
 	HandleScope h01;  
 
 	Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
@@ -222,22 +228,14 @@ void DoSetterProperty(Local<String> propertyName,
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	ManagedRef* extHandler=(ManagedRef*)external->Value();
-
-	////int m_index  = info.Data()->Int32Value();	 
-	//Handle<v8::External> external = Handle<v8::External>::Cast(info.Holder()->GetInternalField(0));
-	//ManagedRef* managedObjRef= (ManagedRef*)external->Value();;
-	//
-
-
-	//jsvalue setvalue;
+ 
 	Handle<Object> obj= Handle<Object>::Cast(info.Holder()->GetInternalField(0));
 	MetCallingArgs callingArgs;
-	memset(&callingArgs,0,sizeof(MetCallingArgs));  
-	setvalue= cctx->ctx->ConvAnyFromV8(value,obj); 
-
-	callingArgs.result = setvalue; 
-	cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs);  
-
+	memset(&callingArgs,0,sizeof(MetCallingArgs)); 
+	callingArgs.accessorInfo = &info;
+    callingArgs.methodCallKind = MET_SETTER; 
+	callingArgs.setterValue = value; 
+	cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs); 
 }
 
 Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
@@ -427,59 +425,55 @@ void ContextRegisterManagedCallback(JsContext* jsContext,void* callback,int call
 {
 	jsContext->RegisterManagedCallback(callback,callBackKind);
 }
+ 
 
-int ArgGetInt32(MetCallingArgs* args,int index)
-{	
-	return  ((*(args->args))[index])->Int32Value();
-}
-int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output)
-{	
-
-	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
-	if(arg->IsString())
-	{		
-		auto str01=  arg->ToString();	    
-		auto strLen= str01->Length();   
-		auto copyLen= strLen;
-		if(copyLen>outputLen)
-		{  
-			copyLen= outputLen;
-		}	
-		 
-		str01->Write(output,0,copyLen);
-		return strLen;	    
-	}  
-	return 0;
-}
 jsvalue ArgGetObject(MetCallingArgs* args,int index)
-{	
-	Local<v8::External> ext= Local<v8::External>::Cast( args->args->Data());
-	CallingContext* cctx =  (CallingContext*)ext->Value(); 
+{		
+	switch(args->methodCallKind)
+	{	
+		case MET_SETTER:
+			{
+				//1 arg
+				return args->result;
+			}break; 
+		case MET_: 
+			{	
+				Local<v8::External> ext= Local<v8::External>::Cast( args->args->Data());
+				CallingContext* cctx =  (CallingContext*)ext->Value(); 
 
-	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
-	Handle<Object> obj= Handle<Object>::Cast(args->args->This());
-	return cctx->ctx->ConvAnyFromV8(arg,obj);
-
+				Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
+				Handle<Object> obj= Handle<Object>::Cast(args->args->This());
+				return cctx->ctx->ConvAnyFromV8(arg,obj);
+			}
+	} 
+	jsvalue v; 
+				// Initialize to a generic error.
+	v.type = JSVALUE_TYPE_NULL;
+	v.length = 0;
+	v.value.str = 0; 
+	return v;
 }
 jsvalue ArgGetThis(MetCallingArgs* args)
 {	
-	Local<v8::External> ext= Local<v8::External>::Cast( args->args->Data());
-	CallingContext* cctx =  (CallingContext*)ext->Value(); 
+	if(args->accessorInfo == NULL)
+	{
+		Local<v8::External> ext= Local<v8::External>::Cast(args->args->Data());
+		CallingContext* cctx =  (CallingContext*)ext->Value(); 
 		
-	Handle<Object> obj= Handle<Object>::Cast(args->args->This());
-	return cctx->ctx->ConvAnyFromV8(obj,obj);
-
-}
-int ArgGetStringLen(MetCallingArgs* args,int index)
-{	
-	Local<v8::Value> arg= (Local<v8::Value>)(*(args->args))[index];  
-	if(arg->IsString())
-	{		
-		auto str01= arg->ToString();	 
-		return str01->Length();   
-	}  
-	return 0;
-}
+		Handle<Object> obj= Handle<Object>::Cast(args->args->This());
+		return cctx->ctx->ConvAnyFromV8(obj,obj);
+	}
+	else
+	{	
+		//use accessor
+		//for getter/setter
+		Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo->Data());
+		CallingContext* cctx =  (CallingContext*)ext->Value(); 
+		
+		Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo->This());
+		return cctx->ctx->ConvAnyFromV8(obj,obj);
+	} 
+} 
  
 //====================================================== 
 ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
@@ -491,6 +485,20 @@ void ExternalTypeDefinition:: ReadTypeDefinitionFromStream(BinaryStreamReader* r
 }
 int ArgCount(MetCallingArgs* args)
 {
-	return args->args->Length();
+	 
+
+	switch(args->methodCallKind)
+	{	
+		case MET_SETTER:
+			{
+				//1 arg
+				return 1;
+			}break; 
+		case MET_: 
+			{	
+				 return args->args->Length();
+			}
+	} 
+	return 0;
 }
 //====================================================== 
