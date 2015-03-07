@@ -399,5 +399,36 @@ namespace VRoomJsTest
 
             }
         }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            NativeV8JsInterOp.RegisterCallBacks();
+            NativeV8JsInterOp.TestCallBack();
+
+
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start(); 
+
+                var ab = new AboutMe();                 
+                ctx.SetVariableAutoWrap("x", ab);
+
+                //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
+                //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
+                //string testsrc = "x.B(x.D.IsOk,x.D.Test1());";
+                
+                string testsrc = "x.IsOK;";
+                object result = ctx.Execute(testsrc);
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+
+            }
+        }
     }
 }
