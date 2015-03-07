@@ -9,6 +9,7 @@ using VroomJs;
 
 namespace NativeV8
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class JsTypeAttribute : Attribute
     {
         public JsTypeAttribute() { }
@@ -18,7 +19,7 @@ namespace NativeV8
         }
         public string Name { get; private set; }
     }
-
+    [AttributeUsage(AttributeTargets.Method)]
     public class JsMethodAttribute : Attribute
     {
         public JsMethodAttribute() { }
@@ -28,6 +29,8 @@ namespace NativeV8
         }
         public string Name { get; private set; }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
     public class JsPropertyAttribute : Attribute
     {
         public JsPropertyAttribute() { }
@@ -37,7 +40,7 @@ namespace NativeV8
         }
         public string Name { get; private set; }
     }
- 
+
     static class JsTypeDefinitionBuilder
     {
         static Type typeOfJsTypeAttr = typeof(JsTypeAttribute);
