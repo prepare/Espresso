@@ -106,6 +106,8 @@ namespace VroomJs
 
                 case JsValueType.Managed:
                     return _context.KeepAliveGet(v.Index);
+                case JsValueType.JsTypeWrap:
+                    return this._context.GetObjectProxy(v.Index);
 
                 case JsValueType.ManagedError:
                     Exception inner = _context.KeepAliveGet(v.Index) as Exception;

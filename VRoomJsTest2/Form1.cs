@@ -106,10 +106,14 @@ namespace VRoomJsTest
             {
                 return 123;
             }
-            [JsMethod]
-            public bool IsOK()
+
+            [JsProperty]
+            public bool IsOK
             {
-                return true;
+                get
+                {
+                    return true;
+                }
             }
         }
         private void button1_Click(object sender, EventArgs e)
@@ -333,7 +337,9 @@ namespace VRoomJsTest
             {
                 var argCount = args.ArgCount;
                 var thisArg = args.GetThisArg();
-                args.SetResult(args.GetArgAsInt32(0));
+                var arg0 = args.GetArgAsObject(0);
+                args.SetResult((bool)arg0);
+
             }));
             jstypedef.AddMember(new JsMethodDefinition("C", args =>
             {
@@ -343,7 +349,7 @@ namespace VRoomJsTest
             //----------------------------------------------------- 
             jstypedef.AddMember(new JsPropertyDefinition("D",
                 args =>
-                {   
+                {
                     var ab = new AboutMe();
                     args.SetResultAutoWrap(ab);
                 },
@@ -384,8 +390,8 @@ namespace VRoomJsTest
 
                 //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
                 //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
-                string testsrc = "x.B(x.D.Test1(),15);";
-
+                //string testsrc = "x.B(x.D.IsOk,x.D.Test1());";
+                string testsrc = "x.B(x.D.IsOK);";
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
 

@@ -68,13 +68,13 @@ namespace NativeV8
             }
 
             var properties = t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-            foreach (var p in properties)
+            foreach (var property in properties)
             {
-                var customAttrs = p.GetCustomAttributes(typeOfJsPropertyAttr, false);
+                var customAttrs = property.GetCustomAttributes(typeOfJsPropertyAttr, false);
                 if (customAttrs != null && customAttrs.Length > 0)
                 {
                     var attr = customAttrs[0] as JsPropertyAttribute;
-
+                    typedefinition.AddMember(new JsPropertyDefinition(attr.Name ?? property.Name, property));
                 }
             }
 

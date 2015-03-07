@@ -213,6 +213,7 @@ namespace NativeV8
     {
         JsPropertyGetDefinition getter;
         JsPropertyGetDefinition setter;
+        System.Reflection.PropertyInfo propInfo;
 
         public JsPropertyDefinition(string name)
             : base(name, JsMemberKind.Property)
@@ -227,6 +228,22 @@ namespace NativeV8
             {
                 this.GetterMethod = new JsPropertyGetDefinition(name, getter);
             }
+            if (setter != null)
+            {
+                this.SetterMethod = new JsPropertySetDefinition(name, setter);
+            }
+        }
+        public JsPropertyDefinition(string name, System.Reflection.PropertyInfo propInfo)
+            : base(name, JsMemberKind.Property)
+        {
+
+            this.propInfo = propInfo;
+            var getter = propInfo.GetGetMethod();
+            if (getter != null)
+            {
+                this.GetterMethod = new JsPropertyGetDefinition(name, getter);
+            }
+            var setter = propInfo.GetSetMethod();
             if (setter != null)
             {
                 this.SetterMethod = new JsPropertySetDefinition(name, setter);
@@ -255,7 +272,12 @@ namespace NativeV8
             : base(name, getter)
         {
         }
+        public JsPropertyGetDefinition(string name, System.Reflection.MethodInfo getterMethod)
+            : base(name, getterMethod)
+        {
+        }
     }
+
     public class JsPropertySetDefinition : JsMethodDefinition
     {
         public JsPropertySetDefinition(string name)
@@ -264,6 +286,10 @@ namespace NativeV8
         }
         public JsPropertySetDefinition(string name, JsMethodCallDel setter)
             : base(name, setter)
+        {
+        }
+        public JsPropertySetDefinition(string name, System.Reflection.MethodInfo setterMethod)
+            : base(name, setterMethod)
         {
         }
     }
@@ -288,40 +314,29 @@ namespace NativeV8
                 return NativeV8JsInterOp.ArgCount(this.metArgsPtr);
             }
         }
-        public string GetArgAsString(int index)
-        {
-            return NativeV8JsInterOp.ArgGetString(this.metArgsPtr, index);
-        }
-        public int GetArgAsInt32(int index)
-        {
-            return NativeV8JsInterOp.ArgGetInt32(this.metArgsPtr, index);
-        }
+
         public object GetThisArg()
         {
             var value = NativeV8JsInterOp.ArgGetThis(this.metArgsPtr);
-            switch (value.Type)
-            {
-                case JsValueType.Managed:
-                    return this.context.KeepAliveGet(value.Index);
-                case JsValueType.JsTypeWrap:
-                    return this.context.GetObjectProxy(value.Index);
-            }
+            return this.context.Converter.FromJsValue(value);
 
-            return null;
+            //var value = NativeV8JsInterOp.ArgGetThis(this.metArgsPtr);
+            //switch (value.Type)
+            //{
+            //    case JsValueType.Managed:
+            //        return this.context.KeepAliveGet(value.Index);
+            //    case JsValueType.JsTypeWrap:
+            //        return this.context.GetObjectProxy(value.Index);
+            //}
+
+            //return null;
         }
         public object GetArgAsObject(int index)
         {
             var value = NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index);
-            switch (value.Type)
-            {
-                case JsValueType.Managed:
-                    return this.context.KeepAliveGet(value.Index);
-                case JsValueType.JsTypeWrap:
-                    return this.context.GetObjectProxy(value.Index);
-            }
-
-            return null;
+            return this.context.Converter.FromJsValue(value);
         }
+         
         //--------------------------------------------------------------------
         public void SetResult(bool value)
         {
@@ -593,12 +608,6 @@ namespace NativeV8
         internal static extern JsValue ArgGetThis(IntPtr callingArgsPtr);
 
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ArgGetInt32(IntPtr callingArgsPtr, int argIndex);
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static extern string ArgGetString(IntPtr callingArgsPtr, int argIndex);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern JsValue ArgGetObject(IntPtr callingArgsPtr, int index);
