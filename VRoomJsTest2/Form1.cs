@@ -374,8 +374,11 @@ namespace VRoomJsTest
 
             //===============================================================
             //create js engine and context
+
+            MyJsTypeDefinitionBuilder customBuilder = new MyJsTypeDefinitionBuilder();
+
             using (JsEngine engine = new JsEngine())
-            using (JsContext ctx = engine.CreateContext())
+            using (JsContext ctx = engine.CreateContext(customBuilder))
             {
 
                 ctx.RegisterTypeDefinition(jstypedef);
@@ -412,7 +415,7 @@ namespace VRoomJsTest
 
 
             using (JsEngine engine = new JsEngine())
-            using (JsContext ctx = engine.CreateContext())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {
 
                 GC.Collect();

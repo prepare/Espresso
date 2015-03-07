@@ -9,48 +9,20 @@ using VroomJs;
 
 namespace NativeV8
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class JsTypeAttribute : Attribute
+
+
+    class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilderBase
     {
-        public JsTypeAttribute() { }
-        public JsTypeAttribute(string name)
+        Type typeOfJsTypeAttr = typeof(JsTypeAttribute);
+        Type typeOfJsMethodAttr = typeof(JsMethodAttribute);
+        Type typeOfJsPropertyAttr = typeof(JsPropertyAttribute);
+
+        public MyJsTypeDefinitionBuilder()
         {
-            this.Name = name;
+            //use built in attr
         }
-        public string Name { get; private set; }
-    }
-    [AttributeUsage(AttributeTargets.Method)]
-    public class JsMethodAttribute : Attribute
-    {
-        public JsMethodAttribute() { }
-        public JsMethodAttribute(string name)
+        protected override JsTypeDefinition OnBuildRequest(Type t)
         {
-            this.Name = name;
-        }
-        public string Name { get; private set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public class JsPropertyAttribute : Attribute
-    {
-        public JsPropertyAttribute() { }
-        public JsPropertyAttribute(string name)
-        {
-            this.Name = name;
-        }
-        public string Name { get; private set; }
-    }
-
-    static class JsTypeDefinitionBuilder
-    {
-        static Type typeOfJsTypeAttr = typeof(JsTypeAttribute);
-        static Type typeOfJsMethodAttr = typeof(JsMethodAttribute);
-        static Type typeOfJsPropertyAttr = typeof(JsPropertyAttribute);
-
-
-        public static JsTypeDefinition BuildTypeDefinition(Type t)
-        {
-            //
 
             //find member that has JsPropertyAttribute or JsMethodAttribute
             JsTypeDefinition typedefinition = new JsTypeDefinition(t.Name);
@@ -80,6 +52,7 @@ namespace NativeV8
 
             return typedefinition;
         }
+
     }
 
 }
