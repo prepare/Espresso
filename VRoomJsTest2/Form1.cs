@@ -373,12 +373,9 @@ namespace VRoomJsTest
                 }));
 
             //===============================================================
-            //create js engine and context
-
-            MyJsTypeDefinitionBuilder customBuilder = new MyJsTypeDefinitionBuilder();
-
+            //create js engine and context 
             using (JsEngine engine = new JsEngine())
-            using (JsContext ctx = engine.CreateContext(customBuilder))
+            using (JsContext ctx = engine.CreateContext())
             {
 
                 ctx.RegisterTypeDefinition(jstypedef);
@@ -424,8 +421,7 @@ namespace VRoomJsTest
                 stwatch.Start();
 
                 var ab = new AboutMe();
-                ctx.SetVariableAutoWrap("x", ab);
-
+                ctx.SetVariableAutoWrap("x", ab); 
 
                 //string testsrc = "x.IsOK;";
                 string testsrc = "x.Test2('AAA');";
