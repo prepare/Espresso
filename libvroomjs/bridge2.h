@@ -74,11 +74,12 @@ extern "C"{
 
 	//--------------------------------------------------------------------- 
 	EXPORT int ArgCount(MetCallingArgs* args);
+	EXPORT jsvalue ArgGetThis(MetCallingArgs* args);
+	EXPORT jsvalue ArgGetObject(MetCallingArgs* args,int index);
+
 	EXPORT int ArgGetInt32(MetCallingArgs* args,int index);
 	EXPORT int ArgGetString(MetCallingArgs* args,int index, int outputLen, uint16_t* output);
-	EXPORT int ArgGetStringLen(MetCallingArgs* args,int index);
-	EXPORT jsvalue ArgGetThis(MetCallingArgs* args);
-	EXPORT jsvalue ArgGetObject(MetCallingArgs* args);
+	EXPORT int ArgGetStringLen(MetCallingArgs* args,int index);		
 	//--------------------------------------------------------------------- 
 	EXPORT void ResultSetBool(MetCallingArgs* result,bool value); 
 	EXPORT void ResultSetInt32(MetCallingArgs* result,int value);

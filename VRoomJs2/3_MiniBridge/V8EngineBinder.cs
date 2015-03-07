@@ -353,24 +353,37 @@ namespace NativeV8
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                 this.context.Converter.AnyToJsValue(result));
         }
+
         public void SetResultObj(object result, JsTypeDefinition jsTypeDef)
         {
             if (!jsTypeDef.IsRegisterd)
             {
                 this.context.RegisterTypeDefinition(jsTypeDef);
             }
+
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
+
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                this.context.Converter.ToJsValue(proxy));
-            //NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
-            //    this.context.Converter.AnyToJsValue(result));
+        }
+        public void SetResultAutoWrap<T>(T result)
+            where T : class,new()
+        {
+
+            var jsTypeDef = this.context.GetJsTypeDefinition<T>(result);
+            var proxy = this.context.CreateWrapper(result, jsTypeDef);
+
+            NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
+               this.context.Converter.ToJsValue(proxy));
         }
     }
 
 
     public class JsMethodDefinition : JsTypeMemberDefinition
     {
+
         JsMethodCallDel methodCallDel;
+        System.Reflection.MethodInfo method;
         public JsMethodDefinition(string methodName)
             : base(methodName, JsMemberKind.Method)
         {
@@ -378,17 +391,28 @@ namespace NativeV8
         public JsMethodDefinition(string methodName, JsMethodCallDel methodCallDel)
             : base(methodName, JsMemberKind.Method)
         {
-            SetCall(methodCallDel);
-        }
-        public void SetCall(JsMethodCallDel methodCallDel)
-        {
             this.methodCallDel = methodCallDel;
         }
-        public void InvokeMethod(ManagedMethodArgs arg)
+        public JsMethodDefinition(string methodName, System.Reflection.MethodInfo method)
+            : base(methodName, JsMemberKind.Method)
         {
-            if (methodCallDel != null)
+            this.method = method;
+        }
+        public void InvokeMethod(ManagedMethodArgs args)
+        {
+            if (method != null)
             {
-                methodCallDel(arg);
+                //invoke method
+                var thisArg = args.GetThisArg() as NativeJsInstanceProxy;
+                int argCount = args.ArgCount;
+                object[] parameters = new object[argCount];
+
+                object result = this.method.Invoke(thisArg.WrapObject, parameters);
+                args.SetResultObj(result);
+            }
+            else
+            {
+                methodCallDel(args);
             }
         }
     }
@@ -401,7 +425,7 @@ namespace NativeV8
     public abstract class NativeObjectProxy
     {
         object wrapObject;
-        int mIndex;
+        int mIndex;//managed index
         IntPtr unmanagedObjectPtr;
         public NativeObjectProxy(int mIndex, object wrapObject)
         {
@@ -626,7 +650,7 @@ namespace NativeV8
         public static void LoadV8(string v8bridgeDll)
         {
 
-            IntPtr v8mod = UnsafeMethods.LoadLibrary(v8bridgeDll);
+            IntPtr v8mod = UnsafeNativeMethods.LoadLibrary(v8bridgeDll);
             hModuleV8 = v8mod;
             if (v8mod == IntPtr.Zero)
             {
@@ -641,15 +665,12 @@ namespace NativeV8
             NativeV8JsInterOp.RegisterManagedListener(engineListenerDel);
             //NativeV8JsInterOp.RegisterManagedMethodCall(engineMethodCallbackDel);
         }
-        public static int GetLibVersion()
-        {
-            return VroomJs.JsContext.getVersion();
-        }
+
         public static void UnloadV8()
         {
             if (hModuleV8 != IntPtr.Zero)
             {
-                UnsafeMethods.FreeLibrary(hModuleV8);
+                UnsafeNativeMethods.FreeLibrary(hModuleV8);
                 hModuleV8 = IntPtr.Zero;
             }
         }
@@ -658,67 +679,6 @@ namespace NativeV8
         {
 
         }
-        //static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
-        //{  
-        //    switch (methodKind)
-        //    {
-        //        case 1:
-        //            {
-        //                //property get        
-        //                if (mIndex == 0) return;
-        //                //------------------------------------------
-        //                JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
-
-        //                if (getterMethod != null)
-        //                {
-        //                    getterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
-        //                }
-
-        //            } break;
-        //        case 2:
-        //            {
-        //                //property set
-        //                if (mIndex == 0) return;
-        //                //------------------------------------------
-        //                JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
-        //                if (setterMethod != null)
-        //                {
-        //                    setterMethod.InvokeMethod(new ManagedMethodArgs(metArgs));
-        //                }
-        //            } break;
-        //        default:
-        //            {
-        //                if (mIndex == 0) return;
-        //                JsMethodDefinition foundMet = registerMethods[mIndex];
-        //                if (foundMet != null)
-        //                {
-        //                    foundMet.InvokeMethod(new ManagedMethodArgs(metArgs));
-        //                }
-        //            } break;
-        //    }
-
-
-        //}
-        //static void CollectMembers(JsTypeDefinition jsTypeDefinition)
-        //{
-        //    List<JsMethodDefinition> methods = jsTypeDefinition.GetMethods();
-        //    int j = methods.Count;
-        //    for (int i = 0; i < j; ++i)
-        //    {
-        //        JsMethodDefinition met = methods[i];
-        //        met.SetMemberId(registerMethods.Count);
-        //        registerMethods.Add(met);
-        //    }
-
-        //    List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
-        //    j = properties.Count;
-        //    for (int i = 0; i < j; ++i)
-        //    {
-        //        var p = properties[i];
-        //        p.SetMemberId(registerProperties.Count);
-        //        registerProperties.Add(p);
-        //    }
-        //}
 
         public static unsafe void RegisterTypeDef(JsContext context, JsTypeDefinition jsTypeDefinition)
         {
@@ -790,7 +750,12 @@ namespace NativeV8
         MethodCall,
     }
 
-    static class UnsafeMethods
+
+
+
+
+
+    static class UnsafeNativeMethods
     {
 
         [DllImport("Kernel32.dll")]
