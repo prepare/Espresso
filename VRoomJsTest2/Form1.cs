@@ -107,6 +107,11 @@ namespace VRoomJsTest
                 return 123;
             }
 
+            [JsMethod]
+            public string Test2(string text)
+            {
+                return "hello " + text;
+            }
             [JsProperty]
             public bool IsOK
             {
@@ -413,16 +418,14 @@ namespace VRoomJsTest
                 GC.Collect();
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Reset();
-                stwatch.Start(); 
+                stwatch.Start();
 
-                var ab = new AboutMe();                 
+                var ab = new AboutMe();
                 ctx.SetVariableAutoWrap("x", ab);
 
-                //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
-                //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
-                //string testsrc = "x.B(x.D.IsOk,x.D.Test1());";
-                
-                string testsrc = "x.IsOK;";
+
+                //string testsrc = "x.IsOK;";
+                string testsrc = "x.Test2('AAA');";
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
 
