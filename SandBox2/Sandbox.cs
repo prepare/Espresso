@@ -87,8 +87,7 @@ namespace Sandbox
             while (true)
             {
                 using (JsEngine js = new JsEngine(4, 32))
-                {
-
+                {   
                     using (JsContext context = js.CreateContext())
                     {
                         //context.SetVariable("dbg", dbg);

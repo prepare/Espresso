@@ -222,7 +222,9 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
                 
     Local<Value> value = (*obj)->Get(String::New(name));
     if (!value.IsEmpty()) {
-        v = engine_->AnyFromV8(value);        
+
+		Handle<v8::Object> obj_handle = Handle<v8::Object>(*obj);
+        v = engine_->AnyFromV8(value,obj_handle);        
     }
     else {
         v = engine_->ErrorFromV8(trycatch);

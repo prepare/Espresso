@@ -87,8 +87,9 @@ namespace VroomJs
                 //return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
                 case JsValueType.Array:
                     {
-                        var r = new object[v.Length];
-                        for (int i = 0; i < v.Length; i++)
+                        int len = v.Length;
+                        var r = new object[len];
+                        for (int i = 0; i < len; i++)
                         {
                             var vi = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
                             r[i] = FromJsValue(vi);
@@ -209,7 +210,7 @@ namespace VroomJs
             };
         }
 
-        public JsValue ToJsValue(NativeV8.NativeJsInstanceProxy jsInstance)
+        public JsValue ToJsValue(INativeScriptable jsInstance)
         {
 
             //extension 
@@ -243,17 +244,16 @@ namespace VroomJs
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
 
-            if (obj is NativeV8.NativeJsInstanceProxy)
+            if (obj is NativeJsInstanceProxy)
             {
                 //extension
-                NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
+                NativeJsInstanceProxy prox = (NativeJsInstanceProxy)obj;
                 int keepAliveId = _context.KeepAliveAdd(obj);
                 return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
             }
 
-
-
             Type type = obj.GetType();
+
             // Check for nullable types (we will cast the value out of the box later).
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
