@@ -125,8 +125,7 @@ namespace VRoomJsTest2
         {
 
 
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
+            JsBridge.dbugTestCallbacks();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
@@ -169,9 +168,8 @@ namespace VRoomJsTest2
 
         private void button2_Click(object sender, EventArgs e)
         {
-
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
+            JsBridge.dbugTestCallbacks();
+             
             //create js engine and context
 
             using (JsEngine engine = new JsEngine())
@@ -197,8 +195,7 @@ namespace VRoomJsTest2
         private void button3_Click(object sender, EventArgs e)
         {
 
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
+            JsBridge.dbugTestCallbacks();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
@@ -262,8 +259,7 @@ namespace VRoomJsTest2
         private void button4_Click(object sender, EventArgs e)
         {
 
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
+            JsBridge.dbugTestCallbacks();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
@@ -316,7 +312,7 @@ namespace VRoomJsTest2
                 stwatch.Start();
 
                 TestMe1 t1 = new TestMe1();
-                NativeJsInstanceProxy proxy = ctx.CreateWrapper(t1, jstypedef);
+                INativeScriptable proxy = ctx.CreateWrapper(t1, jstypedef);
 
                 ctx.SetVariable("x", proxy);
 
@@ -334,9 +330,7 @@ namespace VRoomJsTest2
 
         private void button5_Click(object sender, EventArgs e)
         {
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
-
+            JsBridge.dbugTestCallbacks();
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
@@ -387,7 +381,7 @@ namespace VRoomJsTest2
 
                 TestMe1 t1 = new TestMe1();
 
-                NativeJsInstanceProxy proxy = ctx.CreateWrapper(t1, jstypedef);
+                INativeScriptable proxy = ctx.CreateWrapper(t1, jstypedef);
                 ctx.SetVariable("x", proxy);
 
 
@@ -402,9 +396,7 @@ namespace VRoomJsTest2
 
         private void button6_Click(object sender, EventArgs e)
         {
-            NativeV8JsInterOp.RegisterCallBacks();
-            NativeV8JsInterOp.TestCallBack();
-
+            JsBridge.dbugTestCallbacks();
 
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))

@@ -55,11 +55,11 @@ namespace VroomJs
         readonly KeepAliveDeletePropertyDelegate _keepalive_delete_property;
         readonly KeepAliveEnumeratePropertiesDelegate _keepalive_enumerate_properties;
 
-        private readonly Dictionary<int, JsContext> _aliveContexts = new Dictionary<int, JsContext>();
-        private readonly Dictionary<int, JsScript> _aliveScripts = new Dictionary<int, JsScript>();
+        readonly Dictionary<int, JsContext> _aliveContexts = new Dictionary<int, JsContext>();
+        readonly Dictionary<int, JsScript> _aliveScripts = new Dictionary<int, JsScript>();
 
-        private int _currentContextId = 0;
-        private int _currentScriptId = 0;
+        int _currentContextId = 0;
+        int _currentScriptId = 0;
 
         public static void DumpAllocatedItems()
         {
@@ -76,9 +76,9 @@ namespace VroomJs
         }
 
         readonly HandleRef _engine;
-        JsTypeDefinitionBuilderBase defaultTypeBuilder;
+        JsTypeDefinitionBuilder defaultTypeBuilder;
 
-        public JsEngine(JsTypeDefinitionBuilderBase defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
+        public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
             _keepalive_remove = new KeepaliveRemoveDelegate(KeepAliveRemove);
             _keepalive_get_property_value = new KeepAliveGetPropertyValueDelegate(KeepAliveGetPropertyValue);
@@ -250,7 +250,7 @@ namespace VroomJs
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
-        public JsContext CreateContext(JsTypeDefinitionBuilderBase customTypeDefBuilder)
+        public JsContext CreateContext(JsTypeDefinitionBuilder customTypeDefBuilder)
         {
             CheckDisposed();
             int id = Interlocked.Increment(ref _currentContextId);

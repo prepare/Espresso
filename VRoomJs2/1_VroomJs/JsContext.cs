@@ -92,13 +92,13 @@ namespace VroomJs
 
         NativeObjectProxyStore proxyStore;
 
-        JsTypeDefinitionBuilderBase jsTypeDefBuilder;
+        JsTypeDefinitionBuilder jsTypeDefBuilder;
 
         internal JsContext(int id,
             JsEngine engine,
             HandleRef engineHandle,
             Action<int> notifyDispose,
-            JsTypeDefinitionBuilderBase jsTypeDefBuilder)
+            JsTypeDefinitionBuilder jsTypeDefBuilder)
         {
 
             _id = id;
@@ -121,7 +121,7 @@ namespace VroomJs
 
         }
 
-        internal NativeObjectProxy GetObjectProxy(int index)
+        internal INativeRef GetObjectProxy(int index)
         {
             return this.proxyStore.GetProxyObject(index);
         }
@@ -907,7 +907,7 @@ namespace VroomJs
             return res;
         }
 
-        public NativeJsInstanceProxy CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
+        public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
             return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
         }
@@ -1008,7 +1008,7 @@ namespace VroomJs
             jsvalue_dispose(a);
             jsvalue_dispose(b);
         }
-        public void SetVariable(string name, NativeJsInstanceProxy proxy)
+        public void SetVariable(string name, INativeScriptable proxy)
         {
             if (name == null)
                 throw new ArgumentNullException("name");

@@ -8,7 +8,7 @@ using System.IO;
 using VroomJs; 
 namespace VRoomJsTest2
 { 
-    class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilderBase
+    class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {
         Type typeOfJsTypeAttr = typeof(JsTypeAttribute);
         Type typeOfJsMethodAttr = typeof(JsMethodAttribute);
