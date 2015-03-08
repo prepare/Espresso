@@ -60,12 +60,9 @@ namespace VroomJs
 
         int _currentContextId = 0;
         int _currentScriptId = 0;
-
-        public static void DumpAllocatedItems()
-        {
-            js_dump_allocated_items();
-        }
-
+        readonly HandleRef _engine;
+        JsTypeDefinitionBuilder defaultTypeBuilder;
+      
         static JsEngine()
         {
             JsObjectMarshalType objectMarshalType = JsObjectMarshalType.Dictionary;
@@ -75,8 +72,7 @@ namespace VroomJs
             js_set_object_marshal_type(objectMarshalType);
         }
 
-        readonly HandleRef _engine;
-        JsTypeDefinitionBuilder defaultTypeBuilder;
+        
 
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
@@ -109,24 +105,7 @@ namespace VroomJs
             : this(new DefaultJsTypeDefinitionBuilder(), -1, -1)
         {
 
-        }
-
-        //public object Execute(string code)
-        //{
-        //    if (code == null)
-        //        throw new ArgumentNullException("code");
-
-        //    CheckDisposed();
-
-        //    JsValue v = jsengine_execute(_engine, code);
-        //    object res = _convert.FromJsValue(v);
-        //    jsvalue_dispose(v);
-
-        //    Exception e = res as JsException;
-        //    if (e != null)
-        //        throw e;
-        //    return res;
-        //}
+        } 
         public void TerminateExecution()
         {
             jsengine_terminate_execution(_engine);
@@ -325,12 +304,16 @@ namespace VroomJs
                 throw new ObjectDisposedException("JsEngine:" + _engine.Handle);
         }
 
+       
+        public static void DumpAllocatedItems()
+        {
+            js_dump_allocated_items();
+        }
         ~JsEngine()
         {
             if (!_disposed)
                 Dispose(false);
         }
-
         #endregion
     }
 }

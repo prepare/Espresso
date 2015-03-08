@@ -793,18 +793,15 @@ namespace VroomJs
             MethodInfo mi = type.GetMethod(methodName, flags);
             ParameterInfo[] paramTypes = mi.GetParameters();
 
-            for (int i = 0; i < args.Length; i++)
+            for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
             {
-                if (i >= paramTypes.Length)
-                {
-                    continue;
-                }
                 if (args[i] != null && args[i].GetType() == typeof(JsFunction))
                 {
                     JsFunction function = (JsFunction)args[i];
                     args[i] = function.MakeDelegate(paramTypes[i].ParameterType, args);
                 }
             }
+
         }
 
         internal JsValue KeepAliveDeleteProperty(int slot, string name)
