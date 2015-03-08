@@ -1,4 +1,4 @@
-﻿namespace VRoomJsTest
+﻿namespace VRoomJsTest2
 {
     partial class Form1
     {

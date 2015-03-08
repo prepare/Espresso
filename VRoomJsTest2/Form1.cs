@@ -7,10 +7,10 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using VroomJs;
-using NativeV8;
+using VroomJs;
 using NUnit.Framework;
 
-namespace VRoomJsTest
+namespace VRoomJsTest2
 {
     public partial class Form1 : Form
     {
@@ -371,7 +371,6 @@ namespace VRoomJsTest
                 {
                     //setter 
                 }));
-
             //===============================================================
             //create js engine and context 
             using (JsEngine engine = new JsEngine())
@@ -385,17 +384,13 @@ namespace VRoomJsTest
                 stwatch.Reset();
                 stwatch.Start();
 
-                //AboutMe ab = new AboutMe();
-                //ctx.SetVariableFromAny("x", ab);
-                //ctx.SetVariable(
 
                 TestMe1 t1 = new TestMe1();
+
                 NativeJsInstanceProxy proxy = ctx.CreateWrapper(t1, jstypedef);
                 ctx.SetVariable("x", proxy);
 
-                //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
-                //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
-                //string testsrc = "x.B(x.D.IsOk,x.D.Test1());";
+
                 string testsrc = "x.B(x.D.IsOK);";
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
@@ -421,7 +416,7 @@ namespace VRoomJsTest
                 stwatch.Start();
 
                 var ab = new AboutMe();
-                ctx.SetVariableAutoWrap("x", ab); 
+                ctx.SetVariableAutoWrap("x", ab);
 
                 //string testsrc = "x.IsOK;";
                 string testsrc = "x.Test2('AAA');";

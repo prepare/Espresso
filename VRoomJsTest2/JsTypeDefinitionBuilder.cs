@@ -5,12 +5,9 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 
-using VroomJs;
-
-namespace NativeV8
-{
-
-
+using VroomJs; 
+namespace VRoomJsTest2
+{ 
     class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilderBase
     {
         Type typeOfJsTypeAttr = typeof(JsTypeAttribute);
