@@ -151,10 +151,9 @@ namespace VroomJs.Tests
             using (JsContext js = jsEngine.CreateContext())
             {
                 js.Execute("var x = { the_answer: 42 }");
-                dynamic x = js.GetVariable("x");
-#if NET40
-                Assert.That(x.the_answer, Is.EqualTo(42));
-#endif
+                var x = js.GetVariable("x") as JsObject;
+                Assert.That(x["the_answer"], Is.EqualTo(42));
+
             }
         }
 
@@ -164,10 +163,9 @@ namespace VroomJs.Tests
             using (JsContext js = jsEngine.CreateContext())
             {
                 js.Execute("var x = { a_string: 'This was set from Javascript!' }");
-                dynamic x = js.GetVariable("x");
-#if NET40
-                Assert.That(x.a_string, Is.EqualTo("This was set from Javascript!"));
-#endif
+                var x = js.GetVariable("x") as JsObject;
+                Assert.That(x["a_string"], Is.EqualTo("This was set from Javascript!"));
+
             }
         }
 
@@ -179,11 +177,11 @@ namespace VroomJs.Tests
                 var t = new TestClass();
                 js.SetVariableFromAny("o", t);
                 js.Execute("var x = { nested: o }; x.nested.Int32Property = 42");
-                dynamic x = js.GetVariable("x");
-#if NET40
-                Assert.That(x.nested, Is.EqualTo(t));
+                var x = js.GetVariable("x") as JsObject;
+
+                Assert.That(x["nested"], Is.EqualTo(t));
                 Assert.That(t.Int32Property, Is.EqualTo(42));
-#endif
+
             }
         }
 
@@ -194,11 +192,10 @@ namespace VroomJs.Tests
             {
                 var v = 42;
                 js.Execute("var x = {}");
-                dynamic x = js.GetVariable("x");
-#if NET40
-                x.the_answer = v;
+                var x = js.GetVariable("x") as JsObject;
+                x["the_answer"] = v;
                 Assert.That(js.Execute("x.the_answer"), Is.EqualTo(v));
-#endif
+
             }
         }
 
@@ -209,17 +206,13 @@ namespace VroomJs.Tests
             {
                 var v = "This was set from managed code!";
                 js.Execute("var x = {}");
-                dynamic x = js.GetVariable("x");
-#if NET40
-                x.a_string = v;
+                var x = js.GetVariable("x") as JsObject;
+
+                x["a_string"] = v;
                 Assert.That(js.Execute("x.a_string"), Is.EqualTo(v));
-#endif
+
             }
-        }
-
-
-
-
+        } 
         [Test]
         public void CallJsProperty()
         {
@@ -227,15 +220,17 @@ namespace VroomJs.Tests
             {
 
                 js.Execute("var x = { f: function (a, b) { return [a*2, b+'!']; }}");
-#if NET40
-                dynamic x = js.GetVariable("x");
-                object r = x.f(21, "Can't believe this worked");
+
+                var x = js.GetVariable("x") as JsObject;
+                var f = x["f"] as JsFunction; 
+                var r = f.Invoke(21, "Can't believe this worked");
+                 
                 Assert.That(r, Is.AssignableTo<object[]>());
                 object[] a = (object[])r;
                 Assert.That(a.Length, Is.EqualTo(2));
                 Assert.That(a[0], Is.EqualTo(42));
                 Assert.That(a[1], Is.EqualTo("Can't believe this worked!"));
-#endif
+
             }
         }
 

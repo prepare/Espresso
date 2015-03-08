@@ -87,8 +87,9 @@ namespace VroomJs
                 //return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
                 case JsValueType.Array:
                     {
-                        var r = new object[v.Length];
-                        for (int i = 0; i < v.Length; i++)
+                        int len = v.Length;
+                        var r = new object[len];
+                        for (int i = 0; i < len; i++)
                         {
                             var vi = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
                             r[i] = FromJsValue(vi);
@@ -107,8 +108,8 @@ namespace VroomJs
                 case JsValueType.Managed:
                     return _context.KeepAliveGet(v.Index);
                 case JsValueType.JsTypeWrap:
-                    return this._context.GetObjectProxy(v.Index);
-
+                    //auto unwrap
+                    return this._context.GetObjectProxy(v.Index).WrapObject;
                 case JsValueType.ManagedError:
                     Exception inner = _context.KeepAliveGet(v.Index) as Exception;
                     string msg = null;
@@ -209,7 +210,7 @@ namespace VroomJs
             };
         }
 
-        public JsValue ToJsValue(NativeV8.NativeJsInstanceProxy jsInstance)
+        public JsValue ToJsValue(INativeScriptable jsInstance)
         {
 
             //extension 
@@ -243,17 +244,16 @@ namespace VroomJs
             if (obj == null)
                 return new JsValue { Type = JsValueType.Null };
 
-            if (obj is NativeV8.NativeJsInstanceProxy)
+            if (obj is INativeRef)
             {
                 //extension
-                NativeV8.NativeJsInstanceProxy prox = (NativeV8.NativeJsInstanceProxy)obj;
+                INativeRef prox = (INativeRef)obj;
                 int keepAliveId = _context.KeepAliveAdd(obj);
                 return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
             }
 
-
-
             Type type = obj.GetType();
+
             // Check for nullable types (we will cast the value out of the box later).
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -315,9 +315,16 @@ namespace VroomJs
             // _keepalives list, to make sure the GC won't collect it while still in
             // use by the unmanaged Javascript engine. We don't try to track duplicates
             // because adding the same object more than one time acts more or less as
-            // reference counting. 
+            // reference counting.  
+            //check 
 
-            return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
+            var jsTypeDefinition = _context.GetJsTypeDefinition2(type);
+            INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
+            int keepAliveId2 = _context.KeepAliveAdd(prox2);
+            return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = keepAliveId2 };
+
+            //return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
+
     }
 }

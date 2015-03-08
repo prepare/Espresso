@@ -2,7 +2,7 @@
 using System.Collections.Generic; 
 using System.Windows.Forms;
 
-namespace VRoomJsTest
+namespace VRoomJsTest2
 {
     static class Program
     {
