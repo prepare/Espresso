@@ -72,10 +72,7 @@ void ResultSetString(MetCallingArgs* callingArgs,wchar_t* value)
 void ResultSetJsValue(MetCallingArgs* callingArgs,jsvalue value)
 {	
 	callingArgs->result =  value;   
-}
-
-
-
+} 
 
 ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 { 
@@ -168,12 +165,7 @@ Handle<Value> DoMethodCall(const Arguments& args)
 {	 
 	//call to bridge with args  
 	HandleScope h01; 
-	//if(managedListner)
-	//{
-	//	//for debug
-	//	managedListner(0,L"data",0);
-	//}    
-
+	 
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
 	callingArgs.args = &args;
@@ -196,11 +188,12 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 {
 
 	HandleScope h01;  	
-	wstring name = (wchar_t*) *String::Value(propertyName);
+
+	//wstring name = (wchar_t*) *String::Value(propertyName);
 	Local<v8::External> ext= Local<v8::External>::Cast( info.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value(); 
-
-	//int m_index  = info.Data()->Int32Value();	 
+	 
+	 
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	ManagedRef* extHandler=(ManagedRef*)external->Value();; 
@@ -209,9 +202,11 @@ Handle<Value> DoGetterProperty(Local<String> propertyName,const AccessorInfo& in
 	memset(&callingArgs,0,sizeof(MetCallingArgs));  
 	callingArgs.accessorInfo = &info;
 	callingArgs.methodCallKind = MET_GETTER; 
+	 	
 	cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
 	
-	return cctx->ctx->AnyToV8(callingArgs.result); 
+	//close and return value
+	return h01.Close(cctx->ctx->AnyToV8(callingArgs.result));
 }
 
 void DoSetterProperty(Local<String> propertyName,
@@ -241,13 +236,13 @@ void DoSetterProperty(Local<String> propertyName,
 Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInfo& iInfo)
 {
 	//TODO: implement this ...
-
+	HandleScope h01;  
 	//name of method or property is sent to here
 	wstring name = (wchar_t*) *String::Value(iName);
 	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	//Noesis::Javascript::ManagedRef* exH = (Noesis::Javascript::ManagedRef*)external->Value();
 
-	return Handle<Value>();
+	return  h01.Close(Handle<Value>());
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 
 	// set property
@@ -258,7 +253,9 @@ Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const AccessorInf
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Handle<Value> IndexGetter(uint32_t iIndex, const AccessorInfo &iInfo)
-{
+{		
+	
+	HandleScope h01;  
 	//TODO: implement this ...
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
@@ -270,11 +267,12 @@ Handle<Value> IndexGetter(uint32_t iIndex, const AccessorInfo &iInfo)
 	//	return value;
 
 	// member not found
-	return Handle<Value>();
+	return h01.Close( Handle<Value>());
 } 
 //////////////////////////////////////////////////////////////////////////////////////////////////// 
 Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const AccessorInfo &iInfo)
-{
+{	
+	HandleScope h01;  
 	Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
 	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
 	//Handle<Value> value;
@@ -285,9 +283,8 @@ Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const AccessorIn
 	//	return value;
 
 	// member not found
-	return Handle<Value>();
+	return h01.Close(Handle<Value>());
 }
-
 void JsContext::RegisterManagedCallback(void* callback,int callBackKind)
 {
 	this->myMangedCallBack = (del_JsBridge)callback; 
@@ -418,8 +415,10 @@ ExternalTypeDefinition* ContextRegisterTypeDefinition(
 	int mIndex,  //managed index of type
 	const char* stream,
 	int streamLength)
-{   
-	return jsContext->RegisterTypeDefinition(mIndex,stream,streamLength); 
+{		 
+
+	return jsContext->RegisterTypeDefinition(mIndex,stream,streamLength); 	 
+
 }  
 void ContextRegisterManagedCallback(JsContext* jsContext,void* callback,int callBackKind)
 {
@@ -432,9 +431,14 @@ jsvalue ArgGetObject(MetCallingArgs* args,int index)
 	switch(args->methodCallKind)
 	{	
 		case MET_SETTER:
-			{
+			{	
 				//1 arg
-				return args->result;
+				Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo->Data());
+				Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo->This());
+
+				CallingContext* cctx =  (CallingContext*)ext->Value();  
+				return cctx->ctx->ConvAnyFromV8(args->setterValue,obj);
+				 
 			}break; 
 		case MET_: 
 			{	
