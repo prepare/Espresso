@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
-
 namespace VroomJs
 {
     public class JsFunction : IDisposable
@@ -36,8 +34,20 @@ namespace VroomJs
             object result = _context.Invoke(_funcPtr, _thisPtr, args);
             return result;
         }
-        public object MakeDelegate(Type targetDelegateType)
+        public Delegate MakeDelegate(Type targetDelegateType)
         {
+            //check if we already has cache delegate for handle the targetDelegateType
+            //if not found then create a new one  
+
+            DelegateTemplate foundTemplate;
+            if (this._context.GetCacheDelegateForType(targetDelegateType, out foundTemplate))
+            {
+                //found sample
+                //the create new holder from sample template
+                return foundTemplate.CreateNewDelegate(targetDelegateType, this);
+            }
+            //----------------------------------------------------------------------------------
+
             if (targetDelegateType.BaseType != typeof(MulticastDelegate))
             {
                 throw new ApplicationException("Not a delegate.");
@@ -108,21 +118,18 @@ namespace VroomJs
                         throw new NotSupportedException();
                     }
             }
+            //----------------------------------
+            //create sample 
+            DelegateTemplate newTemplate = new DelegateTemplate(
+                delHolderType,
+                Activator.CreateInstance(delHolderType) as DelegateHolder);
+            //cache 
+            this._context.CacheDelegateForType(targetDelegateType, newTemplate);
 
+            //new delegate created from sample
+            return newTemplate.CreateNewDelegate(targetDelegateType, this);
 
-            DelegateHolder delHolder = null;
-            delHolder = Activator.CreateInstance(delHolderType) as DelegateHolder;
-            delHolder.jsFunc = this;
-
-            return Delegate.CreateDelegate(targetDelegateType,
-                delHolder,
-                delHolderType.GetMethod("Invoke"));
         }
-
-
-
-
-
 
 
         #region IDisposable implementation
