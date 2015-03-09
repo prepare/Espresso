@@ -96,14 +96,14 @@ namespace VRoomJsTest2
                 return true;
             }
         }
+         
+        delegate object AboutMeEventHandler(object[] args);
 
-        delegate void AboutMeEventHandler(object args);
-        public delegate object SimpleDelegate(object[] args);
         [JsType]
         class AboutMe
         {
 
-            SimpleDelegate mousedownEventHandler;
+            AboutMeEventHandler mousedownEventHandler;
 
             [JsMethod]
             public int Test1()
@@ -130,10 +130,9 @@ namespace VRoomJsTest2
                 return new AboutMe();
             }
             [JsMethod]
-            public void AttachEvent(string eventName, SimpleDelegate evHandler)
+            public void AttachEvent(string eventName, AboutMeEventHandler evHandler)
             {
                 this.mousedownEventHandler = evHandler;
-
             }
             [JsMethod]
             public void FireEventMouseDown(object eventArg)
@@ -144,7 +143,9 @@ namespace VRoomJsTest2
                     //func.Invoke(eventArg);
                     //SimpleDelegate simpleDel = mousedownEventHandler as SimpleDelegate;
                     //simpleDel(new object[] { eventArg }); 
-                    mousedownEventHandler(new object[] { eventArg });
+                    //mousedownEventHandler(new object[] { eventArg });
+                    mousedownEventHandler(new object[] { null, eventArg });
+                    //mousedownEventHandler(this, eventArg);
                 }
             }
         }
