@@ -86,7 +86,8 @@ namespace VroomJs.Tests
             using (JsContext js = jsEngine.CreateContext())
             {
                 js.SetVariableFromAny("o", t);
-                Assert.That(js.Execute("o.NestedObject.StringProperty"), Is.EqualTo(v));
+                var result = js.Execute("o.NestedObject.StringProperty");
+                Assert.That(result, Is.EqualTo(v));
             }
         }
 
