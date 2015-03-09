@@ -1,5 +1,6 @@
-﻿//2015, MIT WinterDev
+﻿//2015 MIT, WinterDev
 //2013 MIT, Federico Di Gregorio <fog@initd.org>
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -63,25 +64,35 @@ namespace VroomJs
             int argCount = invokeParams.Length;
             Type returnType = invoke.ReturnType;
             bool returnVoid = returnType == typeof(void);
-
-            Type[] typelist = new Type[argCount + 1];
-            for (int i = 0; i < argCount; ++i)
+            Type[] typelist = null;
+            if (returnVoid)
             {
-                typelist[i] = invokeParams[i].ParameterType;
+                typelist = new Type[argCount];
+                for (int i = 0; i < argCount; ++i)
+                {
+                    typelist[i] = invokeParams[i].ParameterType;
+                }
             }
-            typelist[argCount] = returnType;
-
+            else
+            {
+                typelist = new Type[argCount + 1]; //+1 for return type
+                for (int i = 0; i < argCount; ++i)
+                {
+                    typelist[i] = invokeParams[i].ParameterType;
+                }
+                typelist[argCount] = returnType;
+            }
             //----------------------------------
             //create delegate holder
             //you can add more than 1  
             Type delHolderType = null;
-            switch (invokeParams.Length)
+            switch (argCount)
             {
                 case 0:
                     {
                         //0 input
                         delHolderType = returnVoid ?
-                            typeof(ActionDelegateHolder).MakeGenericType(typelist) :
+                            typeof(ActionDelegateHolder) :
                             typeof(FuncDelegateHolder<>).MakeGenericType(typelist);
 
                     } break;
@@ -89,27 +100,27 @@ namespace VroomJs
                     {
                         //1 input 
                         delHolderType = returnVoid ?
-                            typeof(ActionDelegateHolder).MakeGenericType(typelist) :
+                            typeof(ActionDelegateHolder<>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,>).MakeGenericType(typelist);
 
                     } break;
                 case 2:
                     {
                         delHolderType = returnVoid ?
-                            typeof(ActionDelegateHolder<>).MakeGenericType(typelist) :
+                            typeof(ActionDelegateHolder<,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,>).MakeGenericType(typelist);
                     } break;
                 case 3:
                     {
                         delHolderType = returnVoid ?
-                            typeof(ActionDelegateHolder<,>).MakeGenericType(typelist) :
+                            typeof(ActionDelegateHolder<,,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,,>).MakeGenericType(typelist);
 
                     } break;
                 case 4:
                     {
                         delHolderType = returnVoid ?
-                            typeof(ActionDelegateHolder<,,>).MakeGenericType(typelist) :
+                            typeof(ActionDelegateHolder<,,,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,,,>).MakeGenericType(typelist);
                     } break;
                 default:
