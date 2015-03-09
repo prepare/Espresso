@@ -263,8 +263,10 @@ extern "C"
         v.length = length;
         v.value.str = new uint16_t[length+1];
         if (v.value.str != NULL) {
-            for (int i=0 ; i < length ; i++)
+            for (int i=length-1;i>=0;--i)
+			{
                  v.value.str[i] = str[i];
+			}
             v.value.str[length] = '\0';
             v.type = JSVALUE_TYPE_STRING;
         }
@@ -293,33 +295,44 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_dispose" << std::endl;
 #endif
-        if (value.type == JSVALUE_TYPE_STRING || value.type == JSVALUE_TYPE_STRING_ERROR) {
-            if (value.value.str != NULL) {
-				delete[] value.value.str;
-			}
-        }
-		else if (value.type == JSVALUE_TYPE_ARRAY || value.type == JSVALUE_TYPE_FUNCTION) {
-		    for (int i=0 ; i < value.length ; i++) {
-                jsvalue_dispose(value.value.arr[i]);
-			}
-            if (value.value.arr != NULL) {
-                delete[] value.value.arr;
-			}
-        }
-		else if (value.type == JSVALUE_TYPE_DICT) {
-			for (int i=0 ; i < value.length * 2; i++) {
-                jsvalue_dispose(value.value.arr[i]);
-			}
-            if (value.value.arr != NULL) {
-                delete[] value.value.arr;
-			}
-		}
-		else if (value.type == JSVALUE_TYPE_ERROR) {
-			jserror *error = (jserror*)value.value.ptr;
-			jsvalue_dispose(error->resource);
-			jsvalue_dispose(error->message);
-			jsvalue_dispose(error->exception);
-			delete error;
-		}
+
+		switch(value.type)
+		{
+			case JSVALUE_TYPE_STRING:
+			case JSVALUE_TYPE_STRING_ERROR:
+				{
+					 if (value.value.str != NULL) {
+						delete[] value.value.str;
+					 }
+				}break;
+			case JSVALUE_TYPE_ARRAY:
+			case JSVALUE_TYPE_FUNCTION:
+				{
+					for (int i=value.length-1;i>=0;--i) {
+						jsvalue_dispose(value.value.arr[i]);
+					}
+					if (value.value.arr != NULL) {
+						delete[] value.value.arr;
+					}
+				}break;
+			case JSVALUE_TYPE_DICT:
+				{	
+					for (int i= (value.length * 2)-1;i>=0;--i) {
+						jsvalue_dispose(value.value.arr[i]);
+					}
+					if (value.value.arr != NULL) {
+						delete[] value.value.arr;
+					}
+				}break;
+			case JSVALUE_TYPE_ERROR:
+				{
+					jserror *error = (jserror*)value.value.ptr;
+					jsvalue_dispose(error->resource);
+					jsvalue_dispose(error->message);
+					jsvalue_dispose(error->exception);
+					delete error;
+
+				}break; 
+		} 
     }       
 }

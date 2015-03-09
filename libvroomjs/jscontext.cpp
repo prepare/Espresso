@@ -336,8 +336,9 @@ jsvalue JsContext::ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
    return this->engine_->AnyFromV8(value,thisArg);
 }
 Handle<Value> JsContext::AnyToV8(jsvalue v )
-{
-   return this->engine_->AnyToV8(v,this->id_);	
+{	
+   HandleScope h01;  
+   return h01.Close( this->engine_->AnyToV8(v,this->id_));
 }
  
 
