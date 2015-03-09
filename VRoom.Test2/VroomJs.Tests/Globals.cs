@@ -151,8 +151,7 @@ namespace VroomJs.Tests
                 var tellmeFunc = x["tellme"] as JsFunction;
                 //tellmeFunc.Invoke(new object[] { "What is the answer to ...?" });
                 object s;
-                x.TryInvokeMember("tellme", new[] { "What is the answer to ...?" }, out s);
-                //object s = tellmeFunc.InvokeInstance(x.Handle, new[] { "What is the answer to ...?" });
+                x.TryInvokeMember("tellme", new[] { "What is the answer to ...?" }, out s); 
                 Assert.That(s, Is.EqualTo("What is the answer to ...? The answer is: 42"));
             }
 

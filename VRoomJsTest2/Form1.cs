@@ -97,10 +97,14 @@ namespace VRoomJsTest2
             }
         }
 
-
+        delegate void AboutMeEventHandler(object args);
+        public delegate object SimpleDelegate(object[] args);
         [JsType]
         class AboutMe
         {
+
+            SimpleDelegate mousedownEventHandler;
+
             [JsMethod]
             public int Test1()
             {
@@ -120,7 +124,35 @@ namespace VRoomJsTest2
                     return true;
                 }
             }
+            [JsMethod]
+            public AboutMe NewAboutMe()
+            {
+                return new AboutMe();
+            }
+            [JsMethod]
+            public void AttachEvent(string eventName, SimpleDelegate evHandler)
+            {
+                this.mousedownEventHandler = evHandler;
+
+            }
+            [JsMethod]
+            public void FireEventMouseDown(object eventArg)
+            {
+                if (mousedownEventHandler != null)
+                {
+                    //JsFunction func = mousedownEventHandler.Target as JsFunction;
+                    //func.Invoke(eventArg);
+                    //SimpleDelegate simpleDel = mousedownEventHandler as SimpleDelegate;
+                    //simpleDel(new object[] { eventArg }); 
+                    mousedownEventHandler(new object[] { eventArg });
+                }
+            }
         }
+
+
+
+
+
         private void button1_Click(object sender, EventArgs e)
         {
 
@@ -169,7 +201,7 @@ namespace VRoomJsTest2
         private void button2_Click(object sender, EventArgs e)
         {
             JsBridge.dbugTestCallbacks();
-             
+
             //create js engine and context
 
             using (JsEngine engine = new JsEngine())
@@ -418,6 +450,61 @@ namespace VRoomJsTest2
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
 
             }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            JsBridge.dbugTestCallbacks();
+
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                var ab = new AboutMe();
+                ctx.SetVariableAutoWrap("x", ab);
+
+                //string testsrc = "x.IsOK;";
+                string testsrc = "x.NewAboutMe();";
+                object result = ctx.Execute(testsrc);
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+
+            }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            int version = JsBridge.LibVersion;
+            JsBridge.dbugTestCallbacks();
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                var ab = new AboutMe();
+                ctx.SetVariableAutoWrap("x", ab);
+
+                string testsrc = @"(function(){
+                    x.AttachEvent('mousedown',function(evArgs){});
+                    x.FireEventMouseDown({});
+                })()";
+                object result = ctx.Execute(testsrc);
+                stwatch.Stop();
+
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+
+            }
+
         }
     }
 }
