@@ -79,6 +79,10 @@
       <Project>{E3AEA724-CC01-4E12-90D1-C0337276F728}</Project>
       <Name>VRoom.Test2</Name>
     </ProjectReference>
+    <ProjectReference Include="..\VRoomJs.Core\VRoomJs.Core.csproj">
+      <Project>{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}</Project>
+      <Name>VRoomJs.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VRoomJs2\VRoomJs2.csproj">
       <Project>{CECA196E-EB06-403E-8044-F760EB65C8E5}</Project>
       <Name>VRoomJs2</Name>

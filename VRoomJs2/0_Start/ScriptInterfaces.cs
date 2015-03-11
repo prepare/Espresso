@@ -7,18 +7,6 @@ using System.IO;
 
 namespace VroomJs
 {
-    public interface INativeRef
-    {
-        int ManagedIndex { get; }
-        object WrapObject { get; }
-        bool HasNativeSide { get; }
-        void SetUnmanagedPtr(IntPtr unmanagedObjectPtr);
-        IntPtr UnmanagedPtr { get; }
-    }
-    public interface INativeScriptable : INativeRef
-    {
-        IntPtr UnmanagedTypeDefinitionPtr { get; }
-    }
 
     public abstract class JsTypeMemberDefinition
     {
@@ -236,12 +224,12 @@ namespace VroomJs
         {
 
             this.propInfo = propInfo;
-            var getter = propInfo.GetGetMethod();
+            var getter = propInfo.GetGetMethod(true);
             if (getter != null)
             {
                 this.GetterMethod = new JsPropertyGetDefinition(name, getter);
             }
-            var setter = propInfo.GetSetMethod();
+            var setter = propInfo.GetSetMethod(true);
             if (setter != null)
             {
                 this.SetterMethod = new JsPropertySetDefinition(name, setter);
@@ -284,7 +272,7 @@ namespace VroomJs
             : base(name, setterMethod)
         {
         }
-    } 
+    }
 
     public class JsMethodDefinition : JsTypeMemberDefinition
     {
