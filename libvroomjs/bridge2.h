@@ -25,8 +25,12 @@ extern "C"{
 		
 		 
 	    char methodCallKind;
-		const v8::Arguments* args; 
-		const AccessorInfo* accessorInfo;
+		//const v8::Arguments* args;//0.10.x
+		const v8::FunctionCallbackInfo<Value>* args;//0.12.x
+		//TODO
+		//Nodejs 0.12.x class AccessorInfo not found
+		//const AccessorInfo* accessorInfo;
+		Local<Object> accessorInfo;
 		Local<Value> setterValue;
 
 		struct jsvalue result;
