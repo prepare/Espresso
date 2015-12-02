@@ -82,7 +82,7 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 	//(*context_)->Enter();
 	((Context*)context_)->Enter();
 
-	HandleScope handleScope();
+	//HandleScope handleScope();
 	ManagedRef* handler= new ManagedRef(this->engine_,this->id_,mIndex,true);
 
 	//create js from template
@@ -102,6 +102,7 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 		//auto a1= externalTypeDef->handlerToJsObjectTemplate->NewInstance();
 		handler->v8InstanceHandler=
 			Persistent<v8::Object>(isolate_, externalTypeDef->handlerToJsObjectTemplate->NewInstance());
+
 		Handle<Object> hd = Handle<Object>::New(isolate_, handler->v8InstanceHandler);
 		hd->SetInternalField(0, External::New(isolate_, handler));//0.12.x
 		//handler->v8InstanceHandler->SetInternalField(0,External::New(isolate_, handler));//0.10.x
@@ -240,7 +241,7 @@ void DoSetterProperty(Local<String> propertyName,
 	Handle<External> external = Handle<External>::Cast(infoLocal->GetInternalField(0));
 	ManagedRef* extHandler=(ManagedRef*)external->Value();
  
-	Handle<Object> obj= Handle<Object>::Cast(infoLocal->GetInternalField(0));
+	Handle<Object> obj= Handle<Object>::Cast<Value>(infoLocal->GetInternalField(0));
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs)); 
 	callingArgs.accessorInfo = infoLocal;
@@ -420,8 +421,11 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//objTemplate->SetNamedPropertyHandler(Getter, Setter);
 	//objTemplate->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
 
-	//externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); 
-	externalTypeDef->handlerToJsObjectTemplate = Handle<ObjectTemplate>::New(isolate_, handleScope.Escape((Local<Value>)objTemplate));
+	//externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); //0.10.x
+	//externalTypeDef->handlerToJsObjectTemplate = Handle<ObjectTemplate>::New(isolate_, handleScope.Escape((Local<ObjectTemplate>)objTemplate));//0.12.x
+
+	//Persistent<ObjectTemplate>perTemp = Persistent<ObjectTemplate>(isolate_, objTemplate);
+	externalTypeDef->handlerToJsObjectTemplate = objTemplate;//TODO : try to solve error C2248
 	//(*context_)->Exit();
 	((Context*)context_)->Exit();
 

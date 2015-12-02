@@ -58,7 +58,7 @@ static void managed_prop_delete(Local<String> name, const PropertyCallbackInfo<B
     Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
     ManagedRef* ref = (ManagedRef*)wrap->Value();
     //return scope.Close(ref->DeleteProperty(name));
-	info.GetReturnValue().Set(Local<Value>::New(isolate, ref->DeleteProperty(name)));
+	info.GetReturnValue().Set(Local<Boolean>::New(isolate, ref->DeleteProperty(name)));
 }
 
 static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info)
@@ -74,10 +74,10 @@ static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info)
     Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
     ManagedRef* ref = (ManagedRef*)wrap->Value();
     //return scope.Close(ref->EnumerateProperties());
-	info.GetReturnValue().Set(Local<Value>::New(isolate, ref->EnumerateProperties()));
+	info.GetReturnValue().Set(Local<Array>::New(isolate, ref->EnumerateProperties()));
 }
 
-static Local<Value> managed_call(const FunctionCallbackInfo<Value>& args)
+static Local<Value> managed_call2(const FunctionCallbackInfo<Value>& args)
 //static void managed_call(const FunctionCallbackInfo<Value>& args)
 {
 #ifdef DEBUG_TRACE_API
@@ -91,8 +91,23 @@ static Local<Value> managed_call(const FunctionCallbackInfo<Value>& args)
     Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
     ManagedRef* ref = (ManagedRef*)wrap->Value();
     //return scope.Close(ref->Invoke(args));
-	args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));//0.12.x
+	//args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));//0.12.x
 	return scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));//0.10.x
+}
+
+static void managed_call(const FunctionCallbackInfo<v8::Value>& args)
+{
+#ifdef DEBUG_TRACE_API
+	std::cout << "managed_call" << std::endl;
+#endif
+	Isolate* isolate = Isolate::GetCurrent();
+	EscapableHandleScope scope(isolate);
+
+	Local<Object> self = args.Holder();
+	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+	ManagedRef* ref = (ManagedRef*)wrap->Value();
+	args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));//0.12.x
+	//return scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));//0.10.x
 }
 
 void managed_valueof(const FunctionCallbackInfo<Value>& args) {
@@ -147,7 +162,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			managed_prop_delete, 
 			managed_prop_enumerate);
         //obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
-		obj_template->SetCallAsFunctionHandler(callback, managed_call);
+		obj_template->SetCallAsFunctionHandler(callback);//TODO
         engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>(engine->isolate_, fo));
 		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, FunctionTemplate::New(engine->isolate_, managed_valueof));
 		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
@@ -488,7 +503,7 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
     Local<External> wrap = Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
     delete ref;
-	puts(NULL);//TODO
+	//puts(NULL);//TODO
 	//object.Reset();
 	//puts(*data.GetParameter());
 	//Isolate* isolate = Isolate::GetCurrent();
@@ -511,7 +526,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 		case JSVALUE_TYPE_NULL:
 			return Null(isolate_);
 		case JSVALUE_TYPE_BOOLEAN:
-			return Boolean::New(isolate_, v.value.i32);
+			return Boolean::New(isolate_, v.value.i32!=0);//TODO
 		case JSVALUE_TYPE_INTEGER:
 			return Int32::New(isolate_, v.value.i32);
 		case JSVALUE_TYPE_NUMBER:
