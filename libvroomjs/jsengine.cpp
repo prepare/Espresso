@@ -165,7 +165,8 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 		obj_template->SetCallAsFunctionHandler(callback);//TODO
         engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>(engine->isolate_, fo));
 		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, FunctionTemplate::New(engine->isolate_, managed_valueof));
-		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+//		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+		engine->valueof_function_template_ = &fp;
 		
 		engine->global_context_ = new Persistent<Context>();
 		((Context*)engine->global_context_)->Enter();
@@ -499,7 +500,7 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
     HandleScope scope(isolate);
 
 	Persistent<Object> self = Persistent<Object>(isolate, data.GetValue());//0.12.x
-	Handle<Object> selfHandle = Handle<Object>::New(isolate, self);//0.12.x
+	Local<Object> selfHandle = Local<Object>::New(isolate, self);//0.12.x
     Local<External> wrap = Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
     delete ref;
@@ -571,7 +572,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 				//persistent.MakeWeak(NULL, managed_destroy);
 				persistent.SetWeak(&object, managed_destroy);
 				//persistent.SetWeak(&object, managed_destroy1);
-				Handle<Object> handle = Handle<Object>::New(isolate_, persistent);
+				Local<Object> handle = Local<Object>::New(isolate_, persistent);
 				//return persistent;//0.10.x
 				return handle;//0.12.x
 			}
