@@ -103,7 +103,7 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 		handler->v8InstanceHandler=
 			Persistent<v8::Object>(isolate_, externalTypeDef->handlerToJsObjectTemplate->NewInstance());
 
-		Handle<Object> hd = Handle<Object>::New(isolate_, handler->v8InstanceHandler);
+		Local<Object> hd = Local<Object>::New(isolate_, handler->v8InstanceHandler);
 		hd->SetInternalField(0, External::New(isolate_, handler));//0.12.x
 		//handler->v8InstanceHandler->SetInternalField(0,External::New(isolate_, handler));//0.10.x
 	}

@@ -448,7 +448,7 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 		Handle<Function> function = Handle<Function>::Cast(value);
 		jsvalue* arr = new jsvalue[2];
         if (arr != NULL) { 
-			arr[0].value.ptr = new Persistent<Object>(Persistent<Function>(isolate_, function));
+			arr[0].value.ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
 			arr[0].length = 0;
 			arr[0].type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
