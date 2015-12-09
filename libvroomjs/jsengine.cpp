@@ -151,7 +151,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 		HandleScope scope(engine->isolate_);
 
 		// Setup the template we'll use for all managed object references.
-		FunctionCallback callback;
+		//FunctionCallback callback;
         Handle<FunctionTemplate> fo = FunctionTemplate::New(NULL);
 		Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
     	obj_template->SetInternalFieldCount(1);
@@ -162,7 +162,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			managed_prop_delete, 
 			managed_prop_enumerate);
         //obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
-		obj_template->SetCallAsFunctionHandler(callback);//TODO
+		obj_template->SetCallAsFunctionHandler(managed_call);//TODO
         engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>(engine->isolate_, fo));
 		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, FunctionTemplate::New(engine->isolate_, managed_valueof));
 //		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
