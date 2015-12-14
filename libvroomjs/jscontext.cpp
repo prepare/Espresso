@@ -113,32 +113,10 @@ jsvalue JsContext::Execute(JsScript *jsscript)
     TryCatch trycatch;
    
 	//Handle<Script> script = (*jsscript->GetScript()); //0.10.x
-	Persistent<Script> script = *jsscript->GetScript(); //0.12.x
+	Persistent<Script>* script = jsscript->GetScript(); //0.12.x
 	
-	Handle<Script> scriptHandle = Handle<Script>::New(isolate_, script);//0.12.x
-	//auto a = ((Script*)scriptHandle);
-	//auto that_ptr = (Script*)(&(script)); //T 
-
-	//internal::Object** p = reinterpret_cast<internal::Object**>(that_ptr); 
-	//auto tt2 = Handle<v8::Script>(reinterpret_cast<Script*>(HandleScope::CreateHandle2(
-	//		reinterpret_cast<internal::Isolate*>(isolate_), *p)));
-
-	//Handle<T> Handle<T>::New(Isolate* isolate, T* that) {
-	//	if (that == NULL) return Handle<T>();
-	//	T* that_ptr = that;
-	//	internal::Object** p = reinterpret_cast<internal::Object**>(that_ptr);
-	//	return Handle<T>(reinterpret_cast<T*>(HandleScope::CreateHandle(
-	//		reinterpret_cast<internal::Isolate*>(isolate), *p)));
-	//}
-
-
-
-
-
-
-
-
-	if (!script.IsEmpty()) {
+	Local<Script> scriptHandle = Local<Script>::New(isolate_, *script);//0.12.x
+	if (!((*script).IsEmpty())) {
 		//Local<Value> result = script->Run();//0.10.x
 		Local<Value> result = scriptHandle->Run();//0.12.x
 	
@@ -273,9 +251,9 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
     if (!value.IsEmpty()) {
 		//Handle<v8::Object> obj_handle = Handle<v8::Object>(obj);
 		//Handle<v8::Object> obj_handle = Handle<v8::Object>(value);
-		
-		Handle<v8::Object> obj_handle = Handle<v8::Object>::New(isolate_,*obj);//TODO
-        v = engine_->AnyFromV8(value,obj_handle);
+		//Handle<v8::Object> obj_handle = Handle<v8::Object>::New(isolate_, *obj);//TODO
+		Local<v8::Object> obj_handle = Local<v8::Object>::New(isolate_, *obj);//TODO
+        v = engine_->AnyFromV8(value,obj_handle);        
     }
     else {
         v = engine_->ErrorFromV8(trycatch);

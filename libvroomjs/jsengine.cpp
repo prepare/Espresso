@@ -151,7 +151,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 		HandleScope scope(engine->isolate_);
 
 		// Setup the template we'll use for all managed object references.
-		FunctionCallback callback;
+		//FunctionCallback callback;
         Handle<FunctionTemplate> fo = FunctionTemplate::New(NULL);
 		Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
     	obj_template->SetInternalFieldCount(1);
@@ -162,10 +162,11 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			managed_prop_delete, 
 			managed_prop_enumerate);
         //obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
-		obj_template->SetCallAsFunctionHandler(callback);//TODO
+		obj_template->SetCallAsFunctionHandler(managed_call);//TODO
         engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>(engine->isolate_, fo));
 		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, FunctionTemplate::New(engine->isolate_, managed_valueof));
-		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+//		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+		engine->valueof_function_template_ = &fp;
 		
 		engine->global_context_ = new Persistent<Context>();
 		((Context*)engine->global_context_)->Enter();
@@ -447,7 +448,7 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 		Handle<Function> function = Handle<Function>::Cast(value);
 		jsvalue* arr = new jsvalue[2];
         if (arr != NULL) { 
-			arr[0].value.ptr = new Persistent<Object>(Persistent<Function>(isolate_, function));
+			arr[0].value.ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
 			arr[0].length = 0;
 			arr[0].type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
@@ -499,7 +500,7 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
     HandleScope scope(isolate);
 
 	Persistent<Object> self = Persistent<Object>(isolate, data.GetValue());//0.12.x
-	Handle<Object> selfHandle = Handle<Object>::New(isolate, self);//0.12.x
+	Local<Object> selfHandle = Local<Object>::New(isolate, self);//0.12.x
     Local<External> wrap = Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
     delete ref;
@@ -571,7 +572,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 				//persistent.MakeWeak(NULL, managed_destroy);
 				persistent.SetWeak(&object, managed_destroy);
 				//persistent.SetWeak(&object, managed_destroy1);
-				Handle<Object> handle = Handle<Object>::New(isolate_, persistent);
+				Local<Object> handle = Local<Object>::New(isolate_, persistent);
 				//return persistent;//0.10.x
 				return handle;//0.12.x
 			}
