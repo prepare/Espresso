@@ -42,9 +42,9 @@ JsContext* JsContext::New(int id, JsEngine *engine)
         
 		Locker locker(context->isolate_);
         Isolate::Scope isolate_scope(context->isolate_);
-
+		HandleScope scope(context->isolate_);
 		//context->context_ = new Persistent<Context>(Context::New());
-		context->context_ = new Persistent<Context>();
+		context->context_ = new Persistent<Context>(context->isolate_,Context::New(context->isolate_));
 	}
     return context;
 }

@@ -152,7 +152,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 
 		// Setup the template we'll use for all managed object references.
 		//FunctionCallback callback;
-        Handle<FunctionTemplate> fo = FunctionTemplate::New(NULL);
+        Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
 		Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
     	obj_template->SetInternalFieldCount(1);
         obj_template->SetNamedPropertyHandler(
@@ -163,17 +163,21 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			managed_prop_enumerate);
         //obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
 		obj_template->SetCallAsFunctionHandler(managed_call);//TODO
-        engine->managed_template_ = new Persistent<FunctionTemplate>(Persistent<FunctionTemplate>(engine->isolate_, fo));
-		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, FunctionTemplate::New(engine->isolate_, managed_valueof));
-//		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
+        engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
+
+		Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
+		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, ff);
+		//engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
 		engine->valueof_function_template_ = &fp;
 		
-		engine->global_context_ = new Persistent<Context>();
-		((Context*)engine->global_context_)->Enter();
+		engine->global_context_ = new Persistent<Context>(engine->isolate_,Context::New(engine->isolate_));//global_context_ = null
+		Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
+		//((Context*)engine->global_context_)->Enter();
+		ctx->Enter();
 		//(*engine->global_context_)->Enter();
-		Local<FunctionTemplate>temp = Local<FunctionTemplate>::New(engine->isolate_, fp);
-		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), temp->GetFunction());
-		((Context*)engine->global_context_)->Exit();
+		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff->GetFunction());
+		//((Context*)engine->global_context_)->Exit();
+		ctx->Exit();
 		//(*engine->global_context_)->Exit();
 	}
 	return engine;

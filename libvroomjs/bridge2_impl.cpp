@@ -79,8 +79,10 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
+	HandleScope scope(isolate_);
+	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	//(*context_)->Enter();
-	((Context*)context_)->Enter();
+	ctx->Enter();
 
 	//HandleScope handleScope();
 	ManagedRef* handler= new ManagedRef(this->engine_,this->id_,mIndex,true);
@@ -110,7 +112,7 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 		//handler->v8InstanceHandler->SetInternalField(0,External::New(isolate_, handler));//0.10.x
 	}
 	//(*context_)->Exit();
-	((Context*)context_)->Exit();
+	ctx->Exit();
 	return handler;
 }
 
@@ -316,8 +318,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
-	//(*context_)->Enter(); 
-	((Context*)context_)->Enter();
+	HandleScope scope(isolate_);
+	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
+	//((Context*)context_)->Enter();
+	ctx->Enter();
 	//use 2 handle scopes ***, otherwise this will error	 
 
 	//HandleScope handleScope;//0.10.x
@@ -429,7 +433,8 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 	//Persistent<ObjectTemplate>perTemp = Persistent<ObjectTemplate>(isolate_, objTemplate);
 	externalTypeDef->handlerToJsObjectTemplate = objTemplate;//TODO : try to solve error C2248
 	//(*context_)->Exit();
-	((Context*)context_)->Exit();
+	//((Context*)context_)->Exit();
+	ctx->Exit();
 
 	return externalTypeDef; 
 } 

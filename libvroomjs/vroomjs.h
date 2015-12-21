@@ -32,6 +32,7 @@
 #define LIBVROOMJS_H 
 
 #include <v8.h>
+#include <v8-util.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <iostream>
@@ -91,8 +92,7 @@ extern long js_mem_debug_context_count;
 extern long js_mem_debug_managedref_count;
 extern long js_mem_debug_script_count;
 
-//class MetCallingArgs;//0.10.x
-struct MetCallingArgs;//0.12.x
+class MetCallingArgs;
 
 extern "C" 
 {	
