@@ -24,18 +24,9 @@ extern "C"{
 	typedef struct MetCallingArgs{
 		
 	    char methodCallKind;
-		union
-		{
-			const v8::FunctionCallbackInfo<Value>* func_args;
-			const v8::PropertyCallbackInfo<Value>* prop_args;
-		}* args;
-		union
-		{
-			const v8::PropertyCallbackInfo<Value>* prop_accessorInfo;
-			//const v8::PropertyCallbackInfo<void>* prop_accessorInfo_v;
-		}* accessorInfo;
+		const v8::FunctionCallbackInfo<Value>* args;
+		const v8::PropertyCallbackInfo<Value>* accessorInfo;
 		Local<Value> setterValue;
-
 		struct jsvalue result;
 
 	} MetCallingArgs_;
