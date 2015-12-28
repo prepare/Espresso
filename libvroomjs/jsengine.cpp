@@ -162,23 +162,18 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 			managed_prop_delete, 
 			managed_prop_enumerate);
         //obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
-		obj_template->SetCallAsFunctionHandler(managed_call);//TODO
+		obj_template->SetCallAsFunctionHandler(managed_call);
         engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
 
 		Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
 		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, ff);
-		//engine->valueof_function_template_ = new Persistent<FunctionTemplate>(fp);
-		engine->valueof_function_template_ = &fp;
+		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
 		
-		engine->global_context_ = new Persistent<Context>(engine->isolate_,Context::New(engine->isolate_));//global_context_ = null
+		engine->global_context_ = new Persistent<Context>(engine->isolate_,Context::New(engine->isolate_));
 		Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
-		//((Context*)engine->global_context_)->Enter();
 		ctx->Enter();
-		//(*engine->global_context_)->Enter();
 		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff->GetFunction());
-		//((Context*)engine->global_context_)->Exit();
 		ctx->Exit();
-		//(*engine->global_context_)->Exit();
 	}
 	return engine;
 }
@@ -543,8 +538,10 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 		case JSVALUE_TYPE_JSTYPEDEF:
 			{
 				ManagedRef* ext = (ManagedRef*)v.value.ptr;
+				Local<Object> obj = Local<Object>::New(isolate_, ext->v8InstanceHandler);
 				//return ext->v8InstanceHandler;//0.10.x
-				return ext->GetValueOf();//0.12.x
+				//return ext->GetValueOf();//0.12.x
+				return obj;
 			}
 		case JSVALUE_TYPE_ARRAY:
 			{// Arrays are converted to JS native arrays.

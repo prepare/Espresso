@@ -427,6 +427,7 @@ public:
 	int managedIndex; 
 	int memberkind; 
 	v8::Handle<v8::ObjectTemplate> handlerToJsObjectTemplate;
+	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate2;
 	ExternalTypeDefinition(int mIndex);
 	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };
