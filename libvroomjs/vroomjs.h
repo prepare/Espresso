@@ -425,9 +425,8 @@ class ExternalTypeDefinition
 
 public:		
 	int managedIndex; 
-	int memberkind; 
-	v8::Handle<v8::ObjectTemplate> handlerToJsObjectTemplate;
-	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate2;
+	int memberkind;
+	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate;
 	ExternalTypeDefinition(int mIndex);
 	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };

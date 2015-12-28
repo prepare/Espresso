@@ -85,6 +85,7 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 	ctx->Enter();
 
 	//HandleScope handleScope();
+	HandleScope handleScope(isolate_);
 	ManagedRef* handler= new ManagedRef(this->engine_,this->id_,mIndex,true);
 
 	//create js from template
@@ -105,7 +106,9 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 		
 		/*handler->v8InstanceHandler = 
 			Persistent<v8::Object>(isolate_, externalTypeDef->handlerToJsObjectTemplate->NewInstance());*///0.10.x
-		handler->v8InstanceHandler.Reset(isolate_, externalTypeDef->handlerToJsObjectTemplate->NewInstance());//0.12.x
+		Local<ObjectTemplate> objTemplate = Local<ObjectTemplate>::New(isolate_, externalTypeDef->handlerToJsObjectTemplate);
+		Local<Object> instance = objTemplate->NewInstance();
+		handler->v8InstanceHandler.Reset(isolate_, instance);//0.12.x
 		
 		Local<Object> hd = Local<v8::Object>::New(isolate_, handler->v8InstanceHandler);
 		hd->SetInternalField(0, External::New(isolate_, handler));//0.12.x
@@ -131,8 +134,7 @@ void ReleaseWrapper(ManagedRef* externalManagedHandler)
 } 
 
 
-Handle<Value>
-	Getter(Local<String> iName, const Local<Object> &iInfo)
+Handle<Value> Getter(Local<String> iName, const Local<Object> &iInfo)
 {
 	//name may be method or field 
 
@@ -173,7 +175,7 @@ Handle<Value>
 void DoMethodCall(const FunctionCallbackInfo<Value>& args)//0.12.x
 {	 
 	//call to bridge with args  
-	//HandleScope h01; 
+	HandleScope h01(args.GetIsolate());
 	 
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));		 
@@ -194,20 +196,14 @@ void DoMethodCall(const FunctionCallbackInfo<Value>& args)//0.12.x
 	 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//void AccessorGetterCallback(Local<String> propertyName, const PropertyCallbackInfo<Object>& info)//0.10.x
-void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Value>& info)//, Local<String> propertyName, const Local<Object>& info)//0.12.x
-//Handle<Value> DoGetterProperty(Local<String> propertyName,const Local<Object>& info)//0.10.x
+void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Value>& info)
 {
-	AccessorGetterCallback callback = AccessorGetterCallback();
-	//callback(propertyName, info);
 	
-	Isolate* isolate = Isolate::GetCurrent();
-	EscapableHandleScope h01(isolate);
+	HandleScope h01(info.GetIsolate());
 
 	//wstring name = (wchar_t*) *String::Value(propertyName);
-	Local<v8::External> ext= Local<v8::External>::Cast( info.Holder());
+	Local<v8::External> ext= Local<v8::External>::Cast(info.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value(); 
-	
 	
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
@@ -215,62 +211,57 @@ void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Val
 
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs));  
-	callingArgs.accessorInfo = info.Holder();
+	callingArgs.accessorInfo = &info;
 	callingArgs.methodCallKind = MET_GETTER; 
 	 	
 	cctx->ctx->myMangedCallBack(m_index,MET_GETTER, &callingArgs); 
 	
 	//close and return value
-	//return h01.Escape((Local<Value>)cctx->ctx->AnyToV8(callingArgs.result));//0.10.x
-	info.GetReturnValue().Set(h01.Escape((Local<Value>)cctx->ctx->AnyToV8(callingArgs.result)));//0.12.x
+	info.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));//0.12.x
+    //return h01.Escape((Local<Value>)cctx->ctx->AnyToV8(callingArgs.result));//0.10.x
 }
 
-//void DoSetterProperty(Local<String> propertyName,
-//	Local<Value> value,
-//	const Local<Object>& info)
 void DoSetterProperty(Local<String> propertyName,
 	Local<Value> value,
-	const PropertyCallbackInfo<void>& info)
+	const PropertyCallbackInfo<Value>& info)
 {
-	//0.12.x use 'infoLocal' represent 'info' in 0.10.x
-	Local<Object> infoLocal = info.Holder();
-	Isolate* isolate = Isolate::GetCurrent();
-	EscapableHandleScope h01(isolate);
+	
+	HandleScope h01(info.GetIsolate());
 
-	Local<v8::External> ext= Local<v8::External>::Cast(infoLocal);
+	Local<v8::External> ext= Local<v8::External>::Cast(info.Data());
 	CallingContext* cctx =  (CallingContext*)ext->Value(); 
 
 	//int m_index  = info.Data()->Int32Value();	 
 	int m_index = cctx->mIndex;
-	Handle<External> external = Handle<External>::Cast(infoLocal->GetInternalField(0));
+	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	ManagedRef* extHandler=(ManagedRef*)external->Value();
  
-	Handle<Object> obj= Handle<Object>::Cast<Value>(infoLocal->GetInternalField(0));
+	Handle<Object> obj= Handle<Object>::Cast<Value>(info.Holder()->GetInternalField(0));
 	MetCallingArgs callingArgs;
 	memset(&callingArgs,0,sizeof(MetCallingArgs)); 
-	callingArgs.accessorInfo = infoLocal;
+	callingArgs.accessorInfo = &info;
     callingArgs.methodCallKind = MET_SETTER; 
 	callingArgs.setterValue = value; 
 	cctx->ctx->myMangedCallBack(m_index,MET_SETTER, &callingArgs); 
 }
 
-Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const Local<Object>& iInfo)
-{
-	//TODO: implement this ...
-	Isolate* isolate = Isolate::GetCurrent();
-	EscapableHandleScope h01(isolate);
-	//name of method or property is sent to here
-	wstring name = (wchar_t*) *String::Value(iName);
-	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-	//Noesis::Javascript::ManagedRef* exH = (Noesis::Javascript::ManagedRef*)external->Value();
-
-	return  h01.Escape(Local<Value>());
-	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
-
-	// set property
-	//return wrapper->SetProperty(name, iValue);
-	//return 
-}
+//Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const Local<Object>& iInfo)
+//{
+//	//TODO: implement this ...
+//	Isolate* isolate = Isolate::GetCurrent();
+//	EscapableHandleScope h01(isolate);
+//	//name of method or property is sent to here
+//	wstring name = (wchar_t*) *String::Value(iName);
+//	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
+//	//Noesis::Javascript::ManagedRef* exH = (Noesis::Javascript::ManagedRef*)external->Value();
+//
+//	return  h01.Escape(Local<Value>());
+//	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
+//
+//	// set property
+//	//return wrapper->SetProperty(name, iValue);
+//	//return 
+//}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -420,8 +411,8 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 		objTemplate->SetAccessor(String::NewFromTwoByte(isolate_,(uint16_t*)(propName.c_str())),
 			DoGetterProperty,
-			DoSetterProperty,
-			wrap);   
+			(AccessorSetterCallback)DoSetterProperty,
+			wrap);
 	} 
 
 	//objTemplate->SetNamedPropertyHandler(Getter, Setter);
@@ -429,9 +420,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,const char*
 
 	//externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); //0.10.x
 	//externalTypeDef->handlerToJsObjectTemplate = Handle<ObjectTemplate>::New(isolate_, handleScope.Escape((Local<ObjectTemplate>)objTemplate));//0.12.x
+	//handleScope.Escape((Local<ObjectTemplate>)objTemplate);
 
-	//Persistent<ObjectTemplate>perTemp = Persistent<ObjectTemplate>(isolate_, objTemplate);
-	externalTypeDef->handlerToJsObjectTemplate = objTemplate;//TODO : try to solve error C2248
+	//externalTypeDef->handlerToJsObjectTemplate = objTemplate;
+	externalTypeDef->handlerToJsObjectTemplate.Reset(isolate_,objTemplate);
 	//(*context_)->Exit();
 	//((Context*)context_)->Exit();
 	ctx->Exit();
@@ -462,8 +454,8 @@ jsvalue ArgGetObject(MetCallingArgs* args,int index)
 		case MET_SETTER:
 			{	
 				//1 arg
-				Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo);
-				Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo);
+				Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo->Data());
+				Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo->This());
 
 				CallingContext* cctx =  (CallingContext*)ext->Value();  
 				return cctx->ctx->ConvAnyFromV8(args->setterValue,obj);
@@ -488,7 +480,7 @@ jsvalue ArgGetObject(MetCallingArgs* args,int index)
 }
 jsvalue ArgGetThis(MetCallingArgs* args)
 {	
-	if(args->accessorInfo->IsNull())
+	if(args->accessorInfo == NULL)
 	{
 		Local<v8::External> ext= Local<v8::External>::Cast(args->args->Data());
 		CallingContext* cctx =  (CallingContext*)ext->Value(); 
@@ -500,10 +492,10 @@ jsvalue ArgGetThis(MetCallingArgs* args)
 	{	
 		//use accessor
 		//for getter/setter
-		Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo);
+		Local<v8::External> ext= Local<v8::External>::Cast(args->accessorInfo->Data());
 		CallingContext* cctx =  (CallingContext*)ext->Value(); 
 		
-		Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo);
+		Handle<Object> obj= Handle<Object>::Cast(args->accessorInfo->This());
 		return cctx->ctx->ConvAnyFromV8(obj,obj);
 	} 
 } 
@@ -529,7 +521,7 @@ int ArgCount(MetCallingArgs* args)
 			}break; 
 		case MET_: 
 			{	
-				 return args->args->Length();
+				return args->args->Length();
 			}
 	} 
 	return 0;

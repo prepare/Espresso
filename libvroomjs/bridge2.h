@@ -23,22 +23,13 @@ extern "C"{
 	 
 	typedef struct MetCallingArgs{
 		
-		 
 	    char methodCallKind;
-		//const v8::Arguments* args;//0.10.x
-		const v8::FunctionCallbackInfo<Value>* args;//0.12.x
-		//TODO
-		//Nodejs 0.12.x class AccessorInfo not found
-		//const AccessorInfo* accessorInfo;
-		Local<Object> accessorInfo;
+		const v8::FunctionCallbackInfo<Value>* args;
+		const v8::PropertyCallbackInfo<Value>* accessorInfo;
 		Local<Value> setterValue;
-
 		struct jsvalue result;
-		
 
 	} MetCallingArgs_;
-	   
-
 
 	typedef void (__stdcall *del01)();
 
