@@ -21,7 +21,8 @@ void JsScript::Dispose() {
 	if(isolate != NULL) {
 		Locker locker(isolate);
    	 	Isolate::Scope isolate_scope(isolate);
-		script_->Dispose();            
+		//script_->Dispose();//0.10.x
+		script_->Reset();
     	delete script_;
 	}
 }

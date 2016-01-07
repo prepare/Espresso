@@ -32,6 +32,7 @@
 #define LIBVROOMJS_H 
 
 #include <v8.h>
+#include <v8-util.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <iostream>
@@ -257,7 +258,8 @@ public:
 	Persistent<Script> *CompileScript(const uint16_t* str, const uint16_t *resourceName, jsvalue *error);
 
 	// Converts JS function Arguments to an array of jsvalue to call managed code.
-    jsvalue ArrayFromArguments(const Arguments& args);
+    //jsvalue ArrayFromArguments(const Arguments& args);//(0.10.x)
+	jsvalue ArrayFromArguments(const FunctionCallbackInfo<Value>& args);//V8(0.12.x)
 
 	Handle<Value> AnyToV8(jsvalue value, int32_t contextId); 
     // Needed to create an array of args on the stack for calling functions.
@@ -368,7 +370,8 @@ class ManagedRef {
     Handle<Value> GetPropertyValue(Local<String> name);
     Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
 	Handle<Value> GetValueOf();
-    Handle<Value> Invoke(const Arguments& args);
+    //Handle<Value> Invoke(const Arguments& args);//(0.10.x)
+	Handle<Value> Invoke(const FunctionCallbackInfo<Value>& args);//(0.12.x)
     Handle<Boolean> DeleteProperty(Local<String> name);
 	Handle<Array> EnumerateProperties();
 
@@ -422,8 +425,8 @@ class ExternalTypeDefinition
 
 public:		
 	int managedIndex; 
-	int memberkind; 
-	v8::Handle<v8::ObjectTemplate> handlerToJsObjectTemplate;
+	int memberkind;
+	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate;
 	ExternalTypeDefinition(int mIndex);
 	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader); 
 };

@@ -119,7 +119,8 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_force_gc" << std::endl;
 #endif
-        while(!V8::IdleNotification()) {};
+		//TODO: 0.12.x not have IdleNotification() and not found represent method
+        //while(!V8::IdleNotification()) {};
     }
 
     EXPORT void CALLCONV jscontext_dispose(JsContext* context)
