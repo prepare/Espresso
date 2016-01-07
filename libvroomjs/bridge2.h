@@ -85,6 +85,6 @@ extern "C"{
 	EXPORT void ResultSetJsValue(MetCallingArgs* result,jsvalue value);
 	//--------------------------------------------------------------------- 
 
-
+	EXPORT void V8Init();
 	EXPORT int TestCallBack(); 
 }

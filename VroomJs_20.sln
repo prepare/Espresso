@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRoomJs2", "VRoomJs2\VRoomJs2.csproj", "{CECA196E-EB06-403E-8044-F760EB65C8E5}"
 EndProject
@@ -14,8 +14,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox2", "SandBox2\SandBox2.csproj", "{B5F32114-DD97-4E99-8F65-4274AE49365C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRoomJs.Core", "VRoomJs.Core\VRoomJs.Core.csproj", "{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRoomJsBrezzaTest", "VRoomJsBrezzaTest\VRoomJsBrezzaTest.csproj", "{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,38 +155,6 @@ Global
 		{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}.Release|Win32.ActiveCfg = Release|Any CPU
 		{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}.Release|x86.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Any CPU.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Mixed Platforms.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Win32.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|Win32.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|x86.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug NET35|x86.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|Win32.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Debug|x86.Build.0 = Debug|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Any CPU.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Any CPU.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Mixed Platforms.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Win32.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|Win32.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|x86.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release NET35|x86.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Win32.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|Win32.Build.0 = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|x86.ActiveCfg = Release|Any CPU
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,7 +165,6 @@ Global
 		{E3AEA724-CC01-4E12-90D1-C0337276F728} = {11581DCC-C1BA-48E6-A63E-538CE3602622}
 		{B5F32114-DD97-4E99-8F65-4274AE49365C} = {11581DCC-C1BA-48E6-A63E-538CE3602622}
 		{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A} = {11581DCC-C1BA-48E6-A63E-538CE3602622}
-		{9A9DA6A6-E1F3-4084-B84A-FF43699B084A} = {11581DCC-C1BA-48E6-A63E-538CE3602622}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = VroomJs\VroomJs.csproj

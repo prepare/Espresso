@@ -12,6 +12,9 @@ namespace VRoomJsTest2
         [STAThread]
         static void Main()
         {
+            //load and init v8 engine***
+            VroomJs.JsBridge.LoadV8(@"D:\projects\V8Master\V8Net\libvroomjs\build\Debug\VRoomJsNative.dll");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());

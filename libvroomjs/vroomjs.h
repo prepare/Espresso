@@ -92,7 +92,7 @@ extern long js_mem_debug_context_count;
 extern long js_mem_debug_managedref_count;
 extern long js_mem_debug_script_count;
 
-class MetCallingArgs;
+struct MetCallingArgs;
 
 extern "C" 
 {	
