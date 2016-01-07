@@ -23,18 +23,13 @@ extern "C"{
 	 
 	typedef struct MetCallingArgs{
 		
-		 
 	    char methodCallKind;
-		const v8::Arguments* args; 
-		const AccessorInfo* accessorInfo;
+		const v8::FunctionCallbackInfo<Value>* args;
+		const v8::PropertyCallbackInfo<Value>* accessorInfo;
 		Local<Value> setterValue;
-
 		struct jsvalue result;
-		
 
 	} MetCallingArgs_;
-	   
-
 
 	typedef void (__stdcall *del01)();
 

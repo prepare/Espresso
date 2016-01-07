@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using VroomJs;
-using VroomJs;
 using NUnit.Framework;
 
 namespace VRoomJsTest2
@@ -17,9 +16,7 @@ namespace VRoomJsTest2
         public Form1()
         {
             InitializeComponent();
-
-
-
+            
             //-----------------------------------------------------------------------            
             var asm = typeof(VroomJs.Tests.TestClass).Assembly;
             var testFixtureAttr = typeof(NUnit.Framework.TestFixtureAttribute);
@@ -102,7 +99,6 @@ namespace VRoomJsTest2
         [JsType]
         class AboutMe
         {
-
             AboutMeEventHandler mousedownEventHandler;
 
             [JsMethod]
@@ -149,15 +145,9 @@ namespace VRoomJsTest2
                 }
             }
         }
-
-
-
-
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
-
-
             JsBridge.dbugTestCallbacks();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
@@ -291,7 +281,6 @@ namespace VRoomJsTest2
 
         private void button4_Click(object sender, EventArgs e)
         {
-
             JsBridge.dbugTestCallbacks();
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
