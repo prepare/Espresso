@@ -2,6 +2,9 @@
 #include <string>
 
 #include <v8.h>
+#include "libplatform/libplatform.h"
+#include "src/libplatform/default-platform.h"
+#include "platform/platform.h"
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8; 
@@ -526,4 +529,14 @@ int ArgCount(MetCallingArgs* args)
 	} 
 	return 0;
 }
-//====================================================== 
+//======================================================  
+
+static v8::Platform* default_platform;
+void V8Init()
+{
+	const int thread_pool_size = 4;
+	/*auto p = V8::*/
+	default_platform = v8::platform::CreateDefaultPlatform(thread_pool_size);
+	V8::InitializePlatform(default_platform);
+	V8::Initialize();
+}

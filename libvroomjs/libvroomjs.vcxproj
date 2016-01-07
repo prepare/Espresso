@@ -21,7 +21,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -47,13 +47,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>D:\[]Projects\C C++\node-v0.12.7\deps\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\projects\node-v4.2.4\deps\v8\include;D:\projects\node-v4.2.4\deps\v8\src\base;D:\projects\node-v4.2.4\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)v8_lib\Debug\v8_base.lib;$(SolutionDir)v8_lib\Debug\v8_libbase.lib;$(SolutionDir)v8_lib\Debug\v8_snapshot.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)v8_lib\Debug\v8_base_0.lib;$(SolutionDir)v8_lib\Debug\v8_base_1.lib;$(SolutionDir)v8_lib\Debug\v8_base_2.lib;$(SolutionDir)v8_lib\Debug\v8_base_3.lib;$(SolutionDir)v8_lib\Debug\v8_libbase.lib;$(SolutionDir)v8_lib\Debug\v8_snapshot.lib;$(SolutionDir)v8_lib\Debug\v8_libplatform.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
