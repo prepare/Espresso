@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <iostream>
-
+#include <v8-debug.h>
 using namespace v8;
 
 #define JSOBJECT_MARSHAL_TYPE_DYNAMIC       1
@@ -178,6 +178,8 @@ private:
 class JsEngine {
 public:
 	static JsEngine *New(int32_t max_young_space, int32_t max_old_space);
+	static JsEngine *NewDebug(int32_t max_young_space, int32_t max_old_space);
+
 	void TerminateExecution();
 
 	inline void SetRemoveDelegate(keepalive_remove_f delegate) { keepalive_remove_ = delegate; }
@@ -277,13 +279,13 @@ public:
 		DECREMENT(js_mem_debug_engine_count);
 	}
 	Persistent<Context> *global_context_;
-
+	Isolate *isolate_;
 private:
 	inline JsEngine() {
 		INCREMENT(js_mem_debug_engine_count);
 	}
 
-	Isolate *isolate_;
+	
     
 	
 	Persistent<FunctionTemplate> *managed_template_;
@@ -307,7 +309,10 @@ class JsContext {
      
     // Called by bridge to execute JS from managed code.
     jsvalue Execute(const uint16_t* str, const uint16_t *resourceName);  
+	jsvalue ExecuteDebug(const uint16_t* str, const uint16_t *resourceName);
+
 	jsvalue Execute(JsScript *script);  
+	void SetDebugHandler(v8::Debug::MessageHandler h);
 
 	jsvalue GetGlobal();
     jsvalue GetVariable(const uint16_t* name);

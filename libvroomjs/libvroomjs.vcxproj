@@ -18,7 +18,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
@@ -79,6 +79,7 @@
     <ClCompile Include="jscontext.cpp" />
     <ClCompile Include="jsengine.cpp" />
     <ClCompile Include="jsscript.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="managedref.cpp" />
     <ClCompile Include="mini_BinaryReaderWriter.cpp" />
   </ItemGroup>
