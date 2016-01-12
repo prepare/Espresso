@@ -309,7 +309,7 @@ class JsContext {
      
     // Called by bridge to execute JS from managed code.
     jsvalue Execute(const uint16_t* str, const uint16_t *resourceName);  
-	jsvalue ExecuteDebug(const uint16_t* str, const uint16_t *resourceName);
+	 
 
 	jsvalue Execute(JsScript *script);  
 	void SetDebugHandler(v8::Debug::MessageHandler h);

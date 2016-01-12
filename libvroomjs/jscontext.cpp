@@ -112,47 +112,7 @@ void JsContext::SetDebugHandler(v8::Debug::MessageHandler h)
 	v8::Debug::SetMessageHandler(h);
 
 }
-jsvalue JsContext::ExecuteDebug(const uint16_t* str, const uint16_t *resourceName = NULL)
-{
-	jsvalue v;
-
-	Locker locker(isolate_);
-	Isolate::Scope isolate_scope(isolate_);
-	HandleScope scope(isolate_);//0.12.x
-
-	//Local<Context> ctx = Local<Context>::New(isolate_, *context_);
-	Local<Context> ctx = v8::Debug::GetDebugContext();
-	//ctx->Enter();
-
-	//HandleScope scope;//0.10.x
-	TryCatch trycatch;
-
-	Handle<String> source = String::NewFromTwoByte(isolate_, str);
-	Handle<Script> script;
-
-	if (resourceName != NULL) {
-		Handle<String> name = String::NewFromTwoByte(isolate_, resourceName);
-		script = Script::Compile(source);
-	}
-	else {
-		script = Script::Compile(source);
-	}
-
-	if (!script.IsEmpty()) {
-		Local<Value> result = script->Run();
-
-		if (result.IsEmpty())
-			v = engine_->ErrorFromV8(trycatch);
-		else
-			v = engine_->AnyFromV8(result);
-	}
-	else {
-		v = engine_->ErrorFromV8(trycatch);
-	}
-
-	ctx->Exit();
-	return v;
-}
+ 
 jsvalue JsContext::Execute(JsScript *jsscript)
 {
 	jsvalue v;
