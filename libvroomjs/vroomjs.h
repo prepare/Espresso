@@ -312,7 +312,9 @@ class JsContext {
 	 
 
 	jsvalue Execute(JsScript *script);  
-	void SetDebugHandler(v8::Debug::MessageHandler h);
+	void SetDebugHandler(v8::Debug::MessageHandler h, v8::Debug::EventCallback debugEventCb);
+	void SetBreakPoint(int lineNo, int colNo);
+	void DebugContinue();
 
 	jsvalue GetGlobal();
     jsvalue GetVariable(const uint16_t* name);

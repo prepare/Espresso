@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <iostream>
+#include <string>
 #include "vroomjs.h"
 #include "v8-debug.h"
 
@@ -45,6 +46,7 @@ JsContext* JsContext::New(int id, JsEngine *engine)
 		Isolate::Scope isolate_scope(context->isolate_);
 		HandleScope scope(context->isolate_);
 		//context->context_ = new Persistent<Context>(Context::New());
+
 		context->context_ = new Persistent<Context>(context->isolate_, Context::New(context->isolate_));
 	}
 	return context;
@@ -87,6 +89,8 @@ jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = N
 	}
 
 	if (!script.IsEmpty()) {
+
+		//run here		
 		Local<Value> result = script->Run();
 
 		if (result.IsEmpty())
@@ -102,17 +106,66 @@ jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = N
 	return v;
 }
 
-void JsContext::SetDebugHandler(v8::Debug::MessageHandler h)
+
+void JsContext::SetDebugHandler(v8::Debug::MessageHandler h, v8::Debug::EventCallback debugEventCb)
 {
 
-	jsvalue v;
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);//0.12.x
 	v8::Debug::SetMessageHandler(h);
-
+	v8::Debug::SetDebugEventListener(debugEventCb);
 }
- 
+
+int seqCount = 0;
+void JsContext::DebugContinue() {
+
+	std::wstring cmd = L"{\"command\":\"continue\", \"seq\" :" + std::to_wstring(seqCount) + L", \"type\" : \"request\", \"arguments\" : {\"stepaction\":\"next\", \"stepcount\" : 1}}";
+	seqCount++;
+
+	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\",\"arguments\":{ \"line\":1,\"column\":0,\"type\":\"script\",\"target\":\"A.js\",\"enabled\":1} }";
+	//std::wstring cmd = L"{command:\"setbreakpoint\",seq:1,type:\"request\",arguments:{ line:1,column:0,type:\"script\",target:\"A.js\",enabled:true} }";
+	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\"}";
+	//send command to a debugger ? 
+
+	Locker locker(isolate_);
+	Isolate::Scope isolate_scope(isolate_);
+	HandleScope scope(isolate_);//0.12.x
+	auto context = v8::Debug::GetDebugContext();
+
+	//v8::Debug::DebugBreak(isolate_);
+
+	v8::Debug::SendCommand(isolate_,
+		(uint16_t*)cmd.c_str(),
+		cmd.length());
+	//v8::Debug::ProcessDebugMessages();
+	 
+}
+void JsContext::SetBreakPoint(int lineNo,int colNo){
+
+	std::wstring cmd = L"{\"command\":\"setbreakpoint\", \"seq\":" + std::to_wstring(seqCount) + L", \"type\" : \"request\", \"arguments\" :"+
+		L" {\"line\":"+ std::to_wstring(lineNo) + L", \"column\": 0, \"type\" : \"script\", \"target\" : \"c://module.js\" , \"ignoreCount\" : 1, \"enabled\":true}}";
+	seqCount++;
+
+	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\",\"arguments\":{ \"line\":1,\"column\":0,\"type\":\"script\",\"target\":\"A.js\",\"enabled\":1} }";
+	//std::wstring cmd = L"{command:\"setbreakpoint\",seq:1,type:\"request\",arguments:{ line:1,column:0,type:\"script\",target:\"A.js\",enabled:true} }";
+	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\"}";
+	//send command to a debugger ? 
+
+	Locker locker(isolate_);
+	Isolate::Scope isolate_scope(isolate_);
+	HandleScope scope(isolate_);//0.12.x
+	auto context = v8::Debug::GetDebugContext();
+
+	v8::Debug::DebugBreak(isolate_);
+
+	v8::Debug::SendCommand(isolate_,
+		(uint16_t*)cmd.c_str(),
+		cmd.length());
+	//v8::Debug::ProcessDebugMessages();
+
+	std::wprintf(L"-----set break point--");
+}
 jsvalue JsContext::Execute(JsScript *jsscript)
 {
 	jsvalue v;

@@ -110,7 +110,7 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_new" << std::endl;
 #endif
-        JsContext* context = JsContext::New(id, engine);
+        JsContext* context = JsContext::New(id, engine);	
         return context;
     }
 
