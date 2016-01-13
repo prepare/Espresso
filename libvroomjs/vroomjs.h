@@ -314,6 +314,7 @@ class JsContext {
 	jsvalue Execute(JsScript *script);  
 	void SetDebugHandler(v8::Debug::MessageHandler h, v8::Debug::EventCallback debugEventCb);
 	void SetBreakPoint(int lineNo, int colNo);
+	void BackTrace();
 	void DebugContinue();
 
 	jsvalue GetGlobal();

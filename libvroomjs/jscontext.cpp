@@ -120,7 +120,7 @@ void JsContext::SetDebugHandler(v8::Debug::MessageHandler h, v8::Debug::EventCal
 int seqCount = 0;
 void JsContext::DebugContinue() {
 
-	std::wstring cmd = L"{\"command\":\"continue\", \"seq\" :" + std::to_wstring(seqCount) + L", \"type\" : \"request\", \"arguments\" : {\"stepaction\":\"next\", \"stepcount\" : 1}}";
+	std::wstring cmd = L"{\"command\":\"continue\", \"seq\" :" + std::to_wstring(seqCount) + L", \"type\" : \"request\", \"arguments\" : {\"stepaction\":\"in\", \"stepcount\" : 1}}";
 	seqCount++;
 
 	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\",\"arguments\":{ \"line\":1,\"column\":0,\"type\":\"script\",\"target\":\"A.js\",\"enabled\":1} }";
@@ -140,6 +140,31 @@ void JsContext::DebugContinue() {
 		cmd.length());
 	//v8::Debug::ProcessDebugMessages();
 	 
+}
+void JsContext::BackTrace()
+{	
+	//{ "fromFrame", fromFrame },
+	//{ "toFrame", toFrame },
+	//{ "inlineRefs", true }
+
+	std::wstring cmd = L"{\"command\":\"backtrace\", \"seq\":" +
+		std::to_wstring(seqCount) +
+		L", \"type\" : \"request\", \"arguments\" :" +
+		L" {\"fromFrame\":0" +
+		L", \"toFrame\": 500,\"inlineRefs\":true}}"; 
+	seqCount++;
+
+
+	Locker locker(isolate_);
+	Isolate::Scope isolate_scope(isolate_);
+	HandleScope scope(isolate_);//0.12.x
+	auto context = v8::Debug::GetDebugContext();
+
+	//v8::Debug::DebugBreak(isolate_);
+
+	v8::Debug::SendCommand(isolate_,
+		(uint16_t*)cmd.c_str(),
+		cmd.length());
 }
 void JsContext::SetBreakPoint(int lineNo,int colNo){
 

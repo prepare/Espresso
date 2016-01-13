@@ -14,7 +14,7 @@ void debug_callback(const v8::Debug::EventDetails& event_details)
 	case v8::DebugEvent::AfterCompile:
 		std::wprintf(L"-------------AfterCompile-------------");
 		//test insert break point here
-		global_ctx->SetBreakPoint(3, 0);
+		global_ctx->SetBreakPoint(1, 0);
 		global_ctx->SetBreakPoint(6, 0);
 		global_ctx->SetBreakPoint(5, 0);
 		break;
@@ -41,7 +41,12 @@ void debug_callback(const v8::Debug::EventDetails& event_details)
 		break;
 
 	}
-} 
+}
+
+
+int breakCount = 0;//for test only
+int needBackTrace = 1;
+
 void debug_msg_handler(const v8::Debug::Message& message)
 {
 	//this method is called when v8 exec debugger statement
@@ -49,32 +54,58 @@ void debug_msg_handler(const v8::Debug::Message& message)
 
 	//for json protocol
 	auto jsonMsg = message.GetJSON();
-	
+
 	String::Value v(jsonMsg);
 
 	uint16_t* buff = (uint16_t*)*v;
 	const wchar_t* buff2 = (wchar_t*)buff;
 	std::wstring wstr = buff2;
 	std::wprintf(wstr.c_str());
-
+	std::wprintf(L"\r\n");
 	v8::DebugEvent a = message.GetEvent();
-	 
+
 	switch (a) {
-	case v8::DebugEvent::Break:		
+	case v8::DebugEvent::Break:
 		//run next
-		v8::Debug::CancelDebugBreak(message.GetIsolate());
+		//v8::Debug::CancelDebugBreak(message.GetIsolate());
+
+		//if (needBackTrace == 1)
+		//{
+		//global_ctx->BackTrace();
+
+		//	needBackTrace = 0;
+		//}
+		//else
+		//{
+		//	needBackTrace = 1;
+		//	v8::Debug::CancelDebugBreak(message.GetIsolate());
+		//	
+		//}
+		//if (breakCount <2)
+		//{
+		//	global_ctx->BackTrace();
+		//	//for first break we test step into 
+		//	//v8::Debug::CancelDebugBreak(message.GetIsolate());
+		//	//global_ctx->DebugContinue();
+		//}
+		//else
+		//{
+		//	 v8::Debug::CancelDebugBreak(message.GetIsolate());
+		//}
+		breakCount++;
+
 		break;
 
-	/*	std::wprintf(L"-------------b2-------------");
-		if (totalContinue < 2) {
-			totalContinue++;
-			global_ctx->DebugContinue();			
-		}
-		else 
-		{
-			v8::Debug::CancelDebugBreak(message.GetIsolate());
-		}
-		break;  */
+		/*	std::wprintf(L"-------------b2-------------");
+			if (totalContinue < 2) {
+				totalContinue++;
+				global_ctx->DebugContinue();
+			}
+			else
+			{
+				v8::Debug::CancelDebugBreak(message.GetIsolate());
+			}
+			break;  */
 	}
 
 }
