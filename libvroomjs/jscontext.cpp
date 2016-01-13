@@ -143,8 +143,11 @@ void JsContext::DebugContinue() {
 }
 void JsContext::SetBreakPoint(int lineNo,int colNo){
 
-	std::wstring cmd = L"{\"command\":\"setbreakpoint\", \"seq\":" + std::to_wstring(seqCount) + L", \"type\" : \"request\", \"arguments\" :"+
-		L" {\"line\":"+ std::to_wstring(lineNo) + L", \"column\": 0, \"type\" : \"script\", \"target\" : \"c://module.js\" , \"ignoreCount\" : 1, \"enabled\":true}}";
+	std::wstring cmd = L"{\"command\":\"setbreakpoint\", \"seq\":" +
+		 std::to_wstring(seqCount) +
+	    L", \"type\" : \"request\", \"arguments\" :"+
+		L" {\"line\":"+ std::to_wstring(lineNo) + 
+		L", \"column\": 0, \"type\" : \"script\", \"target\" : \"c://module.js\" , \"ignoreCount\" : 1, \"enabled\":true}}";
 	seqCount++;
 
 	//std::wstring cmd = L"{\"command\":\"setbreakpoint\",\"seq\":0,\"type\":\"request\",\"arguments\":{ \"line\":1,\"column\":0,\"type\":\"script\",\"target\":\"A.js\",\"enabled\":1} }";
@@ -157,7 +160,7 @@ void JsContext::SetBreakPoint(int lineNo,int colNo){
 	HandleScope scope(isolate_);//0.12.x
 	auto context = v8::Debug::GetDebugContext();
 
-	v8::Debug::DebugBreak(isolate_);
+	//v8::Debug::DebugBreak(isolate_);
 
 	v8::Debug::SendCommand(isolate_,
 		(uint16_t*)cmd.c_str(),

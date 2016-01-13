@@ -49,6 +49,7 @@ void debug_msg_handler(const v8::Debug::Message& message)
 
 	//for json protocol
 	auto jsonMsg = message.GetJSON();
+	
 	String::Value v(jsonMsg);
 
 	uint16_t* buff = (uint16_t*)*v;
@@ -57,6 +58,7 @@ void debug_msg_handler(const v8::Debug::Message& message)
 	std::wprintf(wstr.c_str());
 
 	v8::DebugEvent a = message.GetEvent();
+	 
 	switch (a) {
 	case v8::DebugEvent::Break:		
 		//run next
