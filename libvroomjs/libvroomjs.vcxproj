@@ -47,7 +47,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>D:\projects\node-v4.2.4\deps\v8\include;D:\projects\node-v4.2.4\deps\v8\src\base;D:\projects\node-v4.2.4\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\[]Projects\C C++\node-v4.2.4\deps\v8\include;D:\[]Projects\C C++\node-v4.2.4\deps\v8\src\base;D:\[]Projects\C C++\node-v4.2.4\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>

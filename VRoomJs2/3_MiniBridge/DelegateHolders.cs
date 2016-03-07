@@ -21,9 +21,10 @@ namespace VroomJs
         {
             DelegateHolder newHolder = this.holder.New();
             newHolder.jsFunc = jsfunc;
-            return Delegate.CreateDelegate(targetDelegateType,
-                newHolder,
-                 this.holder.InvokeMethodInfo);
+            return this.holder.InvokeMethodInfo.CreateDelegate(targetDelegateType, newHolder);
+            //return Delegate.CreateDelegate(targetDelegateType,
+            //    newHolder,
+            //     this.holder.InvokeMethodInfo);
         }
     }
 
@@ -31,7 +32,7 @@ namespace VroomJs
     {
         public static MethodInfo GetInvokeMethod<T>()
         {
-            return typeof(T).GetMethod("Invoke");
+            return typeof(T).GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
         }
     }
 

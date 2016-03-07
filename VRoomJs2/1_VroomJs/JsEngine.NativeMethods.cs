@@ -36,7 +36,7 @@ namespace VroomJs
             int maxYoungSpace,
             int maxOldSpace
         );
-       
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_terminate_execution(HandleRef engine);
 

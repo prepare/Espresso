@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Reflection;
 using System.IO;
  
 namespace VroomJs
@@ -24,13 +25,19 @@ namespace VroomJs
             JsTypeDefinition typedefinition = new JsTypeDefinition(t.Name);
 
             //only instance /public method /prop***
-            var methods = t.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            //MethodInfo[] methods = t.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            var methods = t.GetRuntimeMethods();
             foreach (var met in methods)
             {
-                typedefinition.AddMember(new JsMethodDefinition(met.Name, met));
+                if(!met.IsStatic && met.IsPublic)
+                {
+                    typedefinition.AddMember(new JsMethodDefinition(met.Name, met));
+                }
             }
 
-            var properties = t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            //var properties = t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            var properties = t.GetRuntimeProperties();
+            //TODO finding GetProperties with BindingFlags
             foreach (var property in properties)
             {
                 typedefinition.AddMember(new JsPropertyDefinition(property.Name, property)); 
