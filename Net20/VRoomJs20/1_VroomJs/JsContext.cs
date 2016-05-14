@@ -130,7 +130,8 @@ namespace VroomJs
                             getterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
 
-                    } break;
+                    }
+                    break;
                 case 2:
                     {
                         //property set
@@ -141,7 +142,8 @@ namespace VroomJs
                         {
                             setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
                 default:
                     {
                         if (mIndex == 0) return;
@@ -150,7 +152,8 @@ namespace VroomJs
                         {
                             foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
             }
 
 
@@ -234,7 +237,6 @@ namespace VroomJs
         {
             Stopwatch watch1 = new Stopwatch();
             Stopwatch watch2 = new Stopwatch();
-
             watch1.Start();
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -1054,4 +1056,7 @@ namespace VroomJs
             this.cachedDelSamples[anotherDelegateType] = delegateType;
         }
     }
+
+
+     
 }
