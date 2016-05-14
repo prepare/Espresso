@@ -69,13 +69,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\VRoomJs.Core\VRoomJs.Core.csproj">
-      <Project>{18CE5F1B-9745-45A8-B2BF-E69F0F380E7A}</Project>
-      <Name>VRoomJs.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\VRoomJs2\VRoomJs2.csproj">
-      <Project>{CECA196E-EB06-403E-8044-F760EB65C8E5}</Project>
-      <Name>VRoomJs2</Name>
+    <ProjectReference Include="..\VRoomJs20\VRoomJs20.csproj">
+      <Project>{41517b22-c8e1-404e-8f3c-a8f3e785dfd3}</Project>
+      <Name>VRoomJs20</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
