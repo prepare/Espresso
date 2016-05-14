@@ -9,7 +9,7 @@ namespace VroomJs.Extension
 {
     public static class TypeExtention
     {
-        public static MemberInfo[] GetMembers(this Type type, BindingFlags flags)
+        public static MemberInfo[] GetMembers(this Type type)
         {
 
             var members = type.GetTypeInfo().DeclaredMembers;

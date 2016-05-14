@@ -129,7 +129,8 @@ namespace VroomJs
                             getterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
 
-                    } break;
+                    }
+                    break;
                 case 2:
                     {
                         //property set
@@ -140,7 +141,8 @@ namespace VroomJs
                         {
                             setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
                 default:
                     {
                         if (mIndex == 0) return;
@@ -149,7 +151,8 @@ namespace VroomJs
                         {
                             foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
             }
 
 
@@ -428,20 +431,20 @@ namespace VroomJs
                 return true;
             }
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
             //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
             PropertyInfo pi = type.GetRuntimeProperty(name);
             //foreach(var p in ps)
             //{
-                
+
             //}
             if (pi != null)
             {
@@ -520,15 +523,15 @@ namespace VroomJs
                 return true;
             }
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
 
             // First of all try with a public property (the most common case).
             //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
@@ -553,11 +556,11 @@ namespace VroomJs
             // Then with an instance method: the problem is that we don't have a list of
             // parameter types so we just check if any method with the given name exists
             // and then keep alive a "weak delegate", i.e., just a name and the target.
-            // The real method will be resolved during the invokation itself.
-            BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+            //// The real method will be resolved during the invokation itself.
+            //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
             // TODO: This is probably slooow.
-            MemberInfo[] members = type.GetMembers(flags);
+            MemberInfo[] members = type.GetMembers();
             foreach (var met in members)
             {
                 if (met.Name == name)
@@ -662,7 +665,7 @@ namespace VroomJs
             var obj = KeepAliveGet(slot);
             if (obj != null)
             {
-                
+
                 Type type = obj.GetType();
                 MethodInfo mi;// = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
                 mi = type.GetRuntimeMethod("ValueOf", new Type[0]);
@@ -709,29 +712,29 @@ namespace VroomJs
 #endif
                 object[] a = (object[])_convert.FromJsValue(args);
 
-                BindingFlags flags = BindingFlags.Public
-                        | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+                //BindingFlags flags = BindingFlags.Public
+                //        | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
-                if (func.Target != null)
-                {
-                    flags |= BindingFlags.Instance;
-                }
-                else
-                {
-                    flags |= BindingFlags.Static;
-                }
+                //if (func.Target != null)
+                //{
+                //    flags |= BindingFlags.Instance;
+                //}
+                //else
+                //{
+                //    flags |= BindingFlags.Static;
+                //}
 
-                if (obj is BoundWeakDelegate)
-                {
-                    flags |= BindingFlags.NonPublic;
-                }
+                //if (obj is BoundWeakDelegate)
+                //{
+                //    flags |= BindingFlags.NonPublic;
+                //}
 
                 // need to convert methods from JsFunction's into delegates?
                 foreach (var a_elem in a)
                 {
                     if (a.GetType() == typeof(JsFunction))
                     {
-                        CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
+                        CheckAndResolveJsFunctions(type, func.MethodName, a);
                         break;
                     }
                 }
@@ -760,7 +763,7 @@ namespace VroomJs
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
-        private static void CheckAndResolveJsFunctions(Type type, string methodName, BindingFlags flags, object[] args)
+        private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
         {
             //MethodInfo mi = type.GetMethod(methodName, flags);
             MethodInfo mi = type.GetRuntimeMethod(methodName, null);
@@ -832,8 +835,7 @@ namespace VroomJs
                 }
 
                 var mbNameList = new System.Collections.Generic.List<string>();
-                foreach (var mb in obj.GetType().GetMembers(BindingFlags.Public |
-                    BindingFlags.Instance))
+                foreach (var mb in obj.GetType().GetMembers())
                 {
                     var met = mb as MethodBase;
                     if (met != null && !met.IsSpecialName)
@@ -1070,6 +1072,7 @@ namespace VroomJs
 
     class Timer
     {
+        //dummy timer
         public event EventHandler Elapsed;
         public Timer(double millisec)
         {
