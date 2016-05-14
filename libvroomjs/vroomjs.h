@@ -97,7 +97,7 @@ struct MetCallingArgs;
 extern "C" 
 {	
 	
-	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
+	typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
 
     struct jsvalue

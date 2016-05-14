@@ -18,6 +18,10 @@ namespace VroomJs
             }
             NativeV8JsInterOp.V8Init();
         }
+        public static void V8Init()
+        {
+            NativeV8JsInterOp.V8Init();
+        }
         public static void UnloadV8()
         {
             if (hModuleV8 != IntPtr.Zero)
