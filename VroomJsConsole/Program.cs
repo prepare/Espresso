@@ -34,7 +34,7 @@ namespace VRoomJsConsoleTest
         {
             var testList = new List<TestInfo>();
             Type t = typeof(Program);
-            var mets = t.GetMethods(System.Reflection.BindingFlags.Static);
+            var mets = t.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             foreach (var met in mets)
             {
                 var found = met.GetCustomAttributes(typeof(TestAttribute), false) as TestAttribute[];
