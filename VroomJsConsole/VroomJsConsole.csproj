@@ -47,9 +47,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\VRoomJs.Core\VRoomJs.Core.csproj">
       <Project>{d3616af0-4f27-4a26-839f-fcde27f915b0}</Project>
       <Name>VRoomJs.Core</Name>
