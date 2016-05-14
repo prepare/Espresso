@@ -53,7 +53,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)v8_lib\Debug\v8_base_0.lib;$(SolutionDir)v8_lib\Debug\v8_base_1.lib;$(SolutionDir)v8_lib\Debug\v8_base_2.lib;$(SolutionDir)v8_lib\Debug\v8_base_3.lib;$(SolutionDir)v8_lib\Debug\v8_libbase.lib;$(SolutionDir)v8_lib\Debug\v8_snapshot.lib;$(SolutionDir)v8_lib\Debug\v8_libplatform.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalDependencies>D:\projects\node-v6.1.0\build\Debug\lib\v8_base_0.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_1.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_2.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_3.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libbase.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_snapshot.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -63,13 +63,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>D:\projects\node-v0.10.38\deps\v8\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\projects\node-v6.1.0\deps\v8\include;D:\projects\node-v6.1.0\deps\v8\src\base;D:\projects\node-v6.1.0\deps\v8;</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionDir)v8_lib\Release\v8_base.lib;$(SolutionDir)v8_lib\Release\v8_snapshot.lib;d2d1.lib;d3d9.lib;d3d10.lib;d3d10_1.lib;d3d11.lib;d3dcompiler.lib;D3DCSX.lib;D3DCSXd.lib;d3dx9.lib;d3dx9d.lib;d3dx10.lib;d3dx10d.lib;d3dx11.lib;d3dx11d.lib;d3dxof.lib;dinput8.lib;dsetup.lib;dsound.lib;dwrite.lib;DxErr.lib;dxgi.lib;dxguid.lib;X3DAudio.lib;xapobase.lib;xapobased.lib;XAPOFX.lib;XInput.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\projects\node-v6.1.0\build\Release\lib\v8_base_0.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_1.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_2.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_3.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_libbase.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_snapshot.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
