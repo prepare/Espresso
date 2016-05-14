@@ -64,7 +64,7 @@ namespace VRoomJsConsoleTest
                 testDictionary.Add(t.Choice, t);
             }
 
-            Console.WriteLine("Select test case");
+            Console.WriteLine("Select test case, and press Enter");
             Console.WriteLine("[0] Exit");
             foreach (TestInfo t in testList)
             {
