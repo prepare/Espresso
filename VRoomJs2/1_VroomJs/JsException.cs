@@ -28,7 +28,7 @@ using System.Runtime.Serialization;
 
 namespace VroomJs
 {
-    [Serializable]
+    //[Serializable]
     public class JsException : Exception
     {
 
@@ -68,10 +68,10 @@ namespace VroomJs
 
         }
 
-        protected JsException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+        //protected JsException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
 
         internal JsException(string type, string resource, string message, int line, int col, JsObject error)
             : base(string.Format("{0}: {1} at line: {2} column: {3}.", resource, message, line, col))

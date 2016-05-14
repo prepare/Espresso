@@ -25,7 +25,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-
 namespace VroomJs
 {
     class JsConvert
@@ -260,9 +259,9 @@ namespace VroomJs
             Type type = obj.GetType();
 
             // Check for nullable types (we will cast the value out of the box later).
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                type = type.GetGenericArguments()[0];
+            //if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                type = type.GenericTypeArguments[0]; //type = type.GetGenericArguments()[0];
 
             if (type == typeof(Boolean))
                 return new JsValue { Type = JsValueType.Boolean, I32 = (bool)obj ? 1 : 0 };
