@@ -97,7 +97,7 @@ struct MetCallingArgs;
 extern "C" 
 {	
 	
-	typedef void (__stdcall *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
+	typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
 
     struct jsvalue
@@ -333,7 +333,7 @@ class JsContext {
 	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
 	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
-	Handle<Value> JsContext::AnyToV8(jsvalue v);
+	Handle<Value> AnyToV8(jsvalue v);
 
 	inline int32_t GetId() {
 		return id_;

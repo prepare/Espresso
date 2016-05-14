@@ -1,4 +1,4 @@
-
+#include <string.h>
 #include <iostream>
 #include "vroomjs.h"
 #include "v8-debug.h"
@@ -200,7 +200,8 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 		engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
 
 		Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
-		Persistent<FunctionTemplate> fp = Persistent<FunctionTemplate>(engine->isolate_, ff);
+		Persistent<FunctionTemplate> fp;// = Persistent<FunctionTemplate>(engine->isolate_, ff);
+		fp.Reset(engine->isolate_, ff);
 		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
 
 
@@ -309,9 +310,15 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 
 	((Context*)global_context_)->Exit();
 	//(*global_context_)->Exit();
+<<<<<<< HEAD
 
 	Persistent<Script> *pScript = new Persistent<Script>(Persistent<Script>(isolate_, script));
 
+=======
+	
+	Persistent<Script> *pScript;// = new Persistent<Script>(Persistent<Script>(isolate_, script));
+	pScript->Reset(isolate_, script);
+>>>>>>> refs/remotes/origin/master
 	return pScript;
 }
 
@@ -453,9 +460,16 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
+<<<<<<< HEAD
 		v.value.ptr = new Persistent<Object>(Persistent<Object>(isolate_, obj));
 	}
 	else {
+=======
+		Persistent<Object> *persistent;
+		persistent->Reset(isolate_,obj);
+		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
+	} else {
+>>>>>>> refs/remotes/origin/master
 
 		v.type = JSVALUE_TYPE_WRAPPED;
 		v.length = 0;
@@ -464,7 +478,9 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
 		//v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
-		v.value.ptr = new Persistent<Object>(Persistent<Object>(isolate_, obj));
+		Persistent<Object> *persistent;
+		persistent->Reset(isolate_,Persistent<Object>(isolate_, obj));
+		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 
 		//-------------------------------------------------------------------------
 		/*v.type = JSVALUE_TYPE_DICT;
@@ -555,7 +571,9 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 			arr[0].length = 0;
 			arr[0].type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
-				arr[1].value.ptr = new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
+				Persistent<Object> *persistent;
+				persistent->Reset(isolate_,Persistent<Object>(isolate_, thisArg));
+				arr[1].value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
 				arr[1].length = 0;
 				arr[1].type = JSVALUE_TYPE_WRAPPED;
 			}
@@ -603,7 +621,8 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
 	Isolate* isolate = Isolate::GetCurrent();
 	HandleScope scope(isolate);
 
-	Persistent<Object> self = Persistent<Object>(isolate, data.GetValue());//0.12.x
+	Persistent<Object> self;// = Persistent<Object>(isolate, data.GetValue());//0.12.x
+	self.Reset(isolate,data.GetValue());
 	Local<Object> selfHandle = Local<Object>::New(isolate, self);//0.12.x
 	Local<External> wrap = Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x
 	ManagedRef* ref = (ManagedRef*)wrap->Value();

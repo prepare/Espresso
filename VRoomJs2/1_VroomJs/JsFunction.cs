@@ -16,7 +16,7 @@ namespace VroomJs
 
         static JsFunction()
         {
-            myInvokeMethodInfo = typeof(JsFunction).GetMethod("Invoke");
+            myInvokeMethodInfo = typeof(JsFunction).GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
 
         }
         public JsFunction(JsContext context, IntPtr funcPtr, IntPtr thisPtr)
@@ -49,15 +49,17 @@ namespace VroomJs
             }
             //----------------------------------------------------------------------------------
 
-            if (targetDelegateType.BaseType != typeof(MulticastDelegate))
+            if (targetDelegateType.GetTypeInfo().BaseType != typeof(MulticastDelegate))
             {
-                throw new ApplicationException("Not a delegate.");
+                //throw new ApplicationException("Not a delegate.");
+                throw new Exception("Not a delegate.");
             }
 
-            MethodInfo invoke = targetDelegateType.GetMethod("Invoke");
+            MethodInfo invoke = targetDelegateType.GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
             if (invoke == null)
             {
-                throw new ApplicationException("Not a delegate.");
+                //throw new ApplicationException("Not a delegate.");
+                throw new Exception("Not a delegate.");
             }
 
             ParameterInfo[] invokeParams = invoke.GetParameters();

@@ -31,8 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Timers;
-using VroomJs;
+using VroomJs.Extension;
 
 namespace VroomJs
 {
@@ -130,7 +129,8 @@ namespace VroomJs
                             getterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
 
-                    } break;
+                    }
+                    break;
                 case 2:
                     {
                         //property set
@@ -141,7 +141,8 @@ namespace VroomJs
                         {
                             setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
                 default:
                     {
                         if (mIndex == 0) return;
@@ -150,7 +151,8 @@ namespace VroomJs
                         {
                             foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
                         }
-                    } break;
+                    }
+                    break;
             }
 
 
@@ -332,13 +334,15 @@ namespace VroomJs
         public void SetFunction(string name, Delegate func)
         {
             WeakDelegate del;
+            MethodInfo mInfo = func.GetMethodInfo();
             if (func.Target != null)
             {
-                del = new BoundWeakDelegate(func.Target, func.Method.Name);
+                del = new BoundWeakDelegate(func.Target, mInfo.Name);//.Method.Name);
             }
             else
             {
-                del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
+                //del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
+                del = new BoundWeakDelegate(mInfo.DeclaringType, mInfo.Name);
             }
             this.SetVariableFromAny(name, del);
         }
@@ -420,24 +424,28 @@ namespace VroomJs
         internal bool TrySetMemberValue(Type type, object obj, string name, JsValue value)
         {
             // dictionaries.
-            if (typeof(IDictionary).IsAssignableFrom(type))
+            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
                 IDictionary dictionary = (IDictionary)obj;
                 dictionary[name] = _convert.FromJsValue(value);
                 return true;
             }
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
+            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
+            PropertyInfo pi = type.GetRuntimeProperty(name);
+            //foreach(var p in ps)
+            //{
 
-            PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
+            //}
             if (pi != null)
             {
                 pi.SetValue(obj, _convert.FromJsValue(value), null);
@@ -499,9 +507,8 @@ namespace VroomJs
         internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
         {
             object result;
-
             // dictionaries.
-            if (typeof(IDictionary).IsAssignableFrom(type))
+            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
                 IDictionary dictionary = (IDictionary)obj;
                 if (dictionary.Contains(name))
@@ -516,18 +523,19 @@ namespace VroomJs
                 return true;
             }
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
 
             // First of all try with a public property (the most common case).
-            PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
+            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
+            PropertyInfo pi = type.GetRuntimeProperty(name);
             if (pi != null)
             {
                 result = pi.GetValue(obj, null);
@@ -536,7 +544,8 @@ namespace VroomJs
             }
 
             // try field.
-            FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
+            //FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
+            FieldInfo fi = type.GetRuntimeField(name);
             if (fi != null)
             {
                 result = fi.GetValue(obj);
@@ -547,11 +556,12 @@ namespace VroomJs
             // Then with an instance method: the problem is that we don't have a list of
             // parameter types so we just check if any method with the given name exists
             // and then keep alive a "weak delegate", i.e., just a name and the target.
-            // The real method will be resolved during the invokation itself.
-            BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+            //// The real method will be resolved during the invokation itself.
+            //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
             // TODO: This is probably slooow.
-            foreach (var met in type.GetMembers(flags))
+            MemberInfo[] members = type.GetMembers();
+            foreach (var met in members)
             {
                 if (met.Name == name)
                 {
@@ -592,7 +602,7 @@ namespace VroomJs
 #endif
             // we need to fall back to the prototype verison we set up because v8 won't call an object as a function, it needs
             // to be from a proper FunctionTemplate.
-            if (!string.IsNullOrEmpty(name) && name.Equals("valueOf", StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(name) && name.Equals("valueOf", StringComparison.OrdinalIgnoreCase))
             {
                 return JsValue.Empty;
             }
@@ -655,8 +665,10 @@ namespace VroomJs
             var obj = KeepAliveGet(slot);
             if (obj != null)
             {
+
                 Type type = obj.GetType();
-                MethodInfo mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
+                MethodInfo mi;// = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
+                mi = type.GetRuntimeMethod("ValueOf", new Type[0]);
                 if (mi != null)
                 {
                     object result = mi.Invoke(obj, new object[0]);
@@ -700,29 +712,29 @@ namespace VroomJs
 #endif
                 object[] a = (object[])_convert.FromJsValue(args);
 
-                BindingFlags flags = BindingFlags.Public
-                        | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+                //BindingFlags flags = BindingFlags.Public
+                //        | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
-                if (func.Target != null)
-                {
-                    flags |= BindingFlags.Instance;
-                }
-                else
-                {
-                    flags |= BindingFlags.Static;
-                }
+                //if (func.Target != null)
+                //{
+                //    flags |= BindingFlags.Instance;
+                //}
+                //else
+                //{
+                //    flags |= BindingFlags.Static;
+                //}
 
-                if (obj is BoundWeakDelegate)
-                {
-                    flags |= BindingFlags.NonPublic;
-                }
+                //if (obj is BoundWeakDelegate)
+                //{
+                //    flags |= BindingFlags.NonPublic;
+                //}
 
                 // need to convert methods from JsFunction's into delegates?
                 foreach (var a_elem in a)
                 {
                     if (a.GetType() == typeof(JsFunction))
                     {
-                        CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
+                        CheckAndResolveJsFunctions(type, func.MethodName, a);
                         break;
                     }
                 }
@@ -733,7 +745,9 @@ namespace VroomJs
 
                 try
                 {
-                    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
+                    var method = type.GetRuntimeMethod(func.MethodName, null);
+                    object result = method.Invoke(func.Target, a);
+                    //object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
                     return _convert.AnyToJsValue(result);
                 }
                 catch (TargetInvocationException e)
@@ -749,9 +763,11 @@ namespace VroomJs
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
-        private static void CheckAndResolveJsFunctions(Type type, string methodName, BindingFlags flags, object[] args)
+        private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
         {
-            MethodInfo mi = type.GetMethod(methodName, flags);
+            //MethodInfo mi = type.GetMethod(methodName, flags);
+            MethodInfo mi = type.GetRuntimeMethod(methodName, null);
+            //TODO: type.GetRuntimeMethods();
             ParameterInfo[] paramTypes = mi.GetParameters();
 
             for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
@@ -777,7 +793,7 @@ namespace VroomJs
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
-                if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
+                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
                 {
                     IDictionary dictionary = (IDictionary)obj;
                     if (dictionary.Contains(name))
@@ -804,7 +820,7 @@ namespace VroomJs
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
 
-                if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
+                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
                 {
                     IDictionary dictionary = (IDictionary)obj;
                     //string[] keys = dictionary.Keys.Cast<string>().ToArray();
@@ -819,8 +835,7 @@ namespace VroomJs
                 }
 
                 var mbNameList = new System.Collections.Generic.List<string>();
-                foreach (var mb in obj.GetType().GetMembers(BindingFlags.Public |
-                    BindingFlags.Instance))
+                foreach (var mb in obj.GetType().GetMembers())
                 {
                     var met = mb as MethodBase;
                     if (met != null && !met.IsSpecialName)
@@ -1052,6 +1067,31 @@ namespace VroomJs
         internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
         {
             this.cachedDelSamples[anotherDelegateType] = delegateType;
+        }
+    }
+
+    class Timer
+    {
+        //dummy timer
+        public event EventHandler Elapsed;
+        public Timer(double millisec)
+        {
+
+        }
+
+        public void Start()
+        {
+
+        }
+
+        public void Stop()
+        {
+
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }

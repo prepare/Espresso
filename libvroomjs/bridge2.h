@@ -31,24 +31,24 @@ extern "C"{
 
 	} MetCallingArgs_;
 
-	typedef void (__stdcall *del01)();
+	typedef void (CALLINGCONVENTION *del01)();
 
 	//simple managed del
-	typedef void (__stdcall *del_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1);
-	typedef void (__stdcall *del_s_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1,const wchar_t* arg2);
+	typedef void (CALLINGCONVENTION *del_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1);
+	typedef void (CALLINGCONVENTION *del_s_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1,const wchar_t* arg2);
 
-	typedef void (__stdcall *del_i4)(int oIndex,const wchar_t* methodName,int arg1);
-	typedef void (__stdcall *del_i4_i4)(int oIndex,const wchar_t* methodName,int arg1,int arg2);
+	typedef void (CALLINGCONVENTION *del_i4)(int oIndex,const wchar_t* methodName,int arg1);
+	typedef void (CALLINGCONVENTION *del_i4_i4)(int oIndex,const wchar_t* methodName,int arg1,int arg2);
 
-	typedef void (__stdcall *del_f4)(int oIndex,const wchar_t* methodName,float arg1);
-	typedef void (__stdcall *del_f4_f4)(int oIndex,const wchar_t* methodName,float arg1,float arg2);
+	typedef void (CALLINGCONVENTION *del_f4)(int oIndex,const wchar_t* methodName,float arg1);
+	typedef void (CALLINGCONVENTION *del_f4_f4)(int oIndex,const wchar_t* methodName,float arg1,float arg2);
 
-	typedef void (__stdcall *del_d8)(int oIndex,const wchar_t* methodName,double arg1);
-	typedef void (__stdcall *del_d8_d8)(int oIndex,const wchar_t* methodName,double arg1,double arg2);
+	typedef void (CALLINGCONVENTION *del_d8)(int oIndex,const wchar_t* methodName,double arg1);
+	typedef void (CALLINGCONVENTION *del_d8_d8)(int oIndex,const wchar_t* methodName,double arg1,double arg2);
 	//-------------------------------------------------------------------------------------------
 
 
-	typedef void (__stdcall *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
+	typedef void (CALLINGCONVENTION *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
 	
 	 
 	EXPORT ManagedRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
