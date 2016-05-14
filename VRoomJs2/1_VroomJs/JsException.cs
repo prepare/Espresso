@@ -24,11 +24,9 @@
 // THE SOFTWARE.
 
 using System;
-using System.Runtime.Serialization;
-
 namespace VroomJs
 {
-    //[Serializable]
+
     public class JsException : Exception
     {
 
