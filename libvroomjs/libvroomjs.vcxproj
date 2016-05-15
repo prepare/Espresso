@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}</ProjectGuid>
     <RootNamespace>libvroomjs</RootNamespace>
-    <ProjectName>VRoomJsNative</ProjectName>
+    <ProjectName>libespr</ProjectName>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
