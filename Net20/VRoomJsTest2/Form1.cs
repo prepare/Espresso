@@ -16,7 +16,7 @@ namespace VRoomJsTest2
         public Form1()
         {
             InitializeComponent();
-            
+
             //-----------------------------------------------------------------------            
             var asm = typeof(VroomJs.Tests.TestClass).Assembly;
             var testFixtureAttr = typeof(NUnit.Framework.TestFixtureAttribute);
@@ -93,7 +93,7 @@ namespace VRoomJsTest2
                 return true;
             }
         }
-         
+
         delegate object AboutMeEventHandler(object[] args);
 
         [JsType]
@@ -145,10 +145,12 @@ namespace VRoomJsTest2
                 }
             }
         }
-        
+
         private void button1_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
@@ -191,8 +193,9 @@ namespace VRoomJsTest2
 
         private void button2_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             //create js engine and context
 
             using (JsEngine engine = new JsEngine())
@@ -218,8 +221,9 @@ namespace VRoomJsTest2
         private void button3_Click(object sender, EventArgs e)
         {
 
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
@@ -281,8 +285,9 @@ namespace VRoomJsTest2
 
         private void button4_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
@@ -352,7 +357,9 @@ namespace VRoomJsTest2
 
         private void button5_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
@@ -418,8 +425,9 @@ namespace VRoomJsTest2
 
         private void button6_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {
@@ -444,8 +452,9 @@ namespace VRoomJsTest2
 
         private void button7_Click(object sender, EventArgs e)
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {

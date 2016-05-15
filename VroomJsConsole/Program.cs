@@ -25,7 +25,7 @@ namespace VRoomJsConsoleTest
         static void Main(string[] args)
         {
 
-            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\VRoomJsNative.dll");
+            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
             Menu();
             Console.Read();
         }
@@ -93,7 +93,9 @@ namespace VRoomJsConsoleTest
         [Test("1", "Test1")]
         static void TestCase1()
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
 
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
@@ -136,8 +138,9 @@ namespace VRoomJsConsoleTest
         [Test("2", "Test2")]
         static void TestCase2()
         {
+#if DEBUG
             JsBridge.dbugTestCallbacks();
-
+#endif
             //create js engine and context
 
             using (JsEngine engine = new JsEngine())
