@@ -25,7 +25,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-
 namespace VroomJs
 {
     class JsConvert
@@ -243,7 +242,7 @@ namespace VroomJs
         {
             return new JsValue { Type = JsValueType.Null };
         }
-
+#if NET20
         public JsValue AnyToJsValue(object obj)
         {
             if (obj == null)
@@ -331,6 +330,94 @@ namespace VroomJs
 
             //return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
+#else
+        public JsValue AnyToJsValue(object obj)
+        {
+            if (obj == null)
+                return new JsValue { Type = JsValueType.Null };
 
+            if (obj is INativeRef)
+            {
+                //extension
+                INativeRef prox = (INativeRef)obj;
+                int keepAliveId = _context.KeepAliveAdd(obj);
+                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
+            }
+
+            Type type = obj.GetType();
+
+            // Check for nullable types (we will cast the value out of the box later).
+            //if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                type = type.GenericTypeArguments[0]; //type = type.GetGenericArguments()[0];
+
+            if (type == typeof(Boolean))
+                return new JsValue { Type = JsValueType.Boolean, I32 = (bool)obj ? 1 : 0 };
+
+            if (type == typeof(String) || type == typeof(Char))
+            {
+                // We need to allocate some memory on the other side; will be free'd by unmanaged code.
+                return JsContext.jsvalue_alloc_string(obj.ToString());
+            }
+
+            if (type == typeof(Byte))
+                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Byte)obj };
+            if (type == typeof(Int16))
+                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Int16)obj };
+            if (type == typeof(UInt16))
+                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt16)obj };
+            if (type == typeof(Int32))
+                return new JsValue { Type = JsValueType.Integer, I32 = (int)obj };
+            if (type == typeof(UInt32))
+                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt32)obj };
+
+            if (type == typeof(Int64))
+                return new JsValue { Type = JsValueType.Number, Num = (double)(Int64)obj };
+            if (type == typeof(UInt64))
+                return new JsValue { Type = JsValueType.Number, Num = (double)(UInt64)obj };
+            if (type == typeof(Single))
+                return new JsValue { Type = JsValueType.Number, Num = (double)(Single)obj };
+            if (type == typeof(Double))
+                return new JsValue { Type = JsValueType.Number, Num = (double)obj };
+            if (type == typeof(Decimal))
+                return new JsValue { Type = JsValueType.Number, Num = (double)(Decimal)obj };
+
+            if (type == typeof(DateTime))
+                return new JsValue
+                {
+                    Type = JsValueType.Date,
+                    Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds) /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
+                };
+
+            // Arrays of anything that can be cast to object[] are recursively convertef after
+            // allocating an appropriate jsvalue on the unmanaged side.
+
+            var array = obj as object[];
+            if (array != null)
+            {
+                JsValue v = JsContext.jsvalue_alloc_array(array.Length);
+                if (v.Length != array.Length)
+                    throw new JsInteropException("can't allocate memory on the unmanaged side");
+                for (int i = 0; i < array.Length; i++)
+                    Marshal.StructureToPtr(AnyToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
+                return v;
+            }
+
+            // Every object explicitly converted to a value becomes an entry of the
+            // _keepalives list, to make sure the GC won't collect it while still in
+            // use by the unmanaged Javascript engine. We don't try to track duplicates
+            // because adding the same object more than one time acts more or less as
+            // reference counting.  
+            //check 
+
+            var jsTypeDefinition = _context.GetJsTypeDefinition2(type);
+            INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
+            //int keepAliveId2 = _context.KeepAliveAdd(prox2);
+            return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = prox2.ManagedIndex };
+            //return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = keepAliveId2 };
+
+            //return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
+        }
+#endif
     }
 }

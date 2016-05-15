@@ -164,7 +164,7 @@ namespace VroomJs
     static class NativeV8JsInterOp
     {
         //basic 
-        
+
         static ManagedListenerDel engineListenerDel;
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -249,7 +249,7 @@ namespace VroomJs
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
                 (int)ManagedCallbackKind.MethodCall);
         }
-      
+
         public static void RegisterCallBacks()
         {
             //------------------
@@ -301,8 +301,8 @@ namespace VroomJs
                         context.Handle.Handle,
                         0, tt, finalBuffer.Length));
                 }
-
-                ms.Close();
+                
+                //ms.Close();
             }
         }
         public static void CreateNativePart(JsContext context, INativeScriptable proxyObj)

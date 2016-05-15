@@ -223,7 +223,9 @@ namespace VroomJs
             : base(name, JsMemberKind.Property)
         {
 
-            this.propInfo = propInfo;
+            this.propInfo = propInfo; 
+#if NET20
+
             var getter = propInfo.GetGetMethod(true);
             if (getter != null)
             {
@@ -234,6 +236,19 @@ namespace VroomJs
             {
                 this.SetterMethod = new JsPropertySetDefinition(name, setter);
             }
+#else       
+            var getter = propInfo.GetMethod; 
+            if (getter != null)
+            {
+                this.GetterMethod = new JsPropertyGetDefinition(name, getter);
+            }
+            var setter = propInfo.SetMethod; 
+            if (setter != null)
+            {
+                this.SetterMethod = new JsPropertySetDefinition(name, setter);
+            }
+#endif
+
         }
         public JsPropertyGetDefinition GetterMethod
         {
@@ -427,7 +442,7 @@ namespace VroomJs
                this.context.Converter.ToJsValue(proxy));
         }
         public void SetResultAutoWrap<T>(T result)
-            where T : class,new()
+            where T : class, new()
         {
 
             var jsTypeDef = this.context.GetJsTypeDefinition<T>(result);

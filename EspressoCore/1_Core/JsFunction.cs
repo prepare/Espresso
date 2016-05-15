@@ -16,8 +16,11 @@ namespace VroomJs
 
         static JsFunction()
         {
+#if NET20
             myInvokeMethodInfo = typeof(JsFunction).GetMethod("Invoke");
-
+#else
+            myInvokeMethodInfo = typeof(JsFunction).GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
+#endif
         }
         public JsFunction(JsContext context, IntPtr funcPtr, IntPtr thisPtr)
         {
@@ -49,6 +52,7 @@ namespace VroomJs
             }
             //----------------------------------------------------------------------------------
 
+#if NET20
             if (targetDelegateType.BaseType != typeof(MulticastDelegate))
             {
                 throw new ApplicationException("Not a delegate.");
@@ -59,7 +63,20 @@ namespace VroomJs
             {
                 throw new ApplicationException("Not a delegate.");
             }
+#else
+            if (targetDelegateType.GetTypeInfo().BaseType != typeof(MulticastDelegate))
+            {
+                //throw new ApplicationException("Not a delegate.");
+                throw new Exception("Not a delegate.");
+            }
 
+            MethodInfo invoke = targetDelegateType.GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
+            if (invoke == null)
+            {
+                //throw new ApplicationException("Not a delegate.");
+                throw new Exception("Not a delegate.");
+            }
+#endif
             ParameterInfo[] invokeParams = invoke.GetParameters();
             int argCount = invokeParams.Length;
             Type returnType = invoke.ReturnType;
@@ -95,7 +112,8 @@ namespace VroomJs
                             typeof(ActionDelegateHolder) :
                             typeof(FuncDelegateHolder<>).MakeGenericType(typelist);
 
-                    } break;
+                    }
+                    break;
                 case 1:
                     {
                         //1 input 
@@ -103,26 +121,30 @@ namespace VroomJs
                             typeof(ActionDelegateHolder<>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,>).MakeGenericType(typelist);
 
-                    } break;
+                    }
+                    break;
                 case 2:
                     {
                         delHolderType = returnVoid ?
                             typeof(ActionDelegateHolder<,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,>).MakeGenericType(typelist);
-                    } break;
+                    }
+                    break;
                 case 3:
                     {
                         delHolderType = returnVoid ?
                             typeof(ActionDelegateHolder<,,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,,>).MakeGenericType(typelist);
 
-                    } break;
+                    }
+                    break;
                 case 4:
                     {
                         delHolderType = returnVoid ?
                             typeof(ActionDelegateHolder<,,,>).MakeGenericType(typelist) :
                             typeof(FuncDelegateHolder<,,,,>).MakeGenericType(typelist);
-                    } break;
+                    }
+                    break;
                 default:
                     {
                         //create more if you want

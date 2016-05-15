@@ -31,8 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Timers;
-using VroomJs;
+using VroomJs.Extension;
 
 namespace VroomJs
 {
@@ -235,9 +234,9 @@ namespace VroomJs
 
         public object Execute(string code, string name = null, TimeSpan? executionTimeout = null)
         {
-            Stopwatch watch1 = new Stopwatch();
-            Stopwatch watch2 = new Stopwatch();
-            watch1.Start();
+            //Stopwatch watch1 = new Stopwatch();
+            //Stopwatch watch2 = new Stopwatch(); 
+            //watch1.Start();
             if (code == null)
                 throw new ArgumentNullException("code");
 
@@ -259,12 +258,12 @@ namespace VroomJs
             object res = null;
             try
             {
-                watch2.Start();
+                //watch2.Start();
 
                 int ver = getVersion();
                 JsValue v = jscontext_execute(_context, code, name ?? "<Unnamed Script>");
 
-                watch2.Stop();
+                //watch2.Stop();
                 res = _convert.FromJsValue(v);
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
@@ -290,7 +289,7 @@ namespace VroomJs
             Exception e = res as JsException;
             if (e != null)
                 throw e;
-            watch1.Stop();
+            //watch1.Stop();
 
             // Console.WriteLine("Execution time " + watch2.ElapsedTicks + " total time " + watch1.ElapsedTicks);
             return res;
@@ -333,7 +332,10 @@ namespace VroomJs
 
         public void SetFunction(string name, Delegate func)
         {
+
             WeakDelegate del;
+#if NET20
+
             if (func.Target != null)
             {
                 del = new BoundWeakDelegate(func.Target, func.Method.Name);
@@ -342,6 +344,19 @@ namespace VroomJs
             {
                 del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
             }
+
+#else           
+            MethodInfo mInfo = func.GetMethodInfo();
+            if (func.Target != null)
+            {
+                del = new BoundWeakDelegate(func.Target, mInfo.Name);//.Method.Name);
+            }
+            else
+            {
+                //del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
+                del = new BoundWeakDelegate(mInfo.DeclaringType, mInfo.Name);
+            } 
+#endif
             this.SetVariableFromAny(name, del);
         }
 
@@ -419,6 +434,7 @@ namespace VroomJs
 
         #endregion
 
+#if NET20
         internal bool TrySetMemberValue(Type type, object obj, string name, JsValue value)
         {
             // dictionaries.
@@ -448,7 +464,41 @@ namespace VroomJs
 
             return false;
         }
+#else
+        internal bool TrySetMemberValue(Type type, object obj, string name, JsValue value)
+        {
+            // dictionaries.
+            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            {
+                IDictionary dictionary = (IDictionary)obj;
+                dictionary[name] = _convert.FromJsValue(value);
+                return true;
+            }
 
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
+            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
+            PropertyInfo pi = type.GetRuntimeProperty(name);
+            //foreach(var p in ps)
+            //{
+
+            //}
+            if (pi != null)
+            {
+                pi.SetValue(obj, _convert.FromJsValue(value), null);
+                return true;
+            }
+
+            return false;
+        }
+#endif
         internal JsValue KeepAliveSetPropertyValue(int slot, string name, JsValue value)
         {
 #if DEBUG_TRACE_API
@@ -497,7 +547,7 @@ namespace VroomJs
 
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
-
+#if NET20
         internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
         {
             object result;
@@ -586,7 +636,101 @@ namespace VroomJs
             value = JsValue.Null;
             return false;
         }
+#else
 
+        internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
+        {
+            object result;
+            // dictionaries.
+            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            {
+                IDictionary dictionary = (IDictionary)obj;
+                if (dictionary.Contains(name))
+                {
+                    result = dictionary[name];
+                    value = _convert.AnyToJsValue(result);
+                }
+                else
+                {
+                    value = JsValue.Null;
+                }
+                return true;
+            }
+
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
+
+            // First of all try with a public property (the most common case).
+            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
+            PropertyInfo pi = type.GetRuntimeProperty(name);
+
+            if (pi != null)
+            {
+                result = pi.GetValue(obj, null);
+                value = _convert.AnyToJsValue(result);
+                return true;
+            }
+
+            // try field.
+            FieldInfo fi = type.GetRuntimeField(name);
+            //FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
+
+            if (fi != null)
+            {
+                result = fi.GetValue(obj);
+                value = _convert.AnyToJsValue(result);
+                return true;
+            }
+
+            // Then with an instance method: the problem is that we don't have a list of
+            // parameter types so we just check if any method with the given name exists
+            // and then keep alive a "weak delegate", i.e., just a name and the target.
+            //// The real method will be resolved during the invokation itself.
+            //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+
+            // TODO: This is probably slooow.
+            MemberInfo[] members = type.GetMembers();
+            foreach (var met in members)
+            {
+                if (met.Name == name)
+                {
+                    if (type == obj)
+                    {
+                        result = new WeakDelegate(type, name);
+                    }
+                    else
+                    {
+                        result = new WeakDelegate(obj, name);
+                    }
+                    value = _convert.AnyToJsValue(result);
+                    return true;
+                }
+            }
+            //if (type.GetMethods(mFlags).Any(x => x.Name == name))
+            //{
+            //    if (type == obj)
+            //    {
+            //        result = new WeakDelegate(type, name);
+            //    }
+            //    else
+            //    {
+            //        result = new WeakDelegate(obj, name);
+            //    }
+            //    value = _convert.ToJsValue(result);
+            //    return true;
+            //}
+
+            value = JsValue.Null;
+            return false;
+        }
+#endif
         internal JsValue KeepAliveGetPropertyValue(int slot, string name)
         {
 #if DEBUG_TRACE_API
@@ -594,7 +738,7 @@ namespace VroomJs
 #endif
             // we need to fall back to the prototype verison we set up because v8 won't call an object as a function, it needs
             // to be from a proper FunctionTemplate.
-            if (!string.IsNullOrEmpty(name) && name.Equals("valueOf", StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(name) && name.Equals("valueOf", StringComparison.OrdinalIgnoreCase))
             {
                 return JsValue.Empty;
             }
@@ -657,8 +801,14 @@ namespace VroomJs
             var obj = KeepAliveGet(slot);
             if (obj != null)
             {
+
                 Type type = obj.GetType();
-                MethodInfo mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
+                MethodInfo mi;
+#if NET20
+                mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
+#else
+                mi = type.GetRuntimeMethod("ValueOf", new Type[0]);
+#endif
                 if (mi != null)
                 {
                     object result = mi.Invoke(obj, new object[0]);
@@ -669,6 +819,7 @@ namespace VroomJs
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
+#if NET20
         internal JsValue KeepAliveInvoke(int slot, JsValue args)
         {
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
@@ -751,6 +902,78 @@ namespace VroomJs
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
+
+
+#else
+        internal JsValue KeepAliveInvoke(int slot, JsValue args)
+        {
+            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+#if DEBUG_TRACE_API
+			Console.WriteLine("invoking");
+#endif
+            //   Console.WriteLine(args);
+
+            var obj = KeepAliveGet(slot);
+            if (obj != null)
+            {
+                Type constructorType = obj as Type;
+                if (constructorType != null)
+                {
+#if DEBUG_TRACE_API
+					Console.WriteLine("constructing " + constructorType.Name);
+#endif
+                    object[] constructorArgs = (object[])_convert.FromJsValue(args);
+                    return _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
+                }
+
+                WeakDelegate func = obj as WeakDelegate;
+                if (func == null)
+                {
+                    throw new Exception("not a function.");
+                }
+
+                Type type = func.Target != null ? func.Target.GetType() : func.Type;
+#if DEBUG_TRACE_API
+				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
+#endif
+                object[] a = (object[])_convert.FromJsValue(args);
+
+
+                // need to convert methods from JsFunction's into delegates?
+                foreach (var a_elem in a)
+                {
+                    if (a.GetType() == typeof(JsFunction))
+                    {
+                        CheckAndResolveJsFunctions(type, func.MethodName, a);
+                        break;
+                    }
+                }
+                //if (a.Any(z => z != null && z.GetType() == typeof(JsFunction)))
+                //{
+                //    CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
+                //}
+
+                try
+                {
+                    var method = type.GetRuntimeMethod(func.MethodName, null);
+                    object result = method.Invoke(func.Target, a);
+                    //object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
+                    return _convert.AnyToJsValue(result);
+                }
+                catch (TargetInvocationException e)
+                {
+                    return JsValue.Error(KeepAliveAdd(e.InnerException));
+                }
+                catch (Exception e)
+                {
+                    return JsValue.Error(KeepAliveAdd(e));
+                }
+            }
+
+            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+        }
+#endif
+#if NET20
         private static void CheckAndResolveJsFunctions(Type type, string methodName, BindingFlags flags, object[] args)
         {
             MethodInfo mi = type.GetMethod(methodName, flags);
@@ -764,8 +987,27 @@ namespace VroomJs
                     args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
                 }
             }
-
         }
+#else
+        private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
+        {
+
+            //MethodInfo mi = type.GetMethod(methodName, flags);
+            MethodInfo mi = type.GetRuntimeMethod(methodName, null);
+            //TODO: type.GetRuntimeMethods();
+            ParameterInfo[] paramTypes = mi.GetParameters();
+
+            for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
+            {
+                if (args[i] != null && args[i].GetType() == typeof(JsFunction))
+                {
+                    JsFunction function = (JsFunction)args[i];
+                    args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
+                }
+            }
+        }
+
+#endif
 
         internal JsValue KeepAliveDeleteProperty(int slot, string name)
         {
@@ -779,6 +1021,9 @@ namespace VroomJs
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
+
+
+#if NET20
                 if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
                 {
                     IDictionary dictionary = (IDictionary)obj;
@@ -789,7 +1034,20 @@ namespace VroomJs
                     }
                 }
                 return _convert.ToJsValue(false);
+#else
+                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
+                {
+                    IDictionary dictionary = (IDictionary)obj;
+                    if (dictionary.Contains(name))
+                    {
+                        dictionary.Remove(name);
+                        return _convert.ToJsValue(true);
+                    }
+                }
+                return _convert.ToJsValue(false);
+#endif
             }
+
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
@@ -805,6 +1063,8 @@ namespace VroomJs
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
+
+#if NET20
 
                 if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
                 {
@@ -830,13 +1090,33 @@ namespace VroomJs
                         mbNameList.Add(mb.Name);
                     }
                 }
-                //string[] values = obj.GetType().GetMembers(
-                //    BindingFlags.Public |
-                //    BindingFlags.Instance).Where(m =>
-                //    {
-                //        var method = m as MethodBase;
-                //        return method == null || !method.IsSpecialName;
-                //    }).Select(z => z.Name).ToArray();
+
+#else
+                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
+                {
+                    IDictionary dictionary = (IDictionary)obj;
+                    //string[] keys = dictionary.Keys.Cast<string>().ToArray();
+
+                    var keys01 = new System.Collections.Generic.List<string>();
+                    foreach (var k in dictionary.Keys)
+                    {
+                        keys01.Add(k.ToString());
+                    }
+
+                    return _convert.ToJsValue(keys01.ToArray());
+                }
+
+                var mbNameList = new System.Collections.Generic.List<string>();
+                foreach (var mb in obj.GetType().GetMembers())
+                {
+                    var met = mb as MethodBase;
+                    if (met != null && !met.IsSpecialName)
+                    {
+                        mbNameList.Add(mb.Name);
+                    }
+                }
+              
+#endif
                 return _convert.ToJsValue(mbNameList.ToArray());
             }
             return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
@@ -1057,6 +1337,28 @@ namespace VroomJs
         }
     }
 
+    class Timer
+    {
+        //dummy timer
+        public event EventHandler Elapsed;
+        public Timer(double millisec)
+        {
 
-     
+        }
+
+        public void Start()
+        {
+
+        }
+
+        public void Stop()
+        {
+
+        }
+
+        public void Dispose()
+        {
+
+        }
+    }
 }

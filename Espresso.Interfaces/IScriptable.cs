@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace VroomJs
-{   
+{
     public interface INativeRef
     {
         int ManagedIndex { get; }

@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E3AEA724-CC01-4E12-90D1-C0337276F728}</ProjectGuid>
+    <ProjectGuid>{851AE200-BF80-450B-BF86-D0C14D32E980}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VRoom.Test2</RootNamespace>
@@ -69,9 +69,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VRoomJs20\VRoomJs20.csproj">
-      <Project>{41517b22-c8e1-404e-8f3c-a8f3e785dfd3}</Project>
-      <Name>VRoomJs20</Name>
+    <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
+      <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
+      <Name>Espresso.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EspressoCore\EspressoCore.csproj">
+      <Project>{f6a70c3f-a6b4-4830-91a6-eb7437065028}</Project>
+      <Name>EspressoCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

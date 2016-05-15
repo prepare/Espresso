@@ -23,10 +23,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
+using System; 
 namespace VroomJs
 {
-
+     
     public class JsInteropException : JsException
     {
         public JsInteropException()
@@ -42,6 +42,10 @@ namespace VroomJs
             : base(message, inner)
         {
         }
-         
+
+        //protected JsInteropException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //}
     }
 }

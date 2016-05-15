@@ -70,7 +70,7 @@
     <Compile Include="3_MiniBridge\JsTypeDefinitionBuilder.cs" />
     <Compile Include="3_MiniBridge\NativeV8JsInterOp.cs" />
     <Compile Include="Extension.cs" />
-    <Compile Include="HadleRef.cs" />
+    <Compile Include="HandleRef.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
