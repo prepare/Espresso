@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B5F32114-DD97-4E99-8F65-4274AE49365C}</ProjectGuid>
+    <ProjectGuid>{E96FE289-D349-4592-A601-A55C33AC0E18}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SandBox2</RootNamespace>
@@ -41,9 +41,13 @@
     <Compile Include="Sandbox.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VRoomJs20\VRoomJs20.csproj">
-      <Project>{41517b22-c8e1-404e-8f3c-a8f3e785dfd3}</Project>
-      <Name>VRoomJs20</Name>
+    <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
+      <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
+      <Name>Espresso.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EspressoCore\EspressoCore.csproj">
+      <Project>{f6a70c3f-a6b4-4830-91a6-eb7437065028}</Project>
+      <Name>EspressoCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
