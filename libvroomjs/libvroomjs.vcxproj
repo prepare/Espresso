@@ -47,13 +47,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>D:\projects\node-v6.1.0\deps\v8\include;D:\projects\node-v6.1.0\deps\v8\src\base;D:\projects\node-v6.1.0\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!--<AdditionalIncludeDirectories>D:\projects\node-v6.1.0\deps\v8\include;D:\projects\node-v6.1.0\deps\v8\src\base;D:\projects\node-v6.1.0\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>-->
+      <AdditionalIncludeDirectories>D:\projects\node-v6.2.0\deps\v8\include;D:\projects\node-v6.2.0\deps\v8\src\base;D:\projects\node-v6.2.0\deps\v8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\projects\node-v6.1.0\build\Debug\lib\v8_base_0.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_1.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_2.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_3.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libbase.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_snapshot.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
+      <!--<AdditionalDependencies>D:\projects\node-v6.1.0\build\Debug\lib\v8_base_0.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_1.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_2.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_base_3.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libbase.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_snapshot.lib;D:\projects\node-v6.1.0\build\Debug\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>-->
+      <AdditionalDependencies>D:\projects\node-v6.2.0\build\Debug\lib\v8_base_0.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_base_1.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_base_2.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_base_3.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_libbase.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_snapshot.lib;D:\projects\node-v6.2.0\build\Debug\lib\v8_libplatform.lib;
+	  D:\projects\node-v6.2.0\tools\icu\Debug\lib\icudata.lib;D:\projects\node-v6.2.0\tools\icu\Debug\lib\icuucx.lib;D:\projects\node-v6.2.0\tools\icu\Debug\lib\icui18n.lib;D:\projects\node-v6.2.0\tools\icu\Debug\lib\icustubdata.lib;winmm.lib;ws2_32.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -63,14 +66,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>D:\projects\node-v6.1.0\deps\v8\include;D:\projects\node-v6.1.0\deps\v8\src\base;D:\projects\node-v6.1.0\deps\v8;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\projects\node-v6.2.0\deps\v8\include;D:\projects\node-v6.2.0\deps\v8\src\base;D:\projects\node-v6.2.0\deps\v8</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>D:\projects\node-v6.1.0\build\Release\lib\v8_base_0.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_1.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_2.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_base_3.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_libbase.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_snapshot.lib;D:\projects\node-v6.1.0\build\Release\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\projects\node-v6.2.0\build\Release\lib\v8_base_0.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_base_1.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_base_2.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_base_3.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_libbase.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_snapshot.lib;D:\projects\node-v6.2.0\build\Release\lib\v8_libplatform.lib;winmm.lib;ws2_32.lib;
+		D:\projects\node-v6.2.0\tools\icu\Release\lib\icuucx.lib;D:\projects\node-v6.2.0\tools\icu\Release\lib\icui18n.lib;D:\projects\node-v6.2.0\tools\icu\Release\lib\icustubdata.lib;
+	  %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
