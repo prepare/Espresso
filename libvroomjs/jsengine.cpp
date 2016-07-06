@@ -245,7 +245,7 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 	((Context*)global_context_)->Exit();
 	//(*global_context_)->Exit();
 	
-	Persistent<Script> *pScript;// = new Persistent<Script>(Persistent<Script>(isolate_, script));
+	Persistent<Script> *pScript = new Persistent<Script>();
 	pScript->Reset(isolate_, script);
 	return pScript;
 }
@@ -388,8 +388,8 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
-		Persistent<Object> *persistent;
-		persistent->Reset(isolate_,obj);
+		Persistent<Object> *persistent = new Persistent<Object>();
+		//persistent->Reset(isolate_,obj);
 		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 	} else {
 
@@ -400,7 +400,7 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
 		//v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
-		Persistent<Object> *persistent;
+		Persistent<Object> *persistent = new Persistent<Object>();
 		persistent->Reset(isolate_,Persistent<Object>(isolate_, obj));
 		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 
@@ -493,7 +493,7 @@ jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 			arr[0].length = 0;
 			arr[0].type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
-				Persistent<Object> *persistent;
+				Persistent<Object> *persistent = new Persistent<Object>();
 				persistent->Reset(isolate_,Persistent<Object>(isolate_, thisArg));
 				arr[1].value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
 				arr[1].length = 0;
