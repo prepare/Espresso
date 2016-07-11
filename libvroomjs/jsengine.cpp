@@ -203,14 +203,11 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 		fp.Reset(engine->isolate_, ff);
 		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
 
-
-
-
-
 		engine->global_context_ = new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
 		Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
 		ctx->Enter();
-		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff->GetFunction());
+		//fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff->GetFunction());
+		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff);
 		ctx->Exit();
 	}
 	return engine;
