@@ -25,7 +25,8 @@ namespace VRoomJsConsoleTest
         static void Main(string[] args)
         {
 
-            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
+            //VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
+            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\Release\libespr.dll");
             Menu();
             Console.Read();
         }
