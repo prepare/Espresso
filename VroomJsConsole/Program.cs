@@ -25,7 +25,8 @@ namespace VRoomJsConsoleTest
         static void Main(string[] args)
         {
 
-            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
+            //VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
+            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\Release\libespr.dll");
             Menu();
             Console.Read();
         }
@@ -128,6 +129,12 @@ namespace VRoomJsConsoleTest
                     ctx.SetVariableFromAny("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
                 }
+                //test value of
+                object re = ctx.Execute("(function(){function myNumberType(n) {    this.number = n;}" +
+                        "myNumberType.prototype.valueOf = function() {    return this.number;};" +
+                        "myObj = new myNumberType(4);" +
+                        "return myObj + 3;" +
+                        "})()");
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
