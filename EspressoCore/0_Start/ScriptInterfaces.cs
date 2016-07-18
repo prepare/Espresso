@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.IO;
 
 namespace VroomJs
@@ -223,7 +222,7 @@ namespace VroomJs
             : base(name, JsMemberKind.Property)
         {
 
-            this.propInfo = propInfo; 
+            this.propInfo = propInfo;
 #if NET20
 
             var getter = propInfo.GetGetMethod(true);
@@ -236,13 +235,13 @@ namespace VroomJs
             {
                 this.SetterMethod = new JsPropertySetDefinition(name, setter);
             }
-#else       
-            var getter = propInfo.GetMethod; 
+#else
+            var getter = propInfo.GetMethod;
             if (getter != null)
             {
                 this.GetterMethod = new JsPropertyGetDefinition(name, getter);
             }
-            var setter = propInfo.SetMethod; 
+            var setter = propInfo.SetMethod;
             if (setter != null)
             {
                 this.SetterMethod = new JsPropertySetDefinition(name, setter);

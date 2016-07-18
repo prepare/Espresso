@@ -331,18 +331,4 @@ namespace VroomJs
     }
 
 
-    static class UnsafeNativeMethods
-    {
-
-        [DllImport("Kernel32.dll")]
-        public static extern IntPtr LoadLibrary(string libraryName);
-        [DllImport("Kernel32.dll")]
-        public static extern bool FreeLibrary(IntPtr hModule);
-        [DllImport("Kernel32.dll")]
-        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-        [DllImport("Kernel32.dll")]
-        public static extern uint SetErrorMode(int uMode);
-        [DllImport("Kernel32.dll")]
-        public static extern uint GetLastError();
-    }
 }

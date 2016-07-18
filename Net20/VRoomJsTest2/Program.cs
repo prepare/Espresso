@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace VRoomJsTest2
@@ -13,11 +13,14 @@ namespace VRoomJsTest2
         static void Main()
         {
             //load and init v8 engine***
-            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
-            
+            string libespr = @"D:\projects\Espresso\build\Debug\libespr.dll";
+            VroomJs.JsBridge.LoadV8(libespr);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+            //------------------
+            VroomJs.JsBridge.UnloadV8();
+
         }
     }
 
