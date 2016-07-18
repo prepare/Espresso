@@ -116,9 +116,7 @@
     <Compile Include="..\..\EspressoCore\Extension.cs">
       <Link>Extension.cs</Link>
     </Compile>
-    <Compile Include="..\..\EspressoCore\HandleRef.cs">
-      <Link>HandleRef.cs</Link>
-    </Compile>
+    <Compile Include="0_Start\JsBridgeForNet20.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">

@@ -7,13 +7,8 @@ namespace TestEspressoCore
     {
         public static void Main(string[] args)
         {
-            //VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\libespr.dll");
-            //D:\projects\Espresso\TestEspressoCore\bin\Debug\netcoreapp1.0
-            VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\build\Debug\netcoreapp1.0\xlibespr.dll");
-            //if (System.IO.File.Exists(@"libespr.dll"))
-            //{
-            //    VroomJs.JsBridge.LoadV8(@"D:\projects\Espresso\Release\libespr.dll");
-            //}
+            
+            VroomJs.JsBridge.V8Init(); 
             //----------------------------
             //prepare test cases 
             var testList = GetTestInfoList();
