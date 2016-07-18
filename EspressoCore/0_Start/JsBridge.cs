@@ -10,12 +10,12 @@ namespace VroomJs
         public static void LoadV8(string v8bridgeDll)
         {
 
-            IntPtr v8mod = UnsafeNativeMethods.LoadLibrary(v8bridgeDll);
-            hModuleV8 = v8mod;
-            if (v8mod == IntPtr.Zero)
-            {
-                return;
-            }
+            //IntPtr v8mod = UnsafeNativeMethods.LoadLibrary(v8bridgeDll);
+            //hModuleV8 = v8mod;
+            //if (v8mod == IntPtr.Zero)
+            //{
+            //    return;
+            //}
             NativeV8JsInterOp.V8Init();
         }
 
