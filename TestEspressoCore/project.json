@@ -1,12 +1,11 @@
 {
   "buildOptions": {
     "emitEntryPoint": true,
-    "allowUnsafe": true,
-    "platform": "anycpu32bitpreferred",
+    "allowUnsafe": true, 
     "debugType": "full"
   },
-  "dependencies": {  
-    "EspressoCore": "1.0.0-*",
+  "dependencies": {
+    "LayoutFarm.Espresso": "1.0.57",
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.0"

@@ -3,6 +3,28 @@
   "version": 2,
   "targets": {
     ".NETCoreApp,Version=v1.0": {
+      "LayoutFarm.Espresso/1.0.57": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.0"
+        },
+        "compile": {
+          "lib/netstandard1.6/EspressoCore.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.6/EspressoCore.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win7-x64/native/libespr.dll": {
+            "assetType": "native",
+            "rid": "win7-x64"
+          },
+          "runtimes/win7-x86/native/libespr.dll": {
+            "assetType": "native",
+            "rid": "win7-x86"
+          }
+        }
+      },
       "Libuv/1.9.0": {
         "type": "package",
         "dependencies": {
@@ -2027,23 +2049,22 @@
         "runtime": {
           "lib/netstandard1.3/_._": {}
         }
-      },
-      "EspressoCore/1.0.0": {
-        "type": "project",
-        "framework": ".NETStandard,Version=v1.6",
-        "dependencies": {
-          "NETStandard.Library": "1.6.0"
-        },
-        "compile": {
-          "netstandard1.6/EspressoCore.dll": {}
-        },
-        "runtime": {
-          "netstandard1.6/EspressoCore.dll": {}
-        }
       }
     }
   },
   "libraries": {
+    "LayoutFarm.Espresso/1.0.57": {
+      "sha512": "gUL9W1Z3MEP+1eBpNj3uQm+jde9CZJh4/YZG7dQs8lD6pWiWvl0P2Oga88X25rDNdpWrP8rUudeStDUp/3RQ7g==",
+      "type": "package",
+      "path": "LayoutFarm.Espresso/1.0.57",
+      "files": [
+        "LayoutFarm.Espresso.1.0.57.nupkg.sha512",
+        "LayoutFarm.Espresso.nuspec",
+        "lib/netstandard1.6/EspressoCore.dll",
+        "runtimes/win7-x64/native/libespr.dll",
+        "runtimes/win7-x86/native/libespr.dll"
+      ]
+    },
     "Libuv/1.9.0": {
       "sha512": "9Q7AaqtQhS8JDSIvRBt6ODSLWDBI4c8YxNxyCQemWebBFUtBbc6M5Vi5Gz1ZyIUlTW3rZK9bIr5gnVyv0z7a2Q==",
       "type": "package",
@@ -6634,16 +6655,11 @@
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._"
       ]
-    },
-    "EspressoCore/1.0.0": {
-      "type": "project",
-      "path": "../EspressoCore/project.json",
-      "msbuildProject": "../EspressoCore/EspressoCore.xproj"
     }
   },
   "projectFileDependencyGroups": {
     "": [
-      "EspressoCore >= 1.0.0-*",
+      "LayoutFarm.Espresso >= 1.0.57",
       "Microsoft.NETCore.App >= 1.0.0"
     ],
     ".NETCoreApp,Version=v1.0": []
