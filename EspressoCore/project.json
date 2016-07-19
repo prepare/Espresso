@@ -1,20 +1,17 @@
 ﻿{
-  "version": "1.0.0-*",
-
+  "title": "Espresso",
+  "copyright": "MIT",
+  "version": "1.0.55-*",
+     
   "dependencies": {
     "NETStandard.Library": "1.6.0"
   },
   "buildOptions": {
-    "allowUnsafe": true
-  },
+    "allowUnsafe": true 
+  }, 
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50"
     }
-  },
-  "scripts": {
-    "postcompile": [
-      "dotnet pack --no-build --configuration %compile:Configuration%"
-    ]
-  }
+  } 
 }
