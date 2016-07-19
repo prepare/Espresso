@@ -62,3 +62,5 @@ Access properties and call methods on CLR objects from Javascript:
 	}
 
 Current V8 Engine => We use V8 from node v6.3.0
+
+nuget package (pre-release) => https://www.nuget.org/packages/LayoutFarm.Espresso/
