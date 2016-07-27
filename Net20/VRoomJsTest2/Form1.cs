@@ -147,7 +147,7 @@ namespace VRoomJsTest2
             [JsMethod]
             public void SetResult(object result1)
             {
-
+                Console.WriteLine(result1.ToString());
             }
         }
         private void button1_Click(object sender, EventArgs e)
@@ -546,5 +546,229 @@ namespace VRoomJsTest2
             }
 
         }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            //very basic ***
+            //-----------------
+            //test tsc.js
+            //this needs EspressoHostForTsc 
+            //-----------------
+            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\tsc_espr.js");
+            StringBuilder stbuilder = new StringBuilder();
+            stbuilder.Append(esprima_code);
+            //-----------------
+
+            int version = JsBridge.LibVersion;
+            JsBridge.dbugTestCallbacks();
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                var my_expr_ext = new EspressoHostForTsc();
+                ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
+
+                string testsrc = @"(function(){
+                       ts.executeCommandLine(['greeter.ts']);
+                    })()";
+                stbuilder.Append(testsrc);
+                ctx.Execute(stbuilder.ToString());
+
+                stwatch.Stop();
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+            }
+        }
+
+
+        [JsType]
+        class EspressoHostForTsc
+        {
+            //-------------------------------------
+            //function getEspressoSystem()
+            //{
+            //    var args = JSON.parse(my_expr_ext.GetArgs());//array of args
+            //    function readFile(fileName, encoding) {
+            //        return my_expr_ext.ReadFile(fileName);
+            //    } 
+            //    function writeFile(fileName, data, writeByteOrderMark) {
+            //        my_expr_ext.WriteFile(fileName, data);
+            //    }
+            //    function getDirectories(path) {
+            //        //return array of sub dirs
+            //        return JSON.parse(my_expr_ext.GetDirectories(path));
+            //    }
+            //    function getAccessibleFileSystemEntries(path) {
+            //        //return { files: files, directories: directories };
+            //        return JSON.parse(my_expr_ext.GetAccessibleFileSystemEntries(path));
+            //    }
+            //    function readDirectory(path, extensions, excludes, includes) {
+            //        return ts.matchFiles(path, extensions, excludes, includes, false, my_expr_ext.GetCurrentDir(), getAccessibleFileSystemEntries);
+            //    }
+
+            //    var wscriptSystem = {
+            //        args: args,
+            //    newLine: "\r\n",
+            //    useCaseSensitiveFileNames: false,
+            //    write: function(s) {
+            //            //WScript.StdOut.Write(s);
+            //            my_expr_ext.ConsoleWrite(s);
+            //        },
+            //    readFile: readFile,
+            //    writeFile: writeFile,
+            //    resolvePath: function(path) {
+            //            return my_expr_ext.GetAbsolutePathName(path);
+            //        },
+            //    fileExists: function(path) {
+            //            return my_expr_ext.FileExists(path);
+            //        },
+            //    directoryExists: function(path) {
+            //            return my_expr_ext.FolderExists(path);
+            //        },
+            //    createDirectory: function(directoryName) {
+            //            if (!wscriptSystem.directoryExists(directoryName))
+            //            {
+            //                my_expr_ext.CreateFolder(directoryName);
+            //            }
+            //        },
+            //    getExecutingFilePath: function() {
+            //            //return WScript.ScriptFullName;
+            //            return my_expr_ext.GetScriptFullName();
+            //        },
+            //    getCurrentDirectory: function() {
+            //            return my_expr_ext.GetCurrentDir();
+            //        },
+            //    getDirectories: getDirectories,
+            //    readDirectory: readDirectory,
+            //    exit: function(exitCode) {
+            //            try
+            //            {
+            //                //WScript.Quit(exitCode);
+            //                my_expr_ext.Quit(exitCode);
+            //            }
+            //            catch (e)
+            //            {
+            //            }
+            //        }
+            //    };
+            //    return wscriptSystem;
+            //}
+            //-------------------------------------
+
+            [JsMethod]
+            public string GetArgs()
+            {
+                //return json string
+                return "[]";
+            }
+            [JsMethod]
+            public string ReadFile(string filename)
+            {
+                //string sampleFileContent1 = @"function greeter(person) {
+                //                           return ""Hello, "" + person;
+                //                     }
+                //                     var user = ""Jane User"";
+                //                     document.body.innerHTML = greeter(user);";
+
+                if (filename == "greeter.ts")
+                {
+                    string sampleFileContent2 =
+                        @"
+                        class Student {
+                            fullName: string;
+                            constructor(public firstName, public middleInitial, public lastName) {
+                                this.fullName = firstName + "" "" + middleInitial + "" "" + lastName;
+                            }
+                         }
+
+                        interface Person
+                        {
+                            firstName: string;
+                            lastName: string;
+                        }
+
+                        function greeter(person : Person)
+                        {
+                            return ""Hello, "" + person.firstName + "" "" + person.lastName;
+                        }
+
+                        var user = new Student(""Jane"", ""M."",""User"");
+                        document.body.innerHTML = greeter(user);
+                    ";
+                    return sampleFileContent2;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+            [JsMethod]
+            public void WriteFile(string filename, string data)
+            {
+                Console.WriteLine("req: write " + filename);
+                Console.WriteLine("");
+                Console.WriteLine("=== compiler output===");
+                Console.WriteLine("");
+                Console.WriteLine(data);
+                Console.WriteLine("");
+                Console.WriteLine("======");
+                Console.WriteLine("");
+            }
+            [JsMethod]
+            public string GetDirectories(string path)
+            {
+                //get directory
+                return "";
+            }
+            [JsMethod]
+            public string GetAccessibleFileSystemEntries(string path)
+            {
+                //return { files: files, directories: directories };
+                //        return JSON.parse(my_expr_ext.GetAccessibleFileSystemEntries(path));
+                //get directory
+
+                return "";
+            }
+            [JsMethod]
+            public string GetCurrentDir()
+            {
+                return ".";
+            }
+            [JsMethod]
+            public bool FileExists(string filename)
+            {
+                return false;
+            }
+            [JsMethod]
+            public bool FolderExists(string folderName)
+            {
+                return false;
+            }
+            [JsMethod]
+            public string GetScriptFullName()
+            {
+                return "hello1.ts";
+            }
+            [JsMethod]
+            public void CreateFolder(string directoryName)
+            {
+
+            }
+            [JsMethod]
+            public void Quit(int exitCode)
+            {
+                Console.WriteLine("quit:" + exitCode);
+            }
+            [JsMethod]
+            public void ConsoleWrite(string msg)
+            {
+                Console.WriteLine("console write :" + msg);
+            }
+        }
+
     }
 }
