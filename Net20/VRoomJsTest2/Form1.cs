@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
+using System.IO;
 using System.Drawing;
 
 using System.Text;
@@ -144,8 +144,12 @@ namespace VRoomJsTest2
                     //mousedownEventHandler(this, eventArg);
                 }
             }
-        }
+            [JsMethod]
+            public void SetResult(object result1)
+            {
 
+            }
+        }
         private void button1_Click(object sender, EventArgs e)
         {
 #if DEBUG
@@ -501,7 +505,44 @@ namespace VRoomJsTest2
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+            }
+        }
 
+        private void button9_Click(object sender, EventArgs e)
+        {
+            //------------------------
+            //test esprima package
+            //------------------------
+
+            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\esprima.js");
+            StringBuilder stbuilder = new StringBuilder();
+            stbuilder.Append(esprima_code);
+
+
+            int version = JsBridge.LibVersion;
+            JsBridge.dbugTestCallbacks();
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                var ab = new AboutMe();
+                ctx.SetVariableAutoWrap("aboutme1", ab);
+
+                string testsrc = @"(function(){
+                            var syntax= esprima.parse('var answer = 42');
+                            //convert to json format and send to managed side
+                            aboutme1.SetResult(JSON.stringify(syntax, null, 4));         
+                    })()";
+                stbuilder.Append(testsrc);
+                ctx.Execute(stbuilder.ToString());
+
+                stwatch.Stop();
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
             }
 
         }
