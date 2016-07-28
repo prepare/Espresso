@@ -574,7 +574,17 @@ namespace VRoomJsTest2
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
-                       ts.executeCommandLine(['greeter.ts']);
+                       
+                        // test1: general  compile through commamd line
+                        // ts.executeCommandLine(['greeter.ts']);
+                        //-------------------------------------------------
+                        // test 2: generate ast 
+                        var filename=""greeter.ts"";  //example only
+                        //parse
+                        const sourceFile = ts.createSourceFile(filename,
+                        my_expr_ext.ReadFile(filename),2, false);
+                        //send output as json to managed host
+                        my_expr_ext.ConsoleLog(JSON.stringify( sourceFile));
                     })()";
                 stbuilder.Append(testsrc);
                 ctx.Execute(stbuilder.ToString());
@@ -776,7 +786,7 @@ namespace VRoomJsTest2
             [JsMethod]
             public void ConsoleLog(object o)
             {
-
+                Console.WriteLine("console write :" + o.ToString());
             }
             [JsMethod]
             public object Require(string module)
