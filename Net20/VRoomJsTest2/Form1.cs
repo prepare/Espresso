@@ -514,7 +514,7 @@ namespace VRoomJsTest2
             //test esprima package
             //------------------------
 
-            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\esprima.js");
+            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\esprima\\esprima.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
 
@@ -554,7 +554,7 @@ namespace VRoomJsTest2
             //test tsc.js
             //this needs EspressoHostForTsc 
             //-----------------
-            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\tsc_espr.js");
+            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\tsc\\tsc_espr.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
             //-----------------
@@ -574,7 +574,17 @@ namespace VRoomJsTest2
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
-                       ts.executeCommandLine(['greeter.ts']);
+                       
+                        // test1: general  compile through commamd line
+                        // ts.executeCommandLine(['greeter.ts']);
+                        //-------------------------------------------------
+                        // test 2: generate ast 
+                        var filename=""greeter.ts"";  //example only
+                        //parse
+                        const sourceFile = ts.createSourceFile(filename,
+                        my_expr_ext.ReadFile(filename),2, false);
+                        //send output as json to managed host
+                        my_expr_ext.ConsoleLog(JSON.stringify( sourceFile));
                     })()";
                 stbuilder.Append(testsrc);
                 ctx.Execute(stbuilder.ToString());
@@ -664,6 +674,11 @@ namespace VRoomJsTest2
             {
                 //return json string
                 return "[]";
+            }
+            [JsMethod]
+            public void RemoveFile(string filename)
+            {
+                //danger !!!!
             }
             [JsMethod]
             public string ReadFile(string filename)
@@ -768,7 +783,136 @@ namespace VRoomJsTest2
             {
                 Console.WriteLine("console write :" + msg);
             }
+            [JsMethod]
+            public void ConsoleLog(object o)
+            {
+                Console.WriteLine("console write :" + o.ToString());
+            }
+            [JsMethod]
+            public object Require(string module)
+            {
+                //for require()
+                if (module == "fs")
+                {
+                    return this;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
         }
 
+        [JsType]
+        class EspressoHostForLoki
+        {
+            ////------------------------------------------------------------
+            ////my extension
+            //function LokiEsprAdapter()
+            //{
+            //} 
+            //LokiEsprAdapter.prototype.loadDatabase = function(dbname, callback)
+            //{
+            //    //Read from filesystem
+            //    var content = my_expr_ext.ReadFile(dbname);
+            //    if (content === "")
+            //    {
+            //        callback(new Error("DB file does not exist"));
+            //    }
+            //    else
+            //    {
+            //        callback(content);
+            //    }
+            //}; 
+            //LokiEsprAdapter.prototype.saveDatabase = function(dbname, serialized, callback)
+            //{
+            //    my_expr_ext.WriteFile(dbname, serialized);
+            //    callback();
+            //};
+
+            //LokiEsprAdapter.prototype.deleteDatabase = function deleteDatabase(dbname, callback)
+            //{
+            //    my_expr_ext.RemoveFile(dbname);
+            //    callback();
+            //};
+            ////------------------------------------------------------------
+            public string ReadFile(string filename)
+            {
+                return "";
+            }
+            [JsMethod]
+            public void WriteFile(string filename, string data)
+            {
+                Console.WriteLine("loki: write " + filename);
+                Console.WriteLine("");
+                Console.WriteLine("=== output===");
+                Console.WriteLine("");
+                Console.WriteLine(data);
+                Console.WriteLine("");
+                Console.WriteLine("======");
+                Console.WriteLine("");
+            }
+            [JsMethod]
+            public void ConsoleLog(object o)
+            {
+                Console.WriteLine(o.ToString());
+            }
+            [JsMethod]
+            public object Require(string module)
+            {
+                //for require()
+                if (module == "fs")
+                {
+                    return this;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+        private void button11_Click(object sender, EventArgs e)
+        {
+            //very basic ***
+            //-----------------
+            //test loki.js
+            //this needs EspressoHostForTsc 
+            //-----------------
+            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\lokijs\\lokijs.js");
+            StringBuilder stbuilder = new StringBuilder();
+            stbuilder.Append(esprima_code);
+            //-----------------
+
+            int version = JsBridge.LibVersion;
+            JsBridge.dbugTestCallbacks();
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
+            {
+
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Reset();
+                stwatch.Start();
+
+                var my_expr_ext = new EspressoHostForLoki();
+                ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
+                string testsrc = @"
+                    function require(file){
+                        my_expr_ext.Require(file);
+                    }
+                    (function(){
+                       var db = new loki('loki.json');
+                       //test log
+                       my_expr_ext.ConsoleLog(db);
+                       db.save();
+                    })()";
+                stbuilder.Append(testsrc);
+                ctx.Execute(stbuilder.ToString());
+
+                stwatch.Stop();
+                Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
+            }
+        }
     }
 }
