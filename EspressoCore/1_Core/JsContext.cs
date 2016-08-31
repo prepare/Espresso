@@ -27,18 +27,15 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Generic; 
 using System.Reflection;
-using System.Runtime.InteropServices;
-using VroomJs.Extension;
+using System.Runtime.InteropServices; 
 
-namespace VroomJs
+namespace Espresso
 {
 
     public partial class JsContext : IDisposable
-    {
-
+    { 
 
         readonly int _id;
         readonly JsEngine _engine;

@@ -15,12 +15,12 @@ namespace VRoomJsTest2
             //load and init v8 engine***
             string libespr = @"D:\projects\CompilerKit\Espresso\build\Debug\libespr.dll";             
           
-            VroomJs.JsBridge.LoadV8(libespr);
+            Espresso.JsBridge.LoadV8(libespr);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
             //------------------
-            VroomJs.JsBridge.UnloadV8();
+            Espresso.JsBridge.UnloadV8();
 
         }
     }

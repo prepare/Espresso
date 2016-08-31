@@ -7,7 +7,7 @@ namespace TestEspressoCore
     {
         public static void Main(string[] args)
         {
-            VroomJs.JsBridge.V8Init();
+            Espresso.JsBridge.V8Init();
             //----------------------------
             //prepare test cases 
             var testList = GetTestInfoList();

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace VroomJs
+namespace Espresso
 {
 
     public abstract class JsTypeMemberDefinition

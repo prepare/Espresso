@@ -1,6 +1,6 @@
 ﻿//2015 MIT, WinterDev
 using System;
-namespace VroomJs
+namespace Espresso
 {
  
     public delegate void NativeEngineSetupCallback(IntPtr nativeEngine, IntPtr nativeContext);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-namespace VroomJs
+namespace Espresso
 {
 
     static partial class JsBridge

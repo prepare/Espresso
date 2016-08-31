@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 
-using VroomJs; 
+using Espresso; 
 namespace VRoomJsTest2
 { 
     class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilder

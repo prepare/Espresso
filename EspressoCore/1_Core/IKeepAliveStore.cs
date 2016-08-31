@@ -25,7 +25,7 @@
 
 using System;
 
-namespace VroomJs
+namespace Espresso
 {
     public interface IKeepAliveStore
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-namespace VroomJs
+namespace Espresso
 {
     public class JsFunction : IDisposable
     {
