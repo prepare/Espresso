@@ -3,10 +3,10 @@ Espresso
 
 Espresso (former VroomJS) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
 engine that uses P/Invoke and a thin C layer to avoid the need to recompile V8
-C++ using the MS Managed C++ compiler. That means that VroomJS is Mono-friendly
+C++ using the MS Managed C++ compiler. That means that Espresso is Mono-friendly
 because doesn't use any feature that will make it run only on MS.NET.
 
-With VroomJs it is possible to execute arbitrary javascript code and get the
+With Espresso it is possible to execute arbitrary javascript code and get the
 result as a managed primitive type (for integers, numbers, strings, dates and
 arrays of primitive types) or as a `JsObject` wrapper that allows to
 dynamically access properties and call functions on Javascript objects.
@@ -61,6 +61,6 @@ Access properties and call methods on CLR objects from Javascript:
 		js.Execute("m.PrintValue('And the answer is (again!):')");
 	}
 
-Current V8 Engine => We use V8 from node v6.3.0
+Current V8 Engine => We use V8 from node v6.4.0
 
 nuget package (pre-release) => https://www.nuget.org/packages/LayoutFarm.Espresso/

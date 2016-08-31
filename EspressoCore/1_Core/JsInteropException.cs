@@ -24,7 +24,7 @@
 // THE SOFTWARE.
 
 using System; 
-namespace VroomJs
+namespace Espresso
 {
      
     public class JsInteropException : JsException

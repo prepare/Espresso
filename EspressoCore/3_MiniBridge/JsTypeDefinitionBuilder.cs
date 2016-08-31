@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.IO;
  
-namespace VroomJs
+namespace Espresso
 {
      
     public abstract class JsTypeDefinitionBuilder

@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace VroomJs
+namespace Espresso
 {
     public class JsScript : IDisposable
     {

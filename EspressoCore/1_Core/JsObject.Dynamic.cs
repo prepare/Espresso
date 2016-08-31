@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace VroomJs
+namespace Espresso
 {
     public class DynamicObject
     {

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace VroomJs
+namespace Espresso
 {
     partial class JsContext
     {
