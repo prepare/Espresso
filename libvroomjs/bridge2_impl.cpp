@@ -24,7 +24,7 @@ void RegisterManagedCallback(void* funcPtr, int callbackKind)
 	}break;
 	case 1:
 	{
-		 
+
 	}break;
 	}
 }
@@ -85,40 +85,22 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
-	//(*context_)->Enter();
 	ctx->Enter();
 
-	//HandleScope handleScope();
 	HandleScope handleScope(isolate_);
 	ManagedRef* handler = new ManagedRef(this->engine_, this->id_, mIndex, true);
 
 	//create js from template
 	if (externalTypeDef)
 	{
-		/*if(managedListner){
-		managedListner(1,L"handle0",0);
-		if((externalTypeDef->handlerToJsObjectTemplate).IsEmpty())
-		{
-		managedListner(1,L"handle1",0);
-		}
-		else
-		{
-		managedListner(1,L"handle2",0);
-		}
-		}*/
-		//auto a1= externalTypeDef->handlerToJsObjectTemplate->NewInstance();
 
-		/*handler->v8InstanceHandler =
-			Persistent<v8::Object>(isolate_, externalTypeDef->handlerToJsObjectTemplate->NewInstance());*///0.10.x
 		Local<ObjectTemplate> objTemplate = Local<ObjectTemplate>::New(isolate_, externalTypeDef->handlerToJsObjectTemplate);
 		Local<Object> instance = objTemplate->NewInstance();
-		handler->v8InstanceHandler.Reset(isolate_, instance);//0.12.x
-
+		handler->v8InstanceHandler.Reset(isolate_, instance);
 		Local<Object> hd = Local<v8::Object>::New(isolate_, handler->v8InstanceHandler);
-		hd->SetInternalField(0, External::New(isolate_, handler));//0.12.x
-		//handler->v8InstanceHandler->SetInternalField(0,External::New(isolate_, handler));//0.10.x
+		hd->SetInternalField(0, External::New(isolate_, handler));
 	}
-	//(*context_)->Exit();
+
 	ctx->Exit();
 	return handler;
 }
@@ -173,10 +155,7 @@ Handle<Value> Getter(Local<String> iName, const Local<Object> &iInfo)
 	//	return v8::ThrowException(JavascriptInterop::ConvertToV8("Unknown member: " + gcnew System::String((wchar_t*) *String::Value(iName))));
 	return Handle<Value>();
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//Handle<Value> DoMethodCall(const Arguments& args)//0.10.x
-void DoMethodCall(const FunctionCallbackInfo<Value>& args)//0.12.x
+void DoMethodCall(const FunctionCallbackInfo<Value>& args)
 {
 	//call to bridge with args  
 	HandleScope h01(args.GetIsolate());
@@ -391,10 +370,6 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 		Handle<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate_, DoMethodCall, wrap);
 		objTemplate->Set(String::NewFromTwoByte(isolate_, (uint16_t*)(metName.c_str())), funcTemplate);
 
-		//if(managedListner){ //--if valid pointer 
-		//	metName.append(L"-met");
-		//	managedListner(0,metName.c_str() ,0);
-		//}  
 	}
 
 	//7. properties and indexer
@@ -418,20 +393,8 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 			(AccessorSetterCallback)DoSetterProperty,
 			wrap);
 	}
-
-	//objTemplate->SetNamedPropertyHandler(Getter, Setter);
-	//objTemplate->SetIndexedPropertyHandler(IndexGetter, IndexSetter); 
-
-	//externalTypeDef->handlerToJsObjectTemplate = (Persistent<ObjectTemplate>::New(handleScope.Close(objTemplate))); //0.10.x
-	//externalTypeDef->handlerToJsObjectTemplate = Handle<ObjectTemplate>::New(isolate_, handleScope.Escape((Local<ObjectTemplate>)objTemplate));//0.12.x
-	//handleScope.Escape((Local<ObjectTemplate>)objTemplate);
-
-	//externalTypeDef->handlerToJsObjectTemplate = objTemplate;
 	externalTypeDef->handlerToJsObjectTemplate.Reset(isolate_, objTemplate);
-	//(*context_)->Exit();
-	//((Context*)context_)->Exit();
 	ctx->Exit();
-
 	return externalTypeDef;
 }
 

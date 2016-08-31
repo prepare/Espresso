@@ -4,10 +4,10 @@
 long js_mem_debug_script_count;
 
 JsScript *JsScript::New(JsEngine *engine) {
-	 JsScript *jsscript = new JsScript();
-	 jsscript->engine_ = engine;
-	 jsscript->script_ = NULL;
-	 return jsscript;
+	JsScript *jsscript = new JsScript();
+	jsscript->engine_ = engine;
+	jsscript->script_ = NULL;
+	return jsscript;
 }
 
 jsvalue JsScript::Compile(const uint16_t* str, const uint16_t *resourceName = NULL) {
@@ -18,12 +18,11 @@ jsvalue JsScript::Compile(const uint16_t* str, const uint16_t *resourceName = NU
 }
 
 void JsScript::Dispose() {
-	Isolate *isolate = engine_->GetIsolate(); 
-	if(isolate != NULL) {
+	Isolate *isolate = engine_->GetIsolate();
+	if (isolate != NULL) {
 		Locker locker(isolate);
-   	 	Isolate::Scope isolate_scope(isolate);
-		//script_->Dispose();//0.10.x
+		Isolate::Scope isolate_scope(isolate);
 		script_->Reset();
-    	delete script_;
+		delete script_;
 	}
 }
