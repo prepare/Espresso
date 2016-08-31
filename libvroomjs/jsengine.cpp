@@ -148,68 +148,106 @@ void* ArrayBufferAllocator::Allocate(size_t size) {
 	return malloc(size);*/
 }
 //----------------------
+//----------------------
+JsEngine* JsEngine::NewFromExistingIsolate(v8::Isolate* isolate)
+{
+	//create engine from existing context
+	JsEngine* engine = new JsEngine();
+	if (engine == NULL) {
+		//eg memory error
+		return NULL;
+	}
+	engine->isolate_ = isolate;
+	Locker locker(engine->isolate_);
+	Isolate::Scope isolate_scope(engine->isolate_);
+	HandleScope scope(engine->isolate_);
+	auto context_n = Context::New(engine->isolate_);
+	// Setup the template we'll use for all managed object references.
+	//FunctionCallback callback;
+	Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
+	Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
+	obj_template->SetInternalFieldCount(1);
+	obj_template->SetNamedPropertyHandler(
+		managed_prop_get,
+		managed_prop_set,
+		NULL,
+		managed_prop_delete,
+		managed_prop_enumerate);
+	obj_template->SetCallAsFunctionHandler(managed_call);
+	engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
 
+	Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
+	Persistent<FunctionTemplate> fp;
+	fp.Reset(engine->isolate_, ff);
+	engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
+
+	engine->global_context_ = new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
+	Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
+	ctx->Enter();
+	fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff);
+	ctx->Exit();
+
+	return engine;
+}
+//----------------------
 JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1)
 {
 	JsEngine* engine = new JsEngine();
-	if (engine != NULL)
-	{
-
-		Isolate::CreateParams params;
-		ArrayBufferAllocator* array_buffer_allocator = new ArrayBufferAllocator();
-		params.array_buffer_allocator = array_buffer_allocator;
-		//Isolate* isolate = Isolate::New(params);
-		engine->isolate_ = Isolate::New(params);// Isolate::New();
-		engine->isolate_->Enter();
-
-		//if (max_young_space > 0 && max_old_space > 0) {
-		//	v8::ResourceConstraints constraints;
-		//	//constraints.set_max_young_space_size(max_young_space * Mega);//0.10.x
-		//	constraints.set_max_semi_space_size(max_young_space * Mega);//0.12.x
-		//	constraints.set_max_old_space_size(max_old_space * Mega);
-		//
-		//	//v8::SetResourceConstraints(&constraints); //0.10.x
-		// 	//v8::SetResourceConstraints(engine->isolate_, &constraints); //0.12.x
-		//	
-		//	
-		//}
-
-		engine->isolate_->Exit();
-		//--------------------------------------------------
-
-		Locker locker(engine->isolate_);
-		Isolate::Scope isolate_scope(engine->isolate_);
-		HandleScope scope(engine->isolate_);
-
-
-		auto context_n = Context::New(engine->isolate_);
-		// Setup the template we'll use for all managed object references.
-		//FunctionCallback callback;
-		Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
-		Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
-		obj_template->SetInternalFieldCount(1);
-		obj_template->SetNamedPropertyHandler(
-			managed_prop_get,
-			managed_prop_set,
-			NULL,
-			managed_prop_delete,
-			managed_prop_enumerate);
-		//obj_template->SetCallAsFunctionHandler(callback, managed_call);//0.10.x
-		obj_template->SetCallAsFunctionHandler(managed_call);
-		engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
-
-		Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
-		Persistent<FunctionTemplate> fp;// = Persistent<FunctionTemplate>(engine->isolate_, ff);
-		fp.Reset(engine->isolate_, ff);
-		engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
-
-		engine->global_context_ = new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
-		Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
-		ctx->Enter();
-		//fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff->GetFunction());
-		fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff);
-		ctx->Exit();
+	if (engine == NULL) {
+		//eg memory error
+		return NULL;
 	}
+	//---------------------------------------------------
+	Isolate::CreateParams params;
+	ArrayBufferAllocator* array_buffer_allocator = new ArrayBufferAllocator();
+	params.array_buffer_allocator = array_buffer_allocator;
+	engine->isolate_ = Isolate::New(params); //
+											 //-------------------------------------------------
+											 //engine->isolate_->Enter(); 
+											 ////if (max_young_space > 0 && max_old_space > 0) {
+											 ////	v8::ResourceConstraints constraints;
+											 ////	//constraints.set_max_young_space_size(max_young_space * Mega);//0.10.x
+											 ////	constraints.set_max_semi_space_size(max_young_space * Mega);//0.12.x
+											 ////	constraints.set_max_old_space_size(max_old_space * Mega);
+											 ////
+											 ////	//v8::SetResourceConstraints(&constraints); //0.10.x
+											 //// 	//v8::SetResourceConstraints(engine->isolate_, &constraints); //0.12.x
+											 ////	
+											 ////	
+											 ////} 
+											 //engine->isolate_->Exit();
+											 //--------------------------------------------------
+
+	Locker locker(engine->isolate_);
+	Isolate::Scope isolate_scope(engine->isolate_);
+	HandleScope scope(engine->isolate_);
+	auto context_n = Context::New(engine->isolate_);
+	// Setup the template we'll use for all managed object references.
+
+	Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
+	Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
+	obj_template->SetInternalFieldCount(1);
+	obj_template->SetNamedPropertyHandler(
+		managed_prop_get,
+		managed_prop_set,
+		NULL,
+		managed_prop_delete,
+		managed_prop_enumerate);
+
+	obj_template->SetCallAsFunctionHandler(managed_call);
+	engine->managed_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fo);
+
+	Local<FunctionTemplate> ff = FunctionTemplate::New(engine->isolate_, managed_valueof);
+	Persistent<FunctionTemplate> fp;
+	fp.Reset(engine->isolate_, ff);
+	engine->valueof_function_template_ = new Persistent<FunctionTemplate>(engine->isolate_, fp);
+
+	engine->global_context_ = new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
+	Local<Context> ctx = Local<Context>::New(engine->isolate_, *engine->global_context_);
+	ctx->Enter();
+	fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"), ff);
+	ctx->Exit();
+
 	return engine;
 }
 
