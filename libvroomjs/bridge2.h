@@ -19,8 +19,7 @@ const char MET_GETTER=1;
 const char MET_SETTER=2;
 
 extern "C"{
-
- 
+	 
 	 
 	typedef struct MetCallingArgs{
 		
@@ -31,23 +30,7 @@ extern "C"{
 		struct jsvalue result;
 
 	} MetCallingArgs_;
-
-	typedef void (CALLINGCONVENTION *del01)();
-
-	//simple managed del
-	typedef void (CALLINGCONVENTION *del_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1);
-	typedef void (CALLINGCONVENTION *del_s_s)(int oIndex,const wchar_t* methodName,const wchar_t* arg1,const wchar_t* arg2);
-
-	typedef void (CALLINGCONVENTION *del_i4)(int oIndex,const wchar_t* methodName,int arg1);
-	typedef void (CALLINGCONVENTION *del_i4_i4)(int oIndex,const wchar_t* methodName,int arg1,int arg2);
-
-	typedef void (CALLINGCONVENTION *del_f4)(int oIndex,const wchar_t* methodName,float arg1);
-	typedef void (CALLINGCONVENTION *del_f4_f4)(int oIndex,const wchar_t* methodName,float arg1,float arg2);
-
-	typedef void (CALLINGCONVENTION *del_d8)(int oIndex,const wchar_t* methodName,double arg1);
-	typedef void (CALLINGCONVENTION *del_d8_d8)(int oIndex,const wchar_t* methodName,double arg1,double arg2);
-	//-------------------------------------------------------------------------------------------
-
+ 
 	typedef void (CALLINGCONVENTION *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
 	typedef void (CALLINGCONVENTION *del_engineSetupCb)(JsEngine* jsEngine, JsContext* enginContext);
 	 
@@ -86,6 +69,9 @@ extern "C"{
 	//--------------------------------------------------------------------- 
 
 	EXPORT void V8Init();
-	EXPORT int TestCallBack(); 
-	EXPORT int DoEngineSetupCallback(JsEngine* engine,JsContext* jsContext);
+	EXPORT int TestCallBack(); 	
+	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb);
+
 }
+/////////////////////////////////////////////////////////////////////////////
+void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
