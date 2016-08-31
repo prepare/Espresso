@@ -13,7 +13,8 @@ namespace VroomJs
     delegate void ManagedListenerDel(int mIndex,
       [MarshalAs(UnmanagedType.LPWStr)]string methodName,
       IntPtr args);
-
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    delegate void JsEngineSetupCallbackDel(IntPtr nativeJsEngine, IntPtr currentNativeJsContext);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate void ManagedMethodCallDel(int mIndex, int hint, IntPtr metArgs);
@@ -166,6 +167,7 @@ namespace VroomJs
         //basic 
 
         static ManagedListenerDel engineListenerDel;
+       
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();
@@ -183,14 +185,16 @@ namespace VroomJs
         static extern int RelaseWrapper(IntPtr unmanagedPtr);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern void RegisterManagedCallback(IntPtr funcPointer, int callBackKind);
+        internal static extern void RegisterManagedCallback(IntPtr funcPointer, int callBackKind);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void ContextRegisterManagedCallback(IntPtr contextPtr, IntPtr funcPointer, int callBackKind);
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern void ContextRegisterManagedCallback2(IntPtr contextSetupArgs, IntPtr funcPointer, int callBackKind);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern unsafe IntPtr ContextRegisterTypeDefinition(
-            IntPtr unmanagedEnginePtr, int mIndex,
+            IntPtr nativeJsContextPtr, int mIndex,
             void* stream, int length);
 
         //---------------------------------------------------------------------------------
@@ -229,10 +233,15 @@ namespace VroomJs
         public static extern void ReleaseWrapper(IntPtr externalManagedHandler);
 
 
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ExecNode(string[] args);
+
+
         static NativeV8JsInterOp()
         {
             //prepare 
             engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
+           
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -241,9 +250,10 @@ namespace VroomJs
                  System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mListenerDel),
                 (int)ManagedCallbackKind.Listener);
         }
-
+       
         internal static void CtxRegisterManagedMethodCall(JsContext jsContext, ManagedMethodCallDel mMethodCall)
         {
+            //register managed method to js context
             ContextRegisterManagedCallback(
                 jsContext.Handle.Handle,
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
@@ -258,10 +268,6 @@ namespace VroomJs
             NativeV8JsInterOp.RegisterManagedListener(engineListenerDel);
 
         }
-
-
-
-
         static void EngineListener_Listen(int mIndex, string methodName, IntPtr args)
         {
 
@@ -301,7 +307,7 @@ namespace VroomJs
                         context.Handle.Handle,
                         0, tt, finalBuffer.Length));
                 }
-                
+
                 //ms.Close();
             }
         }
