@@ -42,13 +42,26 @@ JsContext* JsContext::New(int id, JsEngine *engine)
         
 		Locker locker(context->isolate_);
         Isolate::Scope isolate_scope(context->isolate_);
-		HandleScope scope(context->isolate_);
-		//context->context_ = new Persistent<Context>(Context::New());
+		HandleScope scope(context->isolate_); 
 		context->context_ = new Persistent<Context>(context->isolate_,Context::New(context->isolate_));
 	}
     return context;
 }
+JsContext* JsContext::NewFromExistingContext(int id, JsEngine *engine, Persistent<Context>* nativeJsContext)
+{
+	JsContext* context = new JsContext();
+	if (context != NULL) {
+		context->id_ = id;
+		context->engine_ = engine;
+		context->isolate_ = engine->GetIsolate();
 
+		Locker locker(context->isolate_);
+		Isolate::Scope isolate_scope(context->isolate_);
+		HandleScope scope(context->isolate_);
+		context->context_ = nativeJsContext;// new Persistent<Context>(context->isolate_, Context::New(context->isolate_));
+	}
+	return context;
+}
 void JsContext::Dispose()
 {
 	if(engine_->GetIsolate() != NULL) {
