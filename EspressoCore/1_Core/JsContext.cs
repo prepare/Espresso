@@ -716,6 +716,7 @@ namespace Espresso
             //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
             // TODO: This is probably slooow.
+            
             MemberInfo[] members = type.GetMembers();
             foreach (var met in members)
             {
