@@ -77,11 +77,7 @@ namespace VroomJs
         {
 
         }
-        public void AddMember(JsFieldDefinition fieldDef)
-        {
-            fieldDef.SetOwner(this);
-            fields.Add(fieldDef);
-        }
+        
         public void AddMember(JsMethodDefinition methodDef)
         {
             methodDef.SetOwner(this);

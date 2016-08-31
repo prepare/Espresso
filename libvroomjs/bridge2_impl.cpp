@@ -22,10 +22,6 @@ void RegisterManagedCallback(void* funcPtr, int callbackKind)
 	{
 		managedListner = (del02)funcPtr;
 	}break;
-	case 1:
-	{
-
-	}break;
 	}
 }
 
@@ -120,41 +116,6 @@ void ReleaseWrapper(ManagedRef* externalManagedHandler)
 }
 
 
-Handle<Value> Getter(Local<String> iName, const Local<Object> &iInfo)
-{
-	//name may be method or field 
-
-	wstring name = (wchar_t*)*String::Value(iName);
-
-	Handle<External> external = Handle<External>::Cast(iInfo->GetInternalField(0));
-	ManagedRef* extHandler = (ManagedRef*)external->Value();;
-
-	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
-	//Handle<Function> function;
-	//Handle<Value> value;
-
-	//// get method
-	//function = wrapper->GetMethod(name);
-	//if (!function.IsEmpty())
-	//	return function;  // good value or exception
-
-	//// As for GetMethod().
-	//if (wrapper->GetProperty(name, value))
-	//	return value;  // good value or exception
-
-	//// map toString with ToString
-	//if (wstring((wchar_t*) *String::Value(iName)) == L"toString")
-	//{
-	//	function = wrapper->GetMethod(L"ToString");
-	//	if (!function.IsEmpty())
-	//		return function;
-	//}
-
-	//// member not found
-	//if ((wrapper->GetOptions() & SetParameterOptions::RejectUnknownProperties) == SetParameterOptions::RejectUnknownProperties)
-	//	return v8::ThrowException(JavascriptInterop::ConvertToV8("Unknown member: " + gcnew System::String((wchar_t*) *String::Value(iName))));
-	return Handle<Value>();
-}
 void DoMethodCall(const FunctionCallbackInfo<Value>& args)
 {
 	//call to bridge with args  
@@ -175,7 +136,6 @@ void DoMethodCall(const FunctionCallbackInfo<Value>& args)
 		&callingArgs);
 
 	args.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
-	//return cctx->ctx->AnyToV8(callingArgs.result);
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +144,7 @@ void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Val
 
 	HandleScope h01(info.GetIsolate());
 
-	//wstring name = (wchar_t*) *String::Value(propertyName);
+
 	Local<v8::External> ext = Local<v8::External>::Cast(info.Data());
 	CallingContext* cctx = (CallingContext*)ext->Value();
 
@@ -200,8 +160,7 @@ void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Val
 	cctx->ctx->myMangedCallBack(m_index, MET_GETTER, &callingArgs);
 
 	//close and return value
-	info.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));//0.12.x
-	//return h01.Escape((Local<Value>)cctx->ctx->AnyToV8(callingArgs.result));//0.10.x
+	info.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
 }
 
 void DoSetterProperty(Local<String> propertyName,
@@ -214,7 +173,7 @@ void DoSetterProperty(Local<String> propertyName,
 	Local<v8::External> ext = Local<v8::External>::Cast(info.Data());
 	CallingContext* cctx = (CallingContext*)ext->Value();
 
-	//int m_index  = info.Data()->Int32Value();	 
+
 	int m_index = cctx->mIndex;
 	Handle<External> external = Handle<External>::Cast(info.Holder()->GetInternalField(0));
 	ManagedRef* extHandler = (ManagedRef*)external->Value();
@@ -228,60 +187,6 @@ void DoSetterProperty(Local<String> propertyName,
 	cctx->ctx->myMangedCallBack(m_index, MET_SETTER, &callingArgs);
 }
 
-//Handle<Value> Setter(Local<String> iName, Local<Value> iValue, const Local<Object>& iInfo)
-//{
-//	//TODO: implement this ...
-//	Isolate* isolate = Isolate::GetCurrent();
-//	EscapableHandleScope h01(isolate);
-//	//name of method or property is sent to here
-//	wstring name = (wchar_t*) *String::Value(iName);
-//	//Handle<External> external = Handle<External>::Cast(iInfo.Holder()->GetInternalField(0));
-//	//Noesis::Javascript::ManagedRef* exH = (Noesis::Javascript::ManagedRef*)external->Value();
-//
-//	return  h01.Escape(Local<Value>());
-//	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
-//
-//	// set property
-//	//return wrapper->SetProperty(name, iValue);
-//	//return 
-//}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-Handle<Value> IndexGetter(uint32_t iIndex, const Local<Object> &iInfo)
-{
-	Isolate* isolate = Isolate::GetCurrent();
-	EscapableHandleScope h01(isolate);
-	//TODO: implement this ...
-	Handle<External> external = Handle<External>::Cast(iInfo->GetInternalField(0));
-	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
-	//Handle<Value> value;
-
-	//// get property
-	//value = wrapper->GetProperty(iIndex);
-	//if (!value.IsEmpty())
-	//	return value;
-
-	// member not found
-	return h01.Escape(Local<Value>());
-}
-//////////////////////////////////////////////////////////////////////////////////////////////////// 
-Handle<Value> IndexSetter(uint32_t iIndex, Local<Value> iValue, const Local<Object> &iInfo)
-{
-	Isolate* isolate = Isolate::GetCurrent();
-	EscapableHandleScope h01(isolate);
-	Handle<External> external = Handle<External>::Cast(iInfo->GetInternalField(0));
-	//JavascriptExternal* wrapper = (JavascriptExternal*) external->Value();
-	//Handle<Value> value;
-
-	//// get property
-	//value = wrapper->SetProperty(iIndex, iValue);
-	//if (!value.IsEmpty())
-	//	return value;
-
-	// member not found
-	return h01.Escape(Local<Value>());// .Escape(Handle<Value>());
-}
 void JsContext::RegisterManagedCallback(void* callback, int callBackKind)
 {
 	this->myMangedCallBack = (del_JsBridge)callback;
@@ -294,12 +199,10 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
-	//((Context*)context_)->Enter();
 	ctx->Enter();
-	//use 2 handle scopes ***, otherwise this will error	 
+	//use 2 handle scopes ***, otherwise this will error	  
 
-	//HandleScope handleScope;//0.10.x
-	EscapableHandleScope handleScope(isolate_);//0.12.x
+	EscapableHandleScope handleScope(isolate_);
 	//create new object template
 	Handle<ObjectTemplate> objTemplate = ObjectTemplate::New();
 	objTemplate->SetInternalFieldCount(1);//store native instance
@@ -312,18 +215,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	//marker (2 bytes)
 	int marker_kind = binReader.ReadInt16();
 	//--------------------------------------------------------------
-	/*if(managedListner){
-	managedListner(0,L"typekind",0);
-	}*/
-	//---------------------------------------------------------------
-	//deserialize data to typedefinition
-	//plan: we can use other technique eg. json deserialization 
-	//---------------------------------------------------------------
-
-	//this is typename	 
-	//--------------------------------------------------------------
-	//send type definition handler back to managed side
-
+	//send type definition handler back to managed side 
 	ExternalTypeDefinition* externalTypeDef = new ExternalTypeDefinition(mIndex);
 	//1.  typekind( 2 bytes)
 	int type_kind = binReader.ReadInt16();
@@ -333,25 +225,18 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
 	wstring typeDefName = binReader.ReadUtf16String();
-	//if(managedListner){ //--if valid pointer
-
-	//	managedListner(0,typeDefName.c_str() ,0);
-	//}
 
 	//4. num of fields 
 	int nfields = binReader.ReadInt16();
 
 	for (int i = 0; i < nfields; ++i)
 	{
-
+		//we not support in this version ?
 		int flags = binReader.ReadInt16();
 		int fieldId = binReader.ReadInt16();
 		std::wstring fieldname = binReader.ReadUtf16String();
-		////field 
-		//objTemplate->SetAccessor(String::New((uint16_t*)(fieldname.c_str())),
-		//	DoGetterProperty,
-		//	DoSetterProperty,
-		//	v8::Int32::New(fieldId));  
+		//accessor ?
+
 	}
 	//6. num of methods
 	int nMethods = binReader.ReadInt16();
@@ -372,8 +257,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 
 	}
 
-	//7. properties and indexer
-
+	//7. properties and indexer 
 	int nProperties = binReader.ReadInt16();
 	for (int i = 0; i < nProperties; ++i)
 	{
@@ -403,8 +287,8 @@ ExternalTypeDefinition* ContextRegisterTypeDefinition(
 	int mIndex,  //managed index of type
 	const char* stream,
 	int streamLength)
-{
 
+{
 	return jsContext->RegisterTypeDefinition(mIndex, stream, streamLength);
 
 }
@@ -477,8 +361,6 @@ void ExternalTypeDefinition::ReadTypeDefinitionFromStream(BinaryStreamReader* re
 }
 int ArgCount(MetCallingArgs* args)
 {
-
-
 	switch (args->methodCallKind)
 	{
 	case MET_SETTER:
