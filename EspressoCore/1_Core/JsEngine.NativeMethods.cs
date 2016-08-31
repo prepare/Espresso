@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace VroomJs
+namespace Espresso
 {
     partial class JsEngine : IDisposable
     {
@@ -36,6 +36,17 @@ namespace VroomJs
             int maxYoungSpace,
             int maxOldSpace
         );
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr jsengine_registerManagedDels(
+           IntPtr jsEngineNativePtr,
+           KeepaliveRemoveDelegate keepaliveRemove,
+           KeepAliveGetPropertyValueDelegate keepaliveGetPropertyValue,
+           KeepAliveSetPropertyValueDelegate keepaliveSetPropertyValue,
+           KeepAliveValueOfDelegate keepaliveValueOf,
+           KeepAliveInvokeDelegate keepaliveInvoke,
+           KeepAliveDeletePropertyDelegate keepaliveDeleteProperty,
+           KeepAliveEnumeratePropertiesDelegate keepaliveEnumerateProperties
+       );
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_terminate_execution(HandleRef engine);
@@ -48,5 +59,9 @@ namespace VroomJs
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
+
+        [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb);
+
     }
 }

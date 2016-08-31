@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace VroomJs
+namespace Espresso
 {
     class KeepAliveDictionaryStore : IKeepAliveStore
     {

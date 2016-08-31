@@ -47,5 +47,7 @@ x64/
 *.opensdf
 *.ipch
 .builds
-libvrooomjs.VC.db
-libvrooomjs.VC.VC.opendb
+*.VC.db
+*.VC.opendb
+.vs
+.vs/restore.dg

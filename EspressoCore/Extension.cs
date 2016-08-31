@@ -1,7 +1,7 @@
 ﻿using System; 
 using System.Collections.Generic; 
 using System.Reflection; 
-namespace VroomJs.Extension
+namespace Espresso.Extension
 {
     public static class TypeExtention
     {

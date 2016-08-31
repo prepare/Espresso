@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace VroomJs
+namespace Espresso
 {
 
     public abstract class JsTypeMemberDefinition
@@ -77,11 +77,7 @@ namespace VroomJs
         {
 
         }
-        public void AddMember(JsFieldDefinition fieldDef)
-        {
-            fieldDef.SetOwner(this);
-            fields.Add(fieldDef);
-        }
+        
         public void AddMember(JsMethodDefinition methodDef)
         {
             methodDef.SetOwner(this);
