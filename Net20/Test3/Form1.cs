@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Espresso;
 using NUnit.Framework;
 
-namespace VRoomJsTest2
+namespace Test3
 {
     public partial class Form1 : Form
     {

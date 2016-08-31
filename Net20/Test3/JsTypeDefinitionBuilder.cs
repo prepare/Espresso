@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 
 using Espresso; 
-namespace VRoomJsTest2
+namespace Test3
 { 
     class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {

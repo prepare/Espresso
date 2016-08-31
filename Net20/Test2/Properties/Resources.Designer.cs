@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Test2.Properties {
+namespace Test3.Properties {
     using System;
     
     
