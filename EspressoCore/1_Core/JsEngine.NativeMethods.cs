@@ -45,7 +45,7 @@ namespace VroomJs
            KeepAliveValueOfDelegate keepaliveValueOf,
            KeepAliveInvokeDelegate keepaliveInvoke,
            KeepAliveDeletePropertyDelegate keepaliveDeleteProperty,
-           KeepAliveEnumeratePropertiesDelegate keepaliveEnumerateProperties  
+           KeepAliveEnumeratePropertiesDelegate keepaliveEnumerateProperties
        );
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -59,5 +59,9 @@ namespace VroomJs
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
+
+        [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb);
+
     }
 }

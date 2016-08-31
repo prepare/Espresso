@@ -7,7 +7,7 @@ using System.Threading;
 namespace VroomJs
 {
     public partial class JsEngine : IDisposable
-    { 
+    {
 
         readonly KeepaliveRemoveDelegate _keepalive_remove;
         readonly KeepAliveGetPropertyValueDelegate _keepalive_get_property_value;
@@ -58,8 +58,11 @@ namespace VroomJs
                 maxOldSpace));
             this.defaultTypeBuilder = defaultTypeBuilder;
         }
-       
-        internal JsEngine(IntPtr nativeJsEnginePtr, 
+        public JsEngine(IntPtr nativeJsEnginePtr)
+            : this(nativeJsEnginePtr, new DefaultJsTypeDefinitionBuilder())
+        {
+        }
+        public JsEngine(IntPtr nativeJsEnginePtr,
             JsTypeDefinitionBuilder defaultTypeBuilder)
         {
             //native js engine is created from native side
@@ -224,11 +227,11 @@ namespace VroomJs
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
-        internal JsContext CreateContext(IntPtr nativeJsContext)
+        public JsContext CreateContext(IntPtr nativeJsContext)
         {
             CheckDisposed();
-            int id = Interlocked.Increment(ref _currentContextId); 
-            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this.defaultTypeBuilder); 
+            int id = Interlocked.Increment(ref _currentContextId);
+            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this.defaultTypeBuilder);
             _aliveContexts.Add(id, ctx);
             return ctx;
         }

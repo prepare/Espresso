@@ -12,7 +12,7 @@ using namespace v8;
 #include "bridge2.h"
 
 del02 managedListner; //for debug 
-del_engineSetupCb jsEngineSetupCb;
+
 
 void RegisterManagedCallback(void* funcPtr, int callbackKind)
 {
@@ -24,7 +24,7 @@ void RegisterManagedCallback(void* funcPtr, int callbackKind)
 	}break;
 	case 1:
 	{
-		jsEngineSetupCb = (del_engineSetupCb)funcPtr;
+		 
 	}break;
 	}
 }
