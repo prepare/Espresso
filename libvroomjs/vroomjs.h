@@ -1,5 +1,3 @@
-//MIT 2015, WinterDev
-
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -25,7 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
+//MIT 2015, WinterDev
+//MIT, 2015-2016, EngineKit, brezza92
 
 
 #ifndef LIBVROOMJS_H

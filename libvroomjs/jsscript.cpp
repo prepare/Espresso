@@ -1,3 +1,4 @@
+//MIT, 2015-2016, EngineKit, brezza92
 #include "vroomjs.h"
 
 long js_mem_debug_script_count;

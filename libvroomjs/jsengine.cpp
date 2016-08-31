@@ -1,3 +1,4 @@
+//MIT, 2015-2016, EngineKit, brezza92
 #include <string.h>
 #include <iostream>
 #include "vroomjs.h"

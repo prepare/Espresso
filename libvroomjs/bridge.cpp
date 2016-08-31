@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+//MIT, 2015-2016, EngineKit, brezza92
+
 #include <iostream>
 #include "vroomjs.h"
 

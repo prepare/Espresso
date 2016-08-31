@@ -1,4 +1,5 @@
 //MIT 2015, WinterDev
+//MIT, 2015-2016, EngineKit, brezza92
 #include <vector>
 #include <iostream>
 #include <string>
