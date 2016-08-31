@@ -16,13 +16,11 @@ static void managed_prop_get(Local<String> name, const PropertyCallbackInfo<Valu
 	std::cout << "managed_prop_get" << std::endl;
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
 	EscapableHandleScope scope(isolate);
 
 	Local<Object> self = info.Holder();
 	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	//return scope.Close(ref->GetPropertyValue(name));
 	info.GetReturnValue().Set(Local<Value>::New(isolate, ref->GetPropertyValue(name)));
 }
 
@@ -32,7 +30,6 @@ static void managed_prop_set(Local<String> name, Local<Value> value, const Prope
 	std::cout << "managed_prop_set" << std::endl;
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
 	EscapableHandleScope scope(isolate);
 
 	Local<Object> self = info.Holder();
@@ -40,7 +37,6 @@ static void managed_prop_set(Local<String> name, Local<Value> value, const Prope
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
 	if (ref == NULL) {
 		Local<Value> result;
-		//return scope.Close(result);
 		info.GetReturnValue().Set(result);
 	}
 	info.GetReturnValue().Set(Local<Value>::New(isolate, ref->SetPropertyValue(name, value)));
@@ -52,13 +48,11 @@ static void managed_prop_delete(Local<String> name, const PropertyCallbackInfo<B
 	std::cout << "managed_prop_delete" << std::endl;
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
 	EscapableHandleScope scope(isolate);
 
 	Local<Object> self = info.Holder();
 	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	//return scope.Close(ref->DeleteProperty(name));
 	info.GetReturnValue().Set(Local<Boolean>::New(isolate, ref->DeleteProperty(name)));
 }
 
@@ -68,32 +62,12 @@ static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info)
 	std::cout << "managed_prop_enumerate" << std::endl;
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
 	EscapableHandleScope scope(isolate);
 
 	Local<Object> self = info.Holder();
 	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	//return scope.Close(ref->EnumerateProperties());
 	info.GetReturnValue().Set(Local<Array>::New(isolate, ref->EnumerateProperties()));
-}
-
-static Local<Value> managed_call2(const FunctionCallbackInfo<Value>& args)
-//static void managed_call(const FunctionCallbackInfo<Value>& args)
-{
-#ifdef DEBUG_TRACE_API
-	std::cout << "managed_call" << std::endl;
-#endif
-	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
-	EscapableHandleScope scope(isolate);
-
-	Local<Object> self = args.Holder();
-	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	//return scope.Close(ref->Invoke(args));
-	//args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));//0.12.x
-	return scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));//0.10.x
 }
 
 static void managed_call(const FunctionCallbackInfo<v8::Value>& args)
@@ -107,8 +81,8 @@ static void managed_call(const FunctionCallbackInfo<v8::Value>& args)
 	Local<Object> self = args.Holder();
 	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));//0.12.x
-	//return scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));//0.10.x
+	args.GetReturnValue().Set(scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));
+
 }
 
 void managed_valueof(const FunctionCallbackInfo<Value>& args) {
@@ -116,13 +90,11 @@ void managed_valueof(const FunctionCallbackInfo<Value>& args) {
 	std::cout << "managed_valueof" << std::endl;
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
-	//HandleScope scope(isolate);
 	EscapableHandleScope scope(isolate);
 
 	Local<Object> self = args.Holder();
 	Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-	//return scope.Close(ref->GetValueOf());
 	args.GetReturnValue().Set(Local<Value>::New(isolate, ref->GetValueOf()));
 }
 
@@ -260,19 +232,18 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 	TryCatch trycatch;
 
 	((Context*)global_context_)->Enter();
-	//(*global_context_)->Enter();
 
 	Handle<String> source = String::NewFromTwoByte(isolate_, str);
 	Handle<Script> script;
 
 	if (resourceName != NULL) {
 		Handle<String> name = String::NewFromTwoByte(isolate_, resourceName);
-		//script = Script::New(source, name);//0.10.x
-		script = Script::Compile(source, name);//0.12.x
+
+		script = Script::Compile(source, name);
 	}
 	else {
-		//script = Script::New(source);//0.10.x
-		script = Script::Compile(source);//0.12.x
+
+		script = Script::Compile(source);
 	}
 
 	if (script.IsEmpty()) {
@@ -280,8 +251,6 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 	}
 
 	((Context*)global_context_)->Exit();
-	//(*global_context_)->Exit();
-
 	Persistent<Script> *pScript = new Persistent<Script>();
 	pScript->Reset(isolate_, script);
 	return pScript;
@@ -346,7 +315,6 @@ void JsEngine::DisposeObject(Persistent<Object>* obj)
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	obj->Reset();
-	//obj->Dispose(isolate_);
 }
 
 jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
@@ -573,7 +541,6 @@ jsvalue JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args)
 
 
 static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8::Object>>& data)
-//static void managed_destroy(const v8::WeakCallbackData<v8::Object, const char*>& data)
 {
 #ifdef DEBUG_TRACE_API
 	std::cout << "managed_destroy" << std::endl;
@@ -623,12 +590,11 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 	{
 		ManagedRef* ext = (ManagedRef*)v.value.ptr;
 		Local<Object> obj = Local<Object>::New(isolate_, ext->v8InstanceHandler);
-		//return ext->v8InstanceHandler;//0.10.x
-		//return ext->GetValueOf();//0.12.x
+
 		return obj;
 	}
 	case JSVALUE_TYPE_ARRAY:
-	{// Arrays are converted to JS native arrays.
+	{ // Arrays are converted to JS native arrays.
 		Local<Array> a = Array::New(isolate_, v.length);
 		for (int i = 0; i < v.length; i++) {
 			a->Set(i, AnyToV8(v.value.arr[i], contextId));
@@ -643,23 +609,17 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 		// managed error is still a CLR object so it is wrapped exactly as a normal
 		// managed object.
 		ManagedRef* ref = new ManagedRef(this, contextId, v.length, false);
-		//Local<Object> object = (*(managed_template_))->InstanceTemplate()->NewInstance();
+
 		Local<Object> object = ((FunctionTemplate*)managed_template_)->InstanceTemplate()->NewInstance();
 		if (object.IsEmpty()) {
 			return Null(isolate_);
 		}
 		object->SetInternalField(0, External::New(isolate_, ref));
 
-		//return object;
-		//Persistent<Object> persistent = Persistent<Object>::New(object);//0.10.x
 		Persistent<Object> persistent(isolate_, object);
-		//persistent.SetInternalField(0, External::New(ref));
-		//persistent.MakeWeak(NULL, managed_destroy);
 		persistent.SetWeak(&object, managed_destroy);
-		//persistent.SetWeak(&object, managed_destroy1);
 		Local<Object> handle = Local<Object>::New(isolate_, persistent);
-		//return persistent;//0.10.x
-		return handle;//0.12.x
+		return handle;
 	}
 	}
 	return Null(isolate_);
