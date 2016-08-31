@@ -178,6 +178,8 @@ private:
 class JsEngine {
 public:
 	static JsEngine *New(int32_t max_young_space, int32_t max_old_space);
+	static JsEngine *NewFromExistingIsolate(v8::Isolate *isolate);
+	//-----------------------------------------------------------------
 	void TerminateExecution();
 
 	inline void SetRemoveDelegate(keepalive_remove_f delegate) { keepalive_remove_ = delegate; }
@@ -303,8 +305,8 @@ class ManagedRef;
 
 class JsContext {
  public:
-    static JsContext* New(int32_t id, JsEngine *engine);
-     
+    static JsContext* New(int id, JsEngine *engine);
+	static JsContext* NewFromExistingContext(int id, JsEngine *engine, Persistent<Context> *context_);
     // Called by bridge to execute JS from managed code.
     jsvalue Execute(const uint16_t* str, const uint16_t *resourceName);  
 	jsvalue Execute(JsScript *script);  
