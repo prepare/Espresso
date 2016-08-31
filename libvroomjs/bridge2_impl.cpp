@@ -1,17 +1,18 @@
 //BSD 2015, WinterDev
+//MIT, 2015-2016, EngineKit, brezza92
 #include <string>
 
 #include <v8.h>
 #include "libplatform/libplatform.h"
 #include "src/libplatform/default-platform.h"
-#include "platform/platform.h"
+#include "src/base/platform/platform.h"
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
 #include "bridge2.h"
 
 del02 managedListner; //for debug 
-
+del_engineSetupCb jsEngineSetupCb;
 
 void RegisterManagedCallback(void* funcPtr, int callbackKind)
 {
@@ -23,7 +24,7 @@ void RegisterManagedCallback(void* funcPtr, int callbackKind)
 	}break;
 	case 1:
 	{
-
+		jsEngineSetupCb = (del_engineSetupCb)funcPtr;
 	}break;
 	}
 }
