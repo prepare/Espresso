@@ -70,6 +70,32 @@ extern "C"
         }
 		return engine;
 	}
+	EXPORT JsEngine* CALLCONV jsengine_registerManagedDels(
+		JsEngine * engine,
+		keepalive_remove_f keepalive_remove,
+		keepalive_get_property_value_f keepalive_get_property_value,
+		keepalive_set_property_value_f keepalive_set_property_value,
+		keepalive_valueof_f keepalive_valueof,
+		keepalive_invoke_f keepalive_invoke,
+		keepalive_delete_property_f keepalive_delete_property,
+		keepalive_enumerate_properties_f keepalive_enumerate_properties
+		)
+	{
+#ifdef DEBUG_TRACE_API
+		std::wcout << "jsengine_new" << std::endl;
+#endif
+		 
+		if (engine != NULL) {
+			engine->SetRemoveDelegate(keepalive_remove);
+			engine->SetGetPropertyValueDelegate(keepalive_get_property_value);
+			engine->SetSetPropertyValueDelegate(keepalive_set_property_value);
+			engine->SetValueOfDelegate(keepalive_valueof);
+			engine->SetInvokeDelegate(keepalive_invoke);
+			engine->SetDeletePropertyDelegate(keepalive_delete_property);
+			engine->SetEnumeratePropertiesDelegate(keepalive_enumerate_properties);
+		}
+		return engine;
+	}
 
 	EXPORT void CALLCONV jsengine_terminate_execution(JsEngine* engine) {
 #ifdef DEBUG_TRACE_API
