@@ -17,59 +17,59 @@ namespace VRoomJsTest2
         {
             InitializeComponent();
 
-            //-----------------------------------------------------------------------            
-            var asm = typeof(VroomJs.Tests.TestClass).Assembly;
-            var testFixtureAttr = typeof(NUnit.Framework.TestFixtureAttribute);
-            var testAttr = typeof(NUnit.Framework.TestAttribute);
-            var setupAttr = typeof(NUnit.Framework.SetUpAttribute);
-            var tearDownAttr = typeof(NUnit.Framework.TearDownAttribute);
-            var testCaseAttr = typeof(NUnit.Framework.TestCaseAttribute);
+            ////-----------------------------------------------------------------------            
+            //var asm = typeof(VroomJs.Tests.TestClass).Assembly;
+            //var testFixtureAttr = typeof(NUnit.Framework.TestFixtureAttribute);
+            //var testAttr = typeof(NUnit.Framework.TestAttribute);
+            //var setupAttr = typeof(NUnit.Framework.SetUpAttribute);
+            //var tearDownAttr = typeof(NUnit.Framework.TearDownAttribute);
+            //var testCaseAttr = typeof(NUnit.Framework.TestCaseAttribute);
 
-            //-----------------------------------------------------------------------            
-            List<TestCaseInstance> testCaseList = new List<TestCaseInstance>();
-            foreach (var t in asm.GetTypes())
-            {
-                var founds = t.GetCustomAttributes(testFixtureAttr, false);
-                if (founds != null && founds.Length > 0)
-                {
-                    //test 
-                    var testCaseInstance = new TestCaseInstance(t);
-                    //find setup/teardown method
-                    foreach (var met in t.GetMethods())
-                    {
-                        var someSetUpAttrs = met.GetCustomAttributes(setupAttr, false);
-                        if (someSetUpAttrs != null && someSetUpAttrs.Length > 0)
-                        {
-                            testCaseInstance.SetSetupMethod(met);
-                            continue;
-                        }
-                        var someTeardownAttrs = met.GetCustomAttributes(tearDownAttr, false);
-                        if (someTeardownAttrs != null && someTeardownAttrs.Length > 0)
-                        {
-                            testCaseInstance.SetTeardownMethod(met);
-                            continue;
-                        }
-                        var someTestAttrs = met.GetCustomAttributes(testAttr, false);
-                        if (someTestAttrs != null && someTestAttrs.Length > 0)
-                        {
+            ////-----------------------------------------------------------------------            
+            //List<TestCaseInstance> testCaseList = new List<TestCaseInstance>();
+            //foreach (var t in asm.GetTypes())
+            //{
+            //    var founds = t.GetCustomAttributes(testFixtureAttr, false);
+            //    if (founds != null && founds.Length > 0)
+            //    {
+            //        //test 
+            //        var testCaseInstance = new TestCaseInstance(t);
+            //        //find setup/teardown method
+            //        foreach (var met in t.GetMethods())
+            //        {
+            //            var someSetUpAttrs = met.GetCustomAttributes(setupAttr, false);
+            //            if (someSetUpAttrs != null && someSetUpAttrs.Length > 0)
+            //            {
+            //                testCaseInstance.SetSetupMethod(met);
+            //                continue;
+            //            }
+            //            var someTeardownAttrs = met.GetCustomAttributes(tearDownAttr, false);
+            //            if (someTeardownAttrs != null && someTeardownAttrs.Length > 0)
+            //            {
+            //                testCaseInstance.SetTeardownMethod(met);
+            //                continue;
+            //            }
+            //            var someTestAttrs = met.GetCustomAttributes(testAttr, false);
+            //            if (someTestAttrs != null && someTestAttrs.Length > 0)
+            //            {
 
-                            var testMethod = testCaseInstance.AddTestMethod(met);
-                            this.listBox1.Items.Add(testMethod);
-                            continue;
-                        }
-                        someTestAttrs = met.GetCustomAttributes(testCaseAttr, false);
-                        if (someTestAttrs != null && someTestAttrs.Length > 0)
-                        {
-                            var testMethod = testCaseInstance.AddTestMethod(met);
-                            this.listBox1.Items.Add(testMethod);
-                        }
-                    }
+            //                var testMethod = testCaseInstance.AddTestMethod(met);
+            //                this.listBox1.Items.Add(testMethod);
+            //                continue;
+            //            }
+            //            someTestAttrs = met.GetCustomAttributes(testCaseAttr, false);
+            //            if (someTestAttrs != null && someTestAttrs.Length > 0)
+            //            {
+            //                var testMethod = testCaseInstance.AddTestMethod(met);
+            //                this.listBox1.Items.Add(testMethod);
+            //            }
+            //        }
 
-                    testCaseList.Add(testCaseInstance);
-                }
-            }
-            //---------------------------------------------------------------------
-            this.listBox1.DoubleClick += new EventHandler(listBox1_DoubleClick);
+            //        testCaseList.Add(testCaseInstance);
+            //    }
+            //}
+            ////---------------------------------------------------------------------
+            //this.listBox1.DoubleClick += new EventHandler(listBox1_DoubleClick);
         }
 
         void listBox1_DoubleClick(object sender, EventArgs e)
@@ -185,8 +185,20 @@ namespace VRoomJsTest2
                 for (int i = 2000; i >= 0; --i)
                 {
                     ctx.SetVariableFromAny("x", proxy);
-                    object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+                    object result = ctx.Execute("(function(){if(x.C()){return x.B();}else{return 0;}})()");
                 }
+                //for (int i = 1; i >= 0; --i)
+                //{
+                //    ctx.SetVariableFromAny("x", proxy);
+                //    object result = ctx.Execute(@"
+                //    var http = require('http'); 
+                //    var server = http.createServer(function(req, res) {
+                //    res.writeHead(200);
+                //    res.end('Hello Http');
+                //    });
+                //    server.listen(8080);
+                //    ");
+                //}
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
@@ -913,6 +925,11 @@ namespace VRoomJsTest2
                 stwatch.Stop();
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
             }
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
