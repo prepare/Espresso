@@ -61,6 +61,6 @@ Access properties and call methods on CLR objects from Javascript:
 		js.Execute("m.PrintValue('And the answer is (again!):')");
 	}
 
-Current V8 Engine => We use V8 from node v6.4.0
+Current V8 Engine => We use V8 from node v6.3.0
 
 nuget package (pre-release) => https://www.nuget.org/packages/LayoutFarm.Espresso/
