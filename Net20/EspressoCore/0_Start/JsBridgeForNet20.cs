@@ -6,14 +6,20 @@ namespace VroomJs
     static partial class JsBridge
     {
         static IntPtr hModuleV8;
-        public static void LoadV8(string dllfile)
+        public static void LoadV8(string dllfile, bool doV8Init = true)
         {
             hModuleV8 = LoadLibrary(dllfile);
             if (hModuleV8 == IntPtr.Zero)
             {
                 return;
             }
-            NativeV8JsInterOp.V8Init();
+
+            //-------------------
+            if (doV8Init)
+            {    
+                //sometime we set to false , and  let underlying lib init the v8 engine.
+                NativeV8JsInterOp.V8Init();
+            }
         }
 
         public static void UnloadV8()
@@ -24,16 +30,20 @@ namespace VroomJs
                 hModuleV8 = IntPtr.Zero;
             }
         }
+
+        //----------------------------------
+        //if this is windows
         [DllImport("Kernel32.dll")]
-        public static extern IntPtr LoadLibrary(string libraryName);
+        static extern IntPtr LoadLibrary(string libraryName);
         [DllImport("Kernel32.dll")]
-        public static extern bool FreeLibrary(IntPtr hModule);
+        static extern bool FreeLibrary(IntPtr hModule);
         [DllImport("Kernel32.dll")]
-        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+        static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
         [DllImport("Kernel32.dll")]
-        public static extern uint SetErrorMode(int uMode);
+        static extern uint SetErrorMode(int uMode);
         [DllImport("Kernel32.dll")]
-        public static extern uint GetLastError();
+        static extern uint GetLastError();
+        //if unix
     }
 
 }
