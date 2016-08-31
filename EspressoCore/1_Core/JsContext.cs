@@ -27,18 +27,16 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Generic; 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using VroomJs.Extension;
+using Espresso.Extension;
 
-namespace VroomJs
+namespace Espresso
 {
 
     public partial class JsContext : IDisposable
-    {
-
+    { 
 
         readonly int _id;
         readonly JsEngine _engine;
@@ -719,6 +717,7 @@ namespace VroomJs
             //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
             // TODO: This is probably slooow.
+            
             MemberInfo[] members = type.GetMembers();
             foreach (var met in members)
             {
