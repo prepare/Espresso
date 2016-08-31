@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRoomJsNative", "libvroomjs\libvroomjs.vcxproj", "{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libespr", "libvroomjs\libvroomjs.vcxproj", "{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,7 +22,8 @@ Global
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug NET35|x64.ActiveCfg = Debug|Win32
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Win32.ActiveCfg = Debug|Win32
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Win32.Build.0 = Debug|Win32
-		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x64.ActiveCfg = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x64.ActiveCfg = Debug|x64
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x64.Build.0 = Debug|x64
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release NET35|Win32.ActiveCfg = Release|Win32
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release NET35|Win32.Build.0 = Release|Win32
 		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release NET35|x64.ActiveCfg = Release|Win32
