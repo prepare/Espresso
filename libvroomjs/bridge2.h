@@ -20,6 +20,7 @@ const char MET_SETTER=2;
 
 extern "C"{
 
+ 
 	 
 	typedef struct MetCallingArgs{
 		
@@ -47,9 +48,8 @@ extern "C"{
 	typedef void (CALLINGCONVENTION *del_d8_d8)(int oIndex,const wchar_t* methodName,double arg1,double arg2);
 	//-------------------------------------------------------------------------------------------
 
-
 	typedef void (CALLINGCONVENTION *del02)(int oIndex,const wchar_t* methodName,MetCallingArgs* args);
-	
+	typedef void (CALLINGCONVENTION *del_engineSetupCb)(JsEngine* jsEngine, JsContext* enginContext);
 	 
 	EXPORT ManagedRef* CreateWrapperForManagedObject(JsContext* engineContext,int mindex,ExternalTypeDefinition* extTypeDefinition);
 	EXPORT void ReleaseWrapper(ManagedRef* managedObjRef);
@@ -70,7 +70,7 @@ extern "C"{
 		JsContext* jsContext,
 		void* callback,
 		int callBackKind); 
-
+	 
 	//--------------------------------------------------------------------- 
 	EXPORT int ArgCount(MetCallingArgs* args);
 	EXPORT jsvalue ArgGetThis(MetCallingArgs* args);
@@ -87,4 +87,5 @@ extern "C"{
 
 	EXPORT void V8Init();
 	EXPORT int TestCallBack(); 
+	EXPORT int DoEngineSetupCallback(JsEngine* engine,JsContext* jsContext);
 }
