@@ -49,3 +49,5 @@ x64/
 .builds
 *.VC.db
 *.VC.opendb
+.vs
+.vs/restore.dg
