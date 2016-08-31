@@ -40,7 +40,6 @@ namespace VroomJs
     {
 
 
-
         readonly int _id;
         readonly JsEngine _engine;
         readonly ManagedMethodCallDel engineMethodCallbackDel;
@@ -56,17 +55,16 @@ namespace VroomJs
 
         internal JsContext(int id,
             JsEngine engine,
-            HandleRef engineHandle,
             Action<int> notifyDispose,
             JsTypeDefinitionBuilder jsTypeDefBuilder)
         {
 
             _id = id;
-            _engine = engine;
             _notifyDispose = notifyDispose;
-
+            _engine = engine;
             _keepalives = new KeepAliveDictionaryStore();
-            _context = new HandleRef(this, jscontext_new(id, engineHandle));
+            //create native js context
+            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
             _convert = new JsConvert(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
@@ -80,7 +78,32 @@ namespace VroomJs
             proxyStore = new NativeObjectProxyStore(this);
 
         }
+        internal JsContext(int id,
+            JsEngine engine,
+            Action<int> notifyDispose,
+            IntPtr nativeJsContext,
+            JsTypeDefinitionBuilder jsTypeDefBuilder)
+        {
 
+            _id = id;
+            _notifyDispose = notifyDispose;
+            _engine = engine;
+            _keepalives = new KeepAliveDictionaryStore();
+            //create native js context
+            _context = new HandleRef(this, nativeJsContext);
+            _convert = new JsConvert(this);
+
+            this.jsTypeDefBuilder = jsTypeDefBuilder;
+
+            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
+            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
+            registerMethods.Add(null);//first is null
+            registerProperties.Add(null); //first is null
+
+
+            proxyStore = new NativeObjectProxyStore(this);
+
+        }
         internal INativeRef GetObjectProxy(int index)
         {
             return this.proxyStore.GetProxyObject(index);
