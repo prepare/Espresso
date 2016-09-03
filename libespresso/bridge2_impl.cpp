@@ -4,8 +4,10 @@
 
 #include <v8.h>
 #include "libplatform/libplatform.h"
-#include "src/libplatform/default-platform.h"
-#include "src/base/platform/platform.h"
+
+//#include "src/libplatform/default-platform.h"
+//#include "de src/base/platform/platform.h"
+ 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
@@ -204,9 +206,8 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 
 	EscapableHandleScope handleScope(isolate_);
 	//create new object template
-	Handle<ObjectTemplate> objTemplate = ObjectTemplate::New();
-	objTemplate->SetInternalFieldCount(1);//store native instance
-
+	Handle<ObjectTemplate> objTemplate = ObjectTemplate::New(isolate_);
+	objTemplate->SetInternalFieldCount(1);//store native instance 
 	//--------------------------------------------------------------
 
 	//read with stream
