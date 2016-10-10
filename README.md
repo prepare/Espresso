@@ -1,7 +1,12 @@
-Espresso 
+Espresso / Espresso-Cup
 ===============
 
-Espresso (former VroomJS) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
+***Do you want to run V8 js engine with C# (in-process) ?, Yes => here you have Espresso.***
+
+***Do you want to run NodeJS engine with C# (in-process)?, Yes=> here you have Espresso-Cup.***
+
+
+**Espresso** (former VroomJS) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
 engine that uses P/Invoke and a thin C layer to avoid the need to recompile V8
 C++ using the MS Managed C++ compiler. That means that Espresso is Mono-friendly
 because doesn't use any feature that will make it run only on MS.NET.
@@ -18,6 +23,8 @@ get global variables. Variable values can be primitive types, CLR objects or
 as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
+
+Current V8 Engine => We use V8 from node v6.7.0
 
 Examples
 --------
@@ -61,6 +68,21 @@ Access properties and call methods on CLR objects from Javascript:
 		js.Execute("m.PrintValue('And the answer is (again!):')");
 	}
 
-Current V8 Engine => We use V8 from node v6.5.0
 
-nuget package (pre-release) => https://www.nuget.org/packages/LayoutFarm.Espresso/
+---------------
+
+**Espresso-Cup** is special edition of the Espresso, 
+It is NodeJS in dll form + Espresso Code,
+so you can run NodeJS app in-process with .NET Code
+
+see example ...
+
+
+
+
+see more at ...
+
+
+
+
+ 
