@@ -60,8 +60,39 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
 
+
+        //-------------------------------------------------------------------------------------------------------
+        //this is Node-Espresso
+        //the Espresso + NodeJS
+        //-------------------------------------------------------------------------------------------------------
+        public static int RunJsEngine(NativeEngineSetupCallback engineSetupCb)
+        {
+            //hello.espr -> not exist on disk
+            //the engine will callback to our .net code
+            //our .net can load file
+            return RunJsEngine(null, engineSetupCb);
+        }
+        public static int RunJsEngine(string[] otherNodeParameters, NativeEngineSetupCallback engineSetupCb)
+        {
+
+
+            List<string> nodeStartPars = new List<string>();
+            //1. 
+            //default 2 pars
+            //hello.espr -> not exist on disk
+            //the engine will callback to our .net code
+            //our .net can load file
+            nodeStartPars.AddRange(new string[] { "node", "hello.espr" });
+            //2. other pars
+            if (otherNodeParameters != null)
+            {
+                nodeStartPars.AddRange(otherNodeParameters);
+            }
+            return RunJsEngine(nodeStartPars.Count, nodeStartPars.ToArray(), engineSetupCb);
+        }
+        //-------------------------------------------------------------------------------------------------------
         [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb);
+        static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb); 
 
     }
 }
