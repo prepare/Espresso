@@ -82,7 +82,7 @@ see example, run nodejs http server
 
 
 
-see more at https://github.com/CompilerKit/Espresso/wiki/Build-NodeJS-for-Espresso-Cup
+see how to build it at https://github.com/CompilerKit/Espresso/wiki/Build-NodeJS-for-Espresso-Cup
 
 
 
