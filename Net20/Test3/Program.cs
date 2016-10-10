@@ -13,7 +13,7 @@ namespace Test3
         static void Main()
         {
             //load and init v8 engine***
-            string libespr = @"D:\projects\CompilerKit\Espresso\build\Debug\libespr.dll";             
+            string libespr = @"D:\projects\CompilerKit\Espresso\build\Release\libespr.dll";             
           
             Espresso.JsBridge.LoadV8(libespr);
             Application.EnableVisualStyles();
