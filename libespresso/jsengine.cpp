@@ -1,4 +1,6 @@
 //MIT, 2015-2016, EngineKit, brezza92
+#define NODE7
+
 #include <string.h>
 #include <iostream>
 #include "espresso.h"
@@ -538,7 +540,28 @@ jsvalue JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args)
 }
 
 
+#ifdef NODE7
+static void managed_destroy(const v8::WeakCallbackInfo<v8::Local<v8::Object>>& data)
+{
+#ifdef DEBUG_TRACE_API
+	std::cout << "managed_destroy" << std::endl;
+#endif
+	Isolate* isolate = Isolate::GetCurrent();
+	HandleScope scope(isolate);
+	
+	void* internalField = data.GetInternalField(0);
+	ManagedRef* ref = (ManagedRef*)internalField;
+	delete ref;
 
+	//Local<Object> selfHandle1 = Local<Object>::New(isolate, data.GetInternalField(0));//0.12.x 
+	//Persistent<Object> self;// = Persistent<Object>(isolate, data.GetValue());//0.12.x 
+	//self.Reset(isolate, data);
+	//Local<Object> selfHandle = Local<Object>::New(isolate, self);//0.12.x
+	//Local<External> wrap = Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x
+	//ManagedRef* ref = (ManagedRef*)wrap->Value();
+	//delete ref;
+}
+#else
 
 static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8::Object>>& data)
 {
@@ -567,6 +590,7 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
  //   delete ref;
 	//object.Reset();
 }
+#endif
 
 Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 {
@@ -615,9 +639,13 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 			return Null(isolate_);
 		}
 		object->SetInternalField(0, External::New(isolate_, ref));
-
 		Persistent<Object> persistent(isolate_, object);
+#ifdef NODE7
+		//persistent.SetWeak(&object, managed_destroy);
+		persistent.SetWeak(&object, managed_destroy, v8::WeakCallbackType::kFinalizer);
+#else
 		persistent.SetWeak(&object, managed_destroy);
+#endif
 		Local<Object> handle = Local<Object>::New(isolate_, persistent);
 		return handle;
 	}

@@ -3,7 +3,6 @@
 const NativeModule = require('native_module');
 const util = require('util');
 const internalModule = require('internal/module');
-const internalUtil = require('internal/util');
 const vm = require('vm');
 const assert = require('assert').ok;
 const fs = require('fs');
@@ -109,6 +108,14 @@ function tryPackage(requestPath, exts, isMain) {
          tryExtensions(path.resolve(filename, 'index'), exts, isMain);
 }
 
+// In order to minimize unnecessary lstat() calls,
+// this cache is a list of known-real paths.
+// Set to an empty Map to reset.
+const realpathCache = new Map();
+
+const realpathCacheKey = fs.realpathCacheKey;
+delete fs.realpathCacheKey;
+
 // check if the file exists and is not a directory
 // if using --preserve-symlinks and isMain is false,
 // keep symlinks intact, otherwise resolve to the
@@ -118,7 +125,13 @@ function tryFile(requestPath, isMain) {
   if (preserveSymlinks && !isMain) {
     return rc === 0 && path.resolve(requestPath);
   }
-  return rc === 0 && fs.realpathSync(requestPath);
+  return rc === 0 && toRealPath(requestPath);
+}
+
+function toRealPath(requestPath) {
+  return fs.realpathSync(requestPath, {
+    [realpathCacheKey]: realpathCache
+  });
 }
 
 // given a path check a the file exists with any of the set extensions
@@ -164,7 +177,7 @@ Module._findPath = function(request, paths, isMain) {
         if (preserveSymlinks && !isMain) {
           filename = path.resolve(basePath);
         } else {
-          filename = fs.realpathSync(basePath);
+          filename = toRealPath(basePath);
         }
       } else if (rc === 1) {  // Directory.
         if (exts === undefined)
@@ -196,10 +209,14 @@ Module._findPath = function(request, paths, isMain) {
     if (filename) {
       // Warn once if '.' resolved outside the module dir
       if (request === '.' && i > 0) {
-        warned = internalUtil.printDeprecationMessage(
-          'warning: require(\'.\') resolved outside the package ' +
-          'directory. This functionality is deprecated and will be removed ' +
-          'soon.', warned);
+        if (!warned) {
+          warned = true;
+          process.emitWarning(
+            'warning: require(\'.\') resolved outside the package ' +
+            'directory. This functionality is deprecated and will be removed ' +
+            'soon.',
+            'DeprecationWarning');
+        }
       }
 
       Module._pathCache[cacheKey] = filename;
@@ -399,7 +416,8 @@ Module._load = function(request, parent, isMain) {
   if (parent) {
     debug('Module._load REQUEST %s parent: %s', request, parent.id);
   }
- 
+
+  var filename = Module._resolveFilename(request, parent, isMain);
 
   var cachedModule = Module._cache[filename];
   if (cachedModule) {
@@ -448,12 +466,13 @@ Module._resolveFilename = function(request, parent, isMain) {
 
   // look up the filename first, since that's the cache key.
   debug('looking for %j in %j', id, paths);
-  ////////////////////////////////////////////
-  //#espresso, #5
-  if(request.endsWith(".espr")){
-    return request;
+
+    ////////////////////////////////////////////
+    //#espresso, #5
+  if (request.endsWith(".espr")) {
+      return request;
   }
-  ////////////////////////////////////////////
+    ////////////////////////////////////////////
   var filename = Module._findPath(request, paths, isMain);
   if (!filename) {
     var err = new Error("Cannot find module '" + request + "'");
@@ -585,16 +604,15 @@ Module._extensions['.json'] = function(module, filename) {
 //Native extension for .node
 Module._extensions['.node'] = function(module, filename) {
   return process.dlopen(module, path._makeLong(filename));
+};
 //////////////////////////////////
-//#espresso,#5
+//#espresso,#6
 Module._extensions['.espr'] = function (module, filename) {
+    //this make node to callback to our module
     var content = Module.external_loader.LoadMainSrcFile();
     module._compile(internalModule.stripBOM(content), filename);
 };
 //////////////////////////////////
- 
-};
-
 
 // bootstrap main module.
 Module.runMain = function() {
@@ -630,14 +648,9 @@ Module._initPaths = function() {
 
   modulePaths = paths;
 
-  // clone as a read-only copy, for introspection.
+  // clone as a shallow copy, for introspection.
   Module.globalPaths = modulePaths.slice(0);
 };
-
-// TODO(bnoordhuis) Unused, remove in the future.
-Module.requireRepl = internalUtil.deprecate(function() {
-  return NativeModule.require('internal/repl');
-}, 'Module.requireRepl is deprecated.');
 
 Module._preloadModules = function(requests) {
   if (!Array.isArray(requests))

@@ -24,7 +24,7 @@ as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
 
-Current V8 Engine => We use V8 from node v6.7.0
+Current V8 Engine => We use V8 from node v7.0.0
 
 Examples
 --------
