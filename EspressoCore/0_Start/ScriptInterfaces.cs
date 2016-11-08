@@ -77,7 +77,7 @@ namespace Espresso
         {
 
         }
-        
+
         public void AddMember(JsMethodDefinition methodDef)
         {
             methodDef.SetOwner(this);
@@ -193,12 +193,10 @@ namespace Espresso
 
     public class JsPropertyDefinition : JsTypeMemberDefinition
     {
-
-        System.Reflection.PropertyInfo propInfo;
-
         public JsPropertyDefinition(string name)
             : base(name, JsMemberKind.Property)
         {
+            //create blank property and we can add getter/setter later
 
         }
         public JsPropertyDefinition(string name, JsMethodCallDel getter, JsMethodCallDel setter)
@@ -218,7 +216,6 @@ namespace Espresso
             : base(name, JsMemberKind.Property)
         {
 
-            this.propInfo = propInfo;
 #if NET20
 
             var getter = propInfo.GetGetMethod(true);
