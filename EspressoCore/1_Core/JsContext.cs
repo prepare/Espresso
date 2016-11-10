@@ -1310,25 +1310,11 @@ namespace Espresso
             this.SetVariable(name, proxy);
         }
         //------------------------------------------------------------------
-
         public JsTypeDefinition GetJsTypeDefinition<T>(T t)
-            where T : class
+                   where T : class
         {
-            Type type = typeof(T);
-            JsTypeDefinition found;
-            if (this.mappingJsTypeDefinition.TryGetValue(type, out found))
-                return found;
-
-            //if not found
-            //just create it
-            found = this.jsTypeDefBuilder.BuildTypeDefinition(type);
-            this.mappingJsTypeDefinition.Add(type, found);
-            this.RegisterTypeDefinition(found);
-
-            return found;
+            return GetJsTypeDefinition2(typeof(T));
         }
-
-
         public JsTypeDefinition GetJsTypeDefinition2(Type type)
         {
 
