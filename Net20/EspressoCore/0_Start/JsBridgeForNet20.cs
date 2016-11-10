@@ -1,4 +1,5 @@
-﻿using System;
+﻿//MIT, 2015-2016, WinterDev, EngineKit, brezza92
+using System;
 using System.Runtime.InteropServices;
 namespace Espresso
 {

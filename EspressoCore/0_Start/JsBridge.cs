@@ -1,4 +1,4 @@
-﻿//2015-2016, MIT,WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-2016, WinterDev, EngineKit, brezza92
 using System;
 namespace Espresso
 {
