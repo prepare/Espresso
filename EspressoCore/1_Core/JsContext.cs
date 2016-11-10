@@ -1,4 +1,4 @@
-﻿//2015 MIT, WinterDev
+﻿//2015-2016, MIT,WinterDev, EngineKit, brezza92
 
 // This file is part of the VroomJs library.
 //
