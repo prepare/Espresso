@@ -1310,17 +1310,17 @@ namespace Espresso
             var proxy = this.CreateWrapper(result, jsTypeDef);
             this.SetVariable(name, proxy);
         } 
-        public JsTypeDefinition GetJsTypeDefinition(Type type)
+        public JsTypeDefinition GetJsTypeDefinition(Type actualType)
         {
 
             JsTypeDefinition found;
-            if (this.mappingJsTypeDefinition.TryGetValue(type, out found))
+            if (this.mappingJsTypeDefinition.TryGetValue(actualType, out found))
                 return found;
 
             //if not found
             //just create it
-            found = this.jsTypeDefBuilder.BuildTypeDefinition(type);
-            this.mappingJsTypeDefinition.Add(type, found);
+            found = this.jsTypeDefBuilder.BuildTypeDefinition(actualType);
+            this.mappingJsTypeDefinition.Add(actualType, found);
             this.RegisterTypeDefinition(found);
 
             return found;
