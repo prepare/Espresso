@@ -1305,17 +1305,12 @@ namespace Espresso
         public void SetVariableAutoWrap<T>(string name, T result)
              where T : class
         {
-            var jsTypeDef = this.GetJsTypeDefinition<T>(result);
+            Type actualType = result.GetType();
+            var jsTypeDef = this.GetJsTypeDefinition(actualType);
             var proxy = this.CreateWrapper(result, jsTypeDef);
             this.SetVariable(name, proxy);
-        }
-        //------------------------------------------------------------------
-        public JsTypeDefinition GetJsTypeDefinition<T>(T t)
-                   where T : class
-        {
-            return GetJsTypeDefinition2(typeof(T));
-        }
-        public JsTypeDefinition GetJsTypeDefinition2(Type type)
+        } 
+        public JsTypeDefinition GetJsTypeDefinition(Type type)
         {
 
             JsTypeDefinition found;

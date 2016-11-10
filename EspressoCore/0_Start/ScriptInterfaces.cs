@@ -437,13 +437,13 @@ namespace Espresso
             where T : class, new()
         {
 
-            var jsTypeDef = this.context.GetJsTypeDefinition<T>(result);
+            Type actualType = result.GetType();
+            var jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
 
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                this.context.Converter.ToJsValue(proxy));
-        }
-
+        } 
 
     }
 }
