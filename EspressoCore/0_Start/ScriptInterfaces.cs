@@ -1,4 +1,4 @@
-﻿//2015, MIT ,WinterDev
+﻿//MIT, 2015-2016, WinterDev, EngineKit, brezza92
 
 using System;
 using System.Collections.Generic;
@@ -77,7 +77,7 @@ namespace Espresso
         {
 
         }
-        
+
         public void AddMember(JsMethodDefinition methodDef)
         {
             methodDef.SetOwner(this);
@@ -193,12 +193,10 @@ namespace Espresso
 
     public class JsPropertyDefinition : JsTypeMemberDefinition
     {
-
-        System.Reflection.PropertyInfo propInfo;
-
         public JsPropertyDefinition(string name)
             : base(name, JsMemberKind.Property)
         {
+            //create blank property and we can add getter/setter later
 
         }
         public JsPropertyDefinition(string name, JsMethodCallDel getter, JsMethodCallDel setter)
@@ -218,7 +216,6 @@ namespace Espresso
             : base(name, JsMemberKind.Property)
         {
 
-            this.propInfo = propInfo;
 #if NET20
 
             var getter = propInfo.GetGetMethod(true);
@@ -440,13 +437,13 @@ namespace Espresso
             where T : class, new()
         {
 
-            var jsTypeDef = this.context.GetJsTypeDefinition<T>(result);
+            Type actualType = result.GetType();
+            var jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
 
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                this.context.Converter.ToJsValue(proxy));
-        }
-
+        } 
 
     }
 }

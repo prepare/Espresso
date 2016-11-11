@@ -1,5 +1,4 @@
-//BSD 2015, WinterDev
-//MIT, 2015-2016, EngineKit, brezza92
+//MIT, 2015-2016, WinterDev, EngineKit, brezza92
 #include <string>
 
 #include <v8.h>
