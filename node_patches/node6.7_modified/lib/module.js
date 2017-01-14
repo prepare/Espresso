@@ -399,17 +399,7 @@ Module._load = function(request, parent, isMain) {
   if (parent) {
     debug('Module._load REQUEST %s parent: %s', request, parent.id);
   }
-
-
-//////////////////////////////////
-//#espresso,#4
-  var filename = request;
-  if (filename == "d:\\WImageTest\\test007.espr") {
-
-  } else {
-      filename = Module._resolveFilename(request, parent, isMain);
-  }
-////////////////////////////////////////////////////////
+ 
 
   var cachedModule = Module._cache[filename];
   if (cachedModule) {
@@ -458,7 +448,12 @@ Module._resolveFilename = function(request, parent, isMain) {
 
   // look up the filename first, since that's the cache key.
   debug('looking for %j in %j', id, paths);
-
+  ////////////////////////////////////////////
+  //#espresso, #5
+  if(request.endsWith(".espr")){
+    return request;
+  }
+  ////////////////////////////////////////////
   var filename = Module._findPath(request, paths, isMain);
   if (!filename) {
     var err = new Error("Cannot find module '" + request + "'");

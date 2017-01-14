@@ -926,10 +926,6 @@ namespace Test3
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
             }
         }
-
-        private void button12_Click(object sender, EventArgs e)
-        {
-
-        }
+         
     }
 }
