@@ -1,9 +1,9 @@
 Espresso / Espresso-Cup
 ===============
 
-***Do you want to run V8 js engine with C# (in-process) ?, Yes => here you have Espresso.***
+***V8 js engine with C# (in-process), => Espresso.***
 
-***Do you want to run NodeJS engine with C# (in-process) ?, Yes=> here you have Espresso-Cup.***
+***NodeJS engine with C# (in-process), => Espresso-Cup.***
 
 
 **Espresso** (former VroomJS) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
@@ -24,7 +24,7 @@ as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
 
-Current V8 Engine => We use V8 from node v7.0.0
+**Current V8 Engine => We use V8 from node v7.4.0**
 
 Examples
 --------
@@ -75,10 +75,9 @@ Access properties and call methods on CLR objects from Javascript:
 It is NodeJS in dll form + Espresso Code,
 so you can run NodeJS app in-process with .NET Code
 
-see example, run nodejs http server
-![slide17](https://github.com/CompilerKit/Espresso/blob/master/docs/Espresso-Cup/Slide17.PNG)
-![slide18](https://github.com/CompilerKit/Espresso/blob/master/docs/Espresso-Cup/Slide18.PNG)
-![slide19](https://github.com/CompilerKit/Espresso/blob/master/docs/Espresso-Cup/Slide19.PNG)
+see example, run nodejs http server 
+![slide18](https://cloud.githubusercontent.com/assets/9301044/21955739/95196ecc-daa3-11e6-8e91-c0f443ac0165.png)
+![slide19](https://cloud.githubusercontent.com/assets/9301044/21955741/951b7442-daa3-11e6-932f-a76dbeb9358d.PNG)
 
 
 

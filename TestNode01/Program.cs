@@ -17,14 +17,14 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"C:\projects\node-v6.7.0\Release\libespr.dll";
+            string libEspr = @"C:\projects\node-v7.4.0\Release\libespr.dll";
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"C:\projects\node-v6.7.0\Release\node.dll", //from
+               @"C:\projects\node-v7.4.0\Release\node.dll", //from
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
