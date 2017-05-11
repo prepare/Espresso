@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Portable", "Portable", "{11581DCC-C1BA-48E6-A63E-538CE3602622}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net20", "Net20", "{2BCA1F6E-6818-4967-A21A-BB3166FFF999}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4DB98CBB-8C2B-4CAB-9E5F-4014786AA431}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EspressoCore", "Portable\EspressoCore\EspressoCore.csproj", "{90183F26-15B6-45E6-A5F0-6E287EEE406A}"
 EndProject
@@ -17,13 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox2", "Net20\SandBox2\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Espresso.Interfaces", "Net20\Espresso.Interfaces\Espresso.Interfaces.csproj", "{81692F45-7266-4D82-A864-9D7DD839C290}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4DB98CBB-8C2B-4CAB-9E5F-4014786AA431}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EspressoCore", "EspressoCore\EspressoCore.csproj", "{269D404D-C287-45D8-80A4-18242B2D2EC9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "EspressoCore", "EspressoCore\EspressoCore.xproj", "{269D404D-C287-45D8-80A4-18242B2D2EC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestEspressoCore", "TestEspressoCore\TestEspressoCore.csproj", "{4F90E7FD-73F1-4032-904F-67D6E90C037D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TestEspressoCore", "TestEspressoCore\TestEspressoCore.xproj", "{4F90E7FD-73F1-4032-904F-67D6E90C037D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "espr_build_nuget", "espr_build_nuget\espr_build_nuget.xproj", "{E7E41178-26B1-4D29-A54A-DEE6014C7D29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "espr_build_nuget", "espr_build_nuget\espr_build_nuget.csproj", "{E7E41178-26B1-4D29-A54A-DEE6014C7D29}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestJsConsole", "TestJsConsole\TestJsConsole.csproj", "{35C5C182-A385-4166-B056-DB7498FA85B5}"
 EndProject
