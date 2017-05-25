@@ -1,4 +1,4 @@
-﻿//2013 MIT, Federico Di Gregorio <fog@initd.org>
+﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
