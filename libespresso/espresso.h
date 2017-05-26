@@ -24,7 +24,7 @@
 // THE SOFTWARE.
 
 //MIT, 2015, WinterDev
-//MIT, 2015-2016, EngineKit, brezza92
+//MIT, 2015-2017, EngineKit, brezza92
 
 
 #ifndef LIBVROOMJS_H
