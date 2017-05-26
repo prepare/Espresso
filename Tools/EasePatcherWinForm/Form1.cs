@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
 
-namespace EasePatcher
+namespace EasePatcherWinForm
 {
     public partial class Form1 : Form
     {

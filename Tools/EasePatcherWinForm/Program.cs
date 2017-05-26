@@ -1,8 +1,9 @@
-﻿using System;
+﻿//MIT, 2017, EngineKit
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace EasePatcher
+namespace EasePatcherWinForm
 {
     static class Program
     {

@@ -1,4 +1,4 @@
-﻿namespace EasePatcher
+﻿namespace EasePatcherWinForm
 {
     partial class Form1
     {

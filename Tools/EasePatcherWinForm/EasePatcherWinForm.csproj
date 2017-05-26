@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{646390B9-9CFD-4408-B19B-457C4AEF1F3A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>EasePatcher</RootNamespace>
-    <AssemblyName>EasePatcher</AssemblyName>
+    <RootNamespace>EasePatcherWinForm</RootNamespace>
+    <AssemblyName>EasePatcherWinForm</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -58,6 +58,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
