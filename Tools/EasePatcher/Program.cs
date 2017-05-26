@@ -1,8 +1,5 @@
 ﻿//MIT, 2017, EngineKit
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
+using System; 
 namespace EasePatcher
 {
     class Program
@@ -13,19 +10,18 @@ namespace EasePatcher
             Console.WriteLine("Start Build....");
             //------------------------------------ 
             Patcher patcher = new Patcher();
-            patcher.Setup(@"C:\projects\node-v7.10.0",
+            patcher.Setup(@"C:\projects\node-v7.10.0", //specific target 
                           @"D:\projects\CompilerKit\Espresso",
-                          "x86 release");
+                          "x64 release");
             //------------------------------------ 
-
+            patcher.DoPatch();
             patcher.InitBuild((s, e) =>
             {
                 //finish init build
-                //then => do patch
-                patcher.DoPatch();
+                //then => do patch 
 
             });
-
+            Console.WriteLine("Building ...");
             string userReadLine = Console.ReadLine();
 
         }
