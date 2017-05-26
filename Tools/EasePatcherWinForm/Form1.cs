@@ -64,8 +64,8 @@ namespace EasePatcherWinForm
             //1. copy file from espresso's patch folder 
             //and place into target dir 
             //the version must be match between original source and the patch
-            string esprsso_src = @"D:\projects\CompilerKit\Espresso";
-            string patch_folder = esprsso_src + @"\node_patches\node7.10_modified";
+            string espresso_src = @"D:\projects\CompilerKit\Espresso";
+            string patch_folder = espresso_src + @"\node_patches\node7.10_modified";
 
             ReplaceFileInDirectory(patch_folder, original_node_src);
             //2. copy core of libespresso bridge code( nodejs and .NET)
@@ -80,7 +80,7 @@ namespace EasePatcherWinForm
             //create targetdir
             Directory.CreateDirectory(targetDir);
             //copy the following file to target folder
-            string[] libEsprCoreFiles = Directory.GetFiles(esprsso_src + @"\libespresso");
+            string[] libEsprCoreFiles = Directory.GetFiles(espresso_src + @"\libespresso");
             int j = libEsprCoreFiles.Length;
             for (int i = 0; i < j; ++i)
             {
