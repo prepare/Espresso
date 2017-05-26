@@ -93,9 +93,7 @@ namespace EasePatcherWinForm
                     case ".h":
                         File.Copy(esprCodeFilename, targetDir + "/" + Path.GetFileName(esprCodeFilename));
                         break;
-                }
-
-
+                } 
             }
         }
         static void ReplaceFileInDirectory(string patchSrcDir, string targetDir)

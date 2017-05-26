@@ -132,8 +132,77 @@ namespace EasePatcher
         }
         public void DoPatch()
         {
+            //1. copy file from espresso's patch folder 
+            //and place into target dir 
+            //the version must be match between original source and the patch
+
+            string patch_folder = _espresso_src + @"\node_patches\node7.10_modified";
+
+            ReplaceFileInDirectory(patch_folder, _original_node_src_dir);
+            //2. copy core of libespresso bridge code( nodejs and .NET)
+            //to src/espresso_ext folder
+
+            string targetDir = _original_node_src_dir + "/src/libespresso";
+            if (Directory.Exists(targetDir))
+            {
+                //should be 1 level
+                Directory.Delete(targetDir);
+            }
+            //create targetdir
+            Directory.CreateDirectory(targetDir);
+            //copy the following file to target folder
+            string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"\libespresso");
+            int j = libEsprCoreFiles.Length;
+            for (int i = 0; i < j; ++i)
+            {
+                string esprCodeFilename = libEsprCoreFiles[i];
+                switch (Path.GetExtension(esprCodeFilename).ToLower())
+                {
+                    default:
+                        continue;
+                    case ".cpp":
+                    case ".h":
+                        File.Copy(esprCodeFilename, targetDir + "/" + Path.GetFileName(esprCodeFilename));
+                        break;
+                }
+            }
+        }
+        static void ReplaceFileInDirectory(string patchSrcDir, string targetDir)
+        {
+            //recursive
+            string[] allFiles = Directory.GetFiles(patchSrcDir);
+            //copy these files to target folder
+            int j = allFiles.Length;
+            for (int i = 0; i < j; ++i)
+            {
+                string patchSrcFile = allFiles[i];
+                ReplaceFile(patchSrcFile, targetDir + "/" + Path.GetFileName(patchSrcFile));
+            }
+            //sub-folders
+            string[] subFolders = Directory.GetDirectories(patchSrcDir);
+            j = subFolders.Length;
+            for (int i = 0; i < j; ++i)
+            {
+                ReplaceFileInDirectory(subFolders[i], targetDir + "/" + Path.GetFileName(subFolders[i]));
+            }
+        }
+        static void ReplaceFile(string patchFileName, string targetToBeReplaceFileName)
+        {
+            if (!File.Exists(targetToBeReplaceFileName))
+            {
+                //not found -> stop
+                throw new NotSupportedException();
+            }
+            //----------------------------
+            if (Path.GetFileName(targetToBeReplaceFileName) != Path.GetFileName(patchFileName))
+            {
+                //filename must match
+                throw new NotSupportedException();
+            }
+            //----------------------------
+            //replace src to dest
+            File.Copy(patchFileName, targetToBeReplaceFileName, true);
 
         }
-
     }
 }
