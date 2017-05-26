@@ -239,9 +239,9 @@
     <None Include="node.gyp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\projects\CompilerKit\Espresso\libespresso\bridge2.h" />
-    <ClInclude Include="D:\projects\CompilerKit\Espresso\libespresso\espresso.h" />
-    <ClInclude Include="D:\projects\CompilerKit\Espresso\libespresso\jsscript.h" />
+    <ClInclude Include="src\libespresso\bridge2.h" />
+    <ClInclude Include="src\libespresso\espresso.h" />
+    <ClInclude Include="src\libespresso\jsscript.h" />
     <ClInclude Include="src\async-wrap.h" />
     <ClInclude Include="src\async-wrap-inl.h" />
     <ClInclude Include="src\base-object.h" />
@@ -301,13 +301,13 @@
     <ClInclude Include="src\node_counters.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\bridge.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\bridge2_impl.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\jscontext.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\jsengine.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\jsscript.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\managedref.cpp" />
-    <ClCompile Include="D:\projects\CompilerKit\Espresso\libespresso\mini_BinaryReaderWriter.cpp" />
+    <ClCompile Include="src\libespresso\bridge.cpp" />
+    <ClCompile Include="src\libespresso\bridge2_impl.cpp" />
+    <ClCompile Include="src\libespresso\jscontext.cpp" />
+    <ClCompile Include="src\libespresso\jsengine.cpp" />
+    <ClCompile Include="src\libespresso\jsscript.cpp" />
+    <ClCompile Include="src\libespresso\managedref.cpp" />
+    <ClCompile Include="src\libespresso\mini_BinaryReaderWriter.cpp" />
     <ClCompile Include="src\tracing\agent.cc" />
     <ClCompile Include="src\tracing\node_trace_buffer.cc" />
     <ClCompile Include="src\tracing\node_trace_writer.cc" />
