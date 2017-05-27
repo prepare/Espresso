@@ -19,11 +19,14 @@ namespace EasePatcher
                           @"D:\projects\CompilerKit\Espresso",
                           "release nosign nobuild"); //we will build it manually with visual studio
 
+                        Console.WriteLine("Building ...");
                         patcher.Configure(() =>
                         {
-                            patcher.DoPatch();
-                            
-                            Console.WriteLine("Finish!");
+                            if (!patcher.ConfigHasSomeErrs)
+                            {
+                                patcher.DoPatch();
+                                Console.WriteLine("Finish!");
+                            }
                         });
                     }
                     break;
@@ -35,7 +38,7 @@ namespace EasePatcher
                         patcher.Setup(@"~/Downloads/node-v7.10.0", //specific target 
                           @"~/Downloads/Espresso",
                           "release");
-
+                        Console.WriteLine("Building ...");
                         patcher.Build(() =>
                         {
                             patcher.DoPatch();
@@ -46,7 +49,7 @@ namespace EasePatcher
                 default:
                     throw new NotSupportedException();
             }
-            Console.WriteLine("Building ...");
+            
             string userReadLine = Console.ReadLine();
         }
     }

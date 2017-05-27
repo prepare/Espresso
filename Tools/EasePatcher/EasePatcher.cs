@@ -158,6 +158,7 @@ namespace EasePatcher
     class WindowsPatcher : PatcherBase
     {
         string _initBuildParameters;
+
         public void Setup(string original_node_src_dir,
             string espresso_src,
             string initBuildParameters = "")
@@ -167,7 +168,11 @@ namespace EasePatcher
             this._original_node_src_dir = original_node_src_dir;
             this._espresso_src = espresso_src;
         }
-
+        public bool ConfigHasSomeErrs
+        {
+            get;
+            private set;
+        }
         public void Configure(SimpleAction nextAction)
         {
             //-------------------------------------------------------
@@ -178,6 +183,12 @@ namespace EasePatcher
             string vc_build_script = _original_node_src_dir + @"\vcbuild.bat";
             if (!File.Exists(vc_build_script))
             {
+                Console.WriteLine("Err! not found batch files");
+                ConfigHasSomeErrs = true;
+                if (nextAction != null)
+                {
+                    nextAction();
+                }
                 return;
             }
 
@@ -213,6 +224,10 @@ namespace EasePatcher
             //insert
             string vcx = _original_node_src_dir + "/node.vcxproj";
             List<string> allLines = new List<string>();
+            //-------
+            //create backup
+            File.Copy(vcx, vcx + ".backup");
+            //-------
             using (FileStream fs = new FileStream(vcx, FileMode.Open))
             using (StreamReader reader = new StreamReader(fs))
             {
@@ -243,7 +258,7 @@ namespace EasePatcher
                         int impl_count = this._newCppImplFiles.Count;
                         for (int m = 0; m < impl_count; ++m)
                         {
-                            allLines.Insert(i + m, "<ClCompile Include=\"" + _newCppImplFiles[m] + "\" />");
+                            allLines.Insert(i + 2 + m, "<ClCompile Include=\"" + _newCppImplFiles[m] + "\" />");
                         }
 
                     }
@@ -255,7 +270,7 @@ namespace EasePatcher
                         int header_count = this._newHeaderFiles.Count;
                         for (int m = 0; m < header_count; ++m)
                         {
-                            allLines.Insert(i + m, "<ClInclude Include=\"" + _newHeaderFiles[m] + "\" />");
+                            allLines.Insert(i + 2 + m, "<ClInclude Include=\"" + _newHeaderFiles[m] + "\" />");
                         }
 
                     }
