@@ -19,15 +19,12 @@ namespace EasePatcher
                           @"D:\projects\CompilerKit\Espresso",
                           "release nosign nobuild"); //we will build it manually with visual studio
 
-                        patcher.FinishInitBuild += (s, e) =>
+                        patcher.Configure(() =>
                         {
                             patcher.DoPatch();
-                            //modify node.vcxproj
-
+                            
                             Console.WriteLine("Finish!");
-                        };
-
-                        patcher.Build();
+                        });
                     }
                     break;
                 case PatcherOS.Mac:
@@ -37,13 +34,13 @@ namespace EasePatcher
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
                         patcher.Setup(@"~/Downloads/node-v7.10.0", //specific target 
                           @"~/Downloads/Espresso",
-                          "x64 release");
-                        patcher.FinishInitBuild += (s, e) =>
+                          "release");
+
+                        patcher.Build(() =>
                         {
                             patcher.DoPatch();
                             Console.WriteLine("Finish!");
-                        };
-                        patcher.Build();
+                        });
                     }
                     break;
                 default:

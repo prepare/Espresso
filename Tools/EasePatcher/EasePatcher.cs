@@ -1,5 +1,6 @@
 ﻿//MIT, 2017, EngineKit
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -19,7 +20,6 @@ namespace EasePatcher
         Windows,
         Mac,
         Linux
-
     }
 
     abstract class PatcherBase
@@ -27,13 +27,18 @@ namespace EasePatcher
         protected string _original_node_src_dir;
         protected string _espresso_src;
         protected BuildState _buildState;
+        protected List<string> _newHeaderFiles = new List<string>();
+        protected List<string> _newCppImplFiles = new List<string>();
 
         /// <summary>
         /// path to patch folder relative to main espresso src folder (eg. node_patches\node7.10_modified)
         /// </summary>
         public string PatchSubFolder { get; set; }
 
+        protected virtual void OnPatchFinishing()
+        {
 
+        }
         public void DoPatch()
         {
             //1. copy file from espresso's patch folder 
@@ -47,7 +52,8 @@ namespace EasePatcher
             //2. copy core of libespresso bridge code( nodejs and .NET)
             //to src/espresso_ext folder
 
-            string targetDir = _original_node_src_dir + "/src/libespresso";
+            string libespr_dir = "src/libespresso";
+            string targetDir = _original_node_src_dir + "/" + libespr_dir;
             if (Directory.Exists(targetDir))
             {
                 Directory.Delete(targetDir, true);
@@ -57,6 +63,9 @@ namespace EasePatcher
             //copy the following file to target folder
             string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"\libespresso");
             int j = libEsprCoreFiles.Length;
+            _newHeaderFiles.Clear();
+            _newCppImplFiles.Clear();
+
             for (int i = 0; i < j; ++i)
             {
                 string esprCodeFilename = libEsprCoreFiles[i];
@@ -65,13 +74,24 @@ namespace EasePatcher
                     default:
                         continue;
                     case ".cpp":
+                        {
+                            string onlyfilename = Path.GetFileName(esprCodeFilename);
+                            _newCppImplFiles.Add(libespr_dir + "/" + onlyfilename);
+                            File.Copy(esprCodeFilename, targetDir + "/" + onlyfilename);
+                        }
+                        break;
                     case ".h":
-                        File.Copy(esprCodeFilename, targetDir + "/" + Path.GetFileName(esprCodeFilename));
+                        {
+                            string onlyfilename = Path.GetFileName(esprCodeFilename);
+                            _newHeaderFiles.Add(libespr_dir + "/" + onlyfilename);
+                            File.Copy(esprCodeFilename, targetDir + "/" + onlyfilename);
+                        }
                         break;
                 }
             }
+            //
+            OnPatchFinishing();
         }
-
         static void ReplaceFileInDirectory(string patchSrcDir, string targetDir)
         {
             //recursive
@@ -138,17 +158,17 @@ namespace EasePatcher
     class WindowsPatcher : PatcherBase
     {
         string _initBuildParameters;
-        public void Setup(string original_node_src,
+        public void Setup(string original_node_src_dir,
             string espresso_src,
             string initBuildParameters = "")
         {
             _buildState = BuildState.Zero;
             _initBuildParameters = initBuildParameters;
-            this._original_node_src_dir = original_node_src;
+            this._original_node_src_dir = original_node_src_dir;
             this._espresso_src = espresso_src;
         }
 
-        public void Build(EventHandler nextAction)
+        public void Configure(SimpleAction nextAction)
         {
             //-------------------------------------------------------
             //FOR WINDOWS:....
@@ -180,16 +200,87 @@ namespace EasePatcher
                 //finish
                 if (nextAction != null)
                 {
-                    nextAction(this, EventArgs.Empty);
+                    nextAction();
                 }
             });
         }
 
-        public void ModifyVcxProj()
+        protected override void OnPatchFinishing()
         {
+            base.OnPatchFinishing();
+            //-------
+            //modify vcx project
+            //insert
+            string vcx = _original_node_src_dir + "/node.vcxproj";
+            List<string> allLines = new List<string>();
+            using (FileStream fs = new FileStream(vcx, FileMode.Open))
+            using (StreamReader reader = new StreamReader(fs))
+            {
+                string line = reader.ReadLine();
+                while (line != null)
+                {
+                    allLines.Add(line);
+                    line = reader.ReadLine();
+                }
+            }
+            //-------
+            //find proper insert location
+            int j = allLines.Count;
+            bool add_header_files = false;
+            bool add_impl_files = false;
+            for (int i = 0; i < j; ++i)
+            {
+                string line = allLines[i].Trim();
+                if (line == "<ItemGroup>")
+                {
+                    //next line
+                    line = allLines[i + 1].Trim();
+                    if (!add_impl_files && line.StartsWith("<ClCompile"))
+                    {
+                        //found insertion point 
+                        add_impl_files = true;
 
+                        int impl_count = this._newCppImplFiles.Count;
+                        for (int m = 0; m < impl_count; ++m)
+                        {
+                            allLines.Insert(i + m, "<ClCompile Include=\"" + _newCppImplFiles[m] + "\" />");
+                        }
+
+                    }
+                    else if (!add_header_files && line.StartsWith("<ClInclude"))
+                    {
+
+                        add_header_files = true;
+
+                        int header_count = this._newHeaderFiles.Count;
+                        for (int m = 0; m < header_count; ++m)
+                        {
+                            allLines.Insert(i + m, "<ClInclude Include=\"" + _newHeaderFiles[m] + "\" />");
+                        }
+
+                    }
+
+                }
+                //----
+                if (add_impl_files && add_header_files) { break; }
+
+            }
+
+            //-------
+            //save back
+            using (FileStream fs = new FileStream(vcx, FileMode.Create))
+            using (StreamWriter writer = new StreamWriter(fs))
+            {
+                j = allLines.Count;//reset
+                for (int i = 0; i < j; ++i)
+                {
+                    writer.WriteLine(allLines[i]);
+                }
+                writer.Flush();
+            }
         }
     }
+
     class LinuxAndMacPatcher : PatcherBase
     {
         public void Setup(string original_node_src, string espresso_src, string initBuildParameters = "")
@@ -198,7 +289,7 @@ namespace EasePatcher
             this._original_node_src_dir = original_node_src;
             this._espresso_src = espresso_src;
         }
-        public void Build(EventHandler nextAction)
+        public void Build(SimpleAction nextAction)
         {
             //1. configure
             //2. make
@@ -209,7 +300,7 @@ namespace EasePatcher
                 UnixMake();
                 if (nextAction != null)
                 {
-                    nextAction(this, EventArgs.Empty);
+                    nextAction();
                 }
             });
 
