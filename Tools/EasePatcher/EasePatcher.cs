@@ -3,9 +3,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-
+using System.Xml;
 namespace EasePatcher
 {
+    delegate void SimpleAction();
     enum BuildState
     {
         Zero,
@@ -25,17 +26,8 @@ namespace EasePatcher
     {
         protected string _original_node_src_dir;
         protected string _espresso_src;
-
-        public event EventHandler FinishInitBuild;
-
         protected BuildState _buildState;
-        protected void InvokeFinishInitBuild()
-        {
-            if (FinishInitBuild != null)
-            {
-                FinishInitBuild(this, EventArgs.Empty);
-            }
-        }
+
         /// <summary>
         /// path to patch folder relative to main espresso src folder (eg. node_patches\node7.10_modified)
         /// </summary>
@@ -156,7 +148,7 @@ namespace EasePatcher
             this._espresso_src = espresso_src;
         }
 
-        public void Build()
+        public void Build(EventHandler nextAction)
         {
             //-------------------------------------------------------
             //FOR WINDOWS:....
@@ -186,9 +178,16 @@ namespace EasePatcher
                 Process proc = System.Diagnostics.Process.Start(procStartInfo);
                 proc.WaitForExit();
                 //finish
-                InvokeFinishInitBuild();
-
+                if (nextAction != null)
+                {
+                    nextAction(this, EventArgs.Empty);
+                }
             });
+        }
+
+        public void ModifyVcxProj()
+        {
+
         }
     }
     class LinuxAndMacPatcher : PatcherBase
@@ -198,11 +197,8 @@ namespace EasePatcher
             _buildState = BuildState.Zero;
             this._original_node_src_dir = original_node_src;
             this._espresso_src = espresso_src;
-
-            Build();
         }
-
-        public void Build()
+        public void Build(EventHandler nextAction)
         {
             //1. configure
             //2. make
@@ -211,7 +207,10 @@ namespace EasePatcher
             {
                 UnixConfigure();
                 UnixMake();
-                InvokeFinishInitBuild();
+                if (nextAction != null)
+                {
+                    nextAction(this, EventArgs.Empty);
+                }
             });
 
         }

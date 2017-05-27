@@ -18,10 +18,12 @@ namespace EasePatcher
                         patcher.Setup(@"C:\projects\node-v7.10.0", //specific target 
                           @"D:\projects\CompilerKit\Espresso",
                           "release nosign nobuild"); //we will build it manually with visual studio
-                      
+
                         patcher.FinishInitBuild += (s, e) =>
                         {
                             patcher.DoPatch();
+                            //modify node.vcxproj
+
                             Console.WriteLine("Finish!");
                         };
 
