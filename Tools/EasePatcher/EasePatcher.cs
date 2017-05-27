@@ -229,7 +229,7 @@ namespace EasePatcher
             if (!File.Exists(vcx + ".backup"))
             {
                 File.Copy(vcx, vcx + ".backup");
-            } 
+            }
             //
             using (FileStream fs = new FileStream(vcx, FileMode.Open))
             using (StreamReader reader = new StreamReader(fs))
@@ -237,22 +237,35 @@ namespace EasePatcher
                 string line = reader.ReadLine();
                 while (line != null)
                 {
-                    allLines.Add(line);
+                    allLines.Add(line.Trim());//trim here
                     line = reader.ReadLine();
                 }
             }
             //-------
             //find proper insert location
             int j = allLines.Count;
+
+            //remove some config line
+            for (int i = j - 1; i >= 0; --i)
+            {
+                string line = allLines[i];
+                if (line == @"<ModuleDefinitionFile>$(OutDir)obj\global_intermediate\openssl.def</ModuleDefinitionFile>")
+                {
+                    //remove this line
+                    allLines.RemoveAt(i);
+                }
+            }
+            //-------
             bool add_header_files = false;
             bool add_impl_files = false;
+            j = allLines.Count;//reset
             for (int i = 0; i < j; ++i)
             {
-                string line = allLines[i].Trim();
+                string line = allLines[i];
                 if (line == "<ItemGroup>")
                 {
                     //next line
-                    line = allLines[i + 1].Trim();
+                    line = allLines[i + 1];
                     if (!add_impl_files && line.StartsWith("<ClCompile"))
                     {
                         //found insertion point 
@@ -267,24 +280,19 @@ namespace EasePatcher
                     }
                     else if (!add_header_files && line.StartsWith("<ClInclude"))
                     {
-
                         add_header_files = true;
-
                         int header_count = this._newHeaderFiles.Count;
                         for (int m = 0; m < header_count; ++m)
                         {
                             allLines.Insert(i + 2 + m, "<ClInclude Include=\"" + _newHeaderFiles[m] + "\" />");
                         }
-
                     }
 
                 }
                 //----
                 if (add_impl_files && add_header_files) { break; }
-
             }
 
-            //-------
             //save back
             using (FileStream fs = new FileStream(vcx, FileMode.Create))
             using (StreamWriter writer = new StreamWriter(fs))
