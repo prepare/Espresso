@@ -17,7 +17,9 @@ namespace EasePatcher
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
                         patcher.Setup(@"C:\projects\node-v7.10.0", //specific target 
                           @"D:\projects\CompilerKit\Espresso",
-                          "nosign nobuild"); //we will build it manually with visual studio
+                          "release dll nosign nobuild"); //we will build it manually with visual studio
+                        //
+                        //"nosign nobuild"); //we will build it manually with visual studio
 
                         Console.WriteLine("Building ...");
                         patcher.Configure(() =>
