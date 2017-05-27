@@ -348,7 +348,7 @@ namespace EasePatcher
         }
         void UnixConfigure()
         {
-            ProcessStartInfo stInfo = new ProcessStartInfo(_espresso_src + "/configure");
+            ProcessStartInfo stInfo = new ProcessStartInfo(_original_node_src_dir + "/configure");
             stInfo.WorkingDirectory = _original_node_src_dir;
             //
             Process proc = Process.Start(stInfo);
