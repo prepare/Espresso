@@ -255,7 +255,7 @@ namespace EasePatcher
                     //remove this line
                     allLines.RemoveAt(i);
                 }
-                else if (line == "<ClCompile Include=\"src\node_main.cc\">")
+                else if (line == "<ClCompile Include=\"src\\node_main.cc\">")
                 {
                     //check next line 
                     string nextline = allLines[i + 1];
