@@ -61,7 +61,7 @@ namespace EasePatcher
             //create targetdir
             Directory.CreateDirectory(targetDir);
             //copy the following file to target folder
-            string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"\libespresso");
+            string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"/libespresso");
             int j = libEsprCoreFiles.Length;
             _newHeaderFiles.Clear();
             _newCppImplFiles.Clear();
