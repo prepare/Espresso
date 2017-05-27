@@ -1,7 +1,7 @@
 #include "node.h"
 //////////////////////////////////
 //#espresso,#3
-#include "d:\\projects\\\CompilerKit\\Espresso\\libespresso\\bridge2.h"
+#include "../src/libespresso/bridge2.h"
 //////////////////////////////////
 #ifdef _WIN32
 #include <VersionHelpers.h>

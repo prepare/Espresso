@@ -99,7 +99,7 @@ extern char **environ;
 #endif
 //////////////////////////////////
 //#espresso ,#1 
-#include "d:\projects\CompilerKit\Espresso\libespresso\bridge2.h"
+#include "../src/libespresso/bridge2.h"
 //////////////////////////////////
 namespace node {
 
