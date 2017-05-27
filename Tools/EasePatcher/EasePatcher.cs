@@ -249,11 +249,26 @@ namespace EasePatcher
             for (int i = j - 1; i >= 0; --i)
             {
                 string line = allLines[i];
+                //1.  remove 
                 if (line == @"<ModuleDefinitionFile>$(OutDir)obj\global_intermediate\openssl.def</ModuleDefinitionFile>")
                 {
                     //remove this line
                     allLines.RemoveAt(i);
                 }
+                else if (line == "<ClCompile Include=\"src\node_main.cc\">")
+                {
+                    //check next line 
+                    string nextline = allLines[i + 1];
+                    if (nextline == "<ExcludedFromBuild>true</ExcludedFromBuild>")
+                    {
+                        //remove next line
+                        allLines.RemoveAt(i + 1);
+                    }
+                }
+                //2. if we config as dll , 
+                //it exclude main.cc,
+                //but in our case we need it
+                //
             }
             //-------
             bool add_header_files = false;
