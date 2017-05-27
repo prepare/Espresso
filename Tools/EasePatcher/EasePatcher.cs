@@ -337,15 +337,14 @@ namespace EasePatcher
             _buildState = BuildState.InitBuild;
             ThreadPool.QueueUserWorkItem(delegate
             {   
-                InternalPatchGyp();
-
+                InternalPatchGyp(); 
                 //we patch the gyp *** 
                 //UnixConfigure();
                 //UnixMake();
-                //if (nextAction != null)
-                //{
-                //    nextAction();
-                //}
+                if (nextAction != null)
+                {
+                    nextAction();
+                }
             });
         }
         void InternalPatchGyp()
