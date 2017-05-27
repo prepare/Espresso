@@ -17,15 +17,19 @@ namespace EasePatcher
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
                         patcher.Setup(@"C:\projects\node-v7.10.0", //specific target 
                           @"D:\projects\CompilerKit\Espresso",
-                          "x64 release dll nosign nobuild"); //we will build it manually with visual studio
-                      
-                        patcher.FinishInitBuild += (s, e) =>
-                        {
-                            patcher.DoPatch();
-                            Console.WriteLine("Finish!");
-                        };
+                          "release dll nosign nobuild"); //we will build it manually with visual studio
+                        //
+                        //"nosign nobuild"); //we will build it manually with visual studio
 
-                        patcher.Build();
+                        Console.WriteLine("Building ...");
+                        patcher.Configure(() =>
+                        {
+                            if (!patcher.ConfigHasSomeErrs)
+                            {
+                                patcher.DoPatch();
+                                Console.WriteLine("Finish!");
+                            }
+                        });
                     }
                     break;
                 case PatcherOS.Mac:
@@ -35,19 +39,19 @@ namespace EasePatcher
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
                         patcher.Setup(@"~/Downloads/node-v7.10.0", //specific target 
                           @"~/Downloads/Espresso",
-                          "x64 release");
-                        patcher.FinishInitBuild += (s, e) =>
+                          "release");
+                        Console.WriteLine("Building ...");
+                        patcher.Build(() =>
                         {
                             patcher.DoPatch();
                             Console.WriteLine("Finish!");
-                        };
-                        patcher.Build();
+                        });
                     }
                     break;
                 default:
                     throw new NotSupportedException();
             }
-            Console.WriteLine("Building ...");
+            
             string userReadLine = Console.ReadLine();
         }
     }
