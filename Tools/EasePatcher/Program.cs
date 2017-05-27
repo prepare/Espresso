@@ -37,9 +37,9 @@ namespace EasePatcher
                     {
                         var patcher = new LinuxAndMacPatcher();
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
-                        patcher.Setup(@"~/Downloads/node-v7.10.0", //specific target 
-                          @"~/Downloads/Espresso",
-                          "release");
+                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
+                          @"../../../Espresso",
+                          "x64 --shared");
                         Console.WriteLine("Building ...");
                         patcher.Build(() =>
                         {
