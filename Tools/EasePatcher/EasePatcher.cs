@@ -398,7 +398,7 @@ namespace EasePatcher
             //----------      
             //save gyp 
             j = lines.Count;
-            using (FileStream fs = new FileStream(src_dir + "\\" + "node.gyp", FileMode.Create))
+            using (FileStream fs = new FileStream(src_dir + "/" + "node.gyp", FileMode.Create))
             using (StreamWriter writer = new StreamWriter(fs))
             {
                 for (int i = 0; i < j; ++i)
