@@ -33,6 +33,22 @@ namespace EasePatcher
                     }
                     break;
                 case PatcherOS.Mac:
+                    {
+
+                        var patcher = new LinuxAndMacPatcher();
+                        patcher.PatchSubFolder = "node_patches/node7.10_modified";
+                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
+                          @"../../../Espresso",
+                          "x64 --shared --xcode");
+                        Console.WriteLine("Building ...");
+                        patcher.Build(() =>
+                        {
+                            patcher.DoPatch();
+                            Console.WriteLine("Finish!");
+                        });
+
+                    }
+                    break;
                 case PatcherOS.Linux:
                     {
                         var patcher = new LinuxAndMacPatcher();
