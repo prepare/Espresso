@@ -226,8 +226,11 @@ namespace EasePatcher
             List<string> allLines = new List<string>();
             //-------
             //create backup
-            File.Copy(vcx, vcx + ".backup");
-            //-------
+            if (!File.Exists(vcx + ".backup"))
+            {
+                File.Copy(vcx, vcx + ".backup");
+            } 
+            //
             using (FileStream fs = new FileStream(vcx, FileMode.Open))
             using (StreamReader reader = new StreamReader(fs))
             {
