@@ -352,7 +352,7 @@ namespace EasePatcher
         {
             string src_dir = _original_node_src_dir;
             List<string> lines = new List<string>();
-            using (FileStream fs = new FileStream(src_dir + "\\" + "node.gyp", FileMode.Open))
+            using (FileStream fs = new FileStream(src_dir + "/" + "node.gyp", FileMode.Open))
             using (StreamReader reader = new StreamReader(fs))
             {
                 string line = reader.ReadLine();
