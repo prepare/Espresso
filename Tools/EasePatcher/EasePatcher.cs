@@ -372,7 +372,7 @@ namespace EasePatcher
                 "src/libespresso/jsscript.cpp",
                 "src/libespresso/managedref.cpp",
                 "src/libespresso/mini_BinaryReaderWriter.cpp",
-
+                "src/libespresso/libespr_nodemain.cpp",
                 "src/libespresso/bridge2.h",
                 "src/libespresso/espresso.h",
                 "src/libespresso/jsscript.h",
