@@ -1,6 +1,6 @@
 //MIT, 2015-2017, WinterDev, EngineKit, brezza92
 #include <string>
-
+#include <cstring.h>
 #include <v8.h>
 #include "libplatform/libplatform.h"
 
