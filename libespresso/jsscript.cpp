@@ -9,7 +9,7 @@ JsScript *JsScript::New(JsEngine *engine) {
 	jsscript->script_ = NULL;
 	return jsscript;
 }
-
+//TODO: JS_VALUE
 jsvalue JsScript::Compile(const uint16_t* str, const uint16_t *resourceName = NULL) {
 	jsvalue v;
 	v.type = 0;

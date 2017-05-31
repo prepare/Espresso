@@ -98,6 +98,7 @@ extern "C"
 	
 	typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex,int methodKind,MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
+	//TODO: JS_VALUE
 
     struct jsvalue
     {

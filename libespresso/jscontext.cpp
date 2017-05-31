@@ -73,7 +73,7 @@ void JsContext::Dispose()
 		delete context_;
 	}
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = NULL)
 {
 	jsvalue v;
@@ -114,7 +114,7 @@ jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = N
 	ctx->Exit();
 	return v;
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::Execute(JsScript *jsscript)
 {
 	jsvalue v;
@@ -145,7 +145,7 @@ jsvalue JsContext::Execute(JsScript *jsscript)
 
 	return v;
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
 {
 	Locker locker(isolate_);
@@ -166,7 +166,7 @@ jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
 
 	return engine_->AnyFromV8(Null(isolate_));
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::GetGlobal() {
 	jsvalue v;
 
@@ -192,7 +192,7 @@ jsvalue JsContext::GetGlobal() {
 
 	return v;
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::GetVariable(const uint16_t* name)
 {
 	jsvalue v;
@@ -218,7 +218,7 @@ jsvalue JsContext::GetVariable(const uint16_t* name)
 
 	return v;
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::GetPropertyNames(Persistent<Object>* obj) {
 	jsvalue v;
 
@@ -245,7 +245,7 @@ jsvalue JsContext::GetPropertyNames(Persistent<Object>* obj) {
 
 	return v;
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* name)
 {
 	jsvalue v;
@@ -276,7 +276,7 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
 	return v;
 }
 
-
+//TODO: JS_VALUE
 jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value)
 {
 	Locker locker(isolate_);
@@ -298,7 +298,7 @@ jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
 
 	return engine_->AnyFromV8(Null(isolate_));
 }
-
+//TODO: JS_VALUE
 jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args) {
 	jsvalue v;
 
@@ -344,7 +344,7 @@ jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>
 
 }
 
-
+//TODO: JS_VALUE
 jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args)
 {
 	jsvalue v;
@@ -383,10 +383,12 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
 	ctx->Exit(); 
 	return v;
 }
+//TODO: JS_VALUE
 jsvalue JsContext::ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
 {
 	return this->engine_->AnyFromV8(value, thisArg);
 }
+//TODO: JS_VALUE
 Handle<Value> JsContext::AnyToV8(jsvalue v)
 {
 

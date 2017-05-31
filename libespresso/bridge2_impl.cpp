@@ -1,12 +1,12 @@
 //MIT, 2015-2017, WinterDev, EngineKit, brezza92
 #include <string>
-#include <cstring.h>
+
 #include <v8.h>
 #include "libplatform/libplatform.h"
-
+#include <cstring.h>
 //#include "src/libplatform/default-platform.h"
 //#include "de src/base/platform/platform.h"
- 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
@@ -36,6 +36,7 @@ int TestCallBack()
 
 void ResultSetBool(MetCallingArgs* callingArgs, bool value)
 {
+	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_BOOLEAN;
 	result.value.i32 = value ? 1 : 0;
@@ -43,6 +44,7 @@ void ResultSetBool(MetCallingArgs* callingArgs, bool value)
 }
 void ResultSetInt32(MetCallingArgs* callingArgs, int value)
 {
+	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_INTEGER;
 	result.value.i32 = value;
@@ -50,6 +52,7 @@ void ResultSetInt32(MetCallingArgs* callingArgs, int value)
 }
 void ResultSetFloat(MetCallingArgs* callingArgs, float value)
 {
+	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_NUMBER;
 	result.value.num = value;
@@ -57,6 +60,7 @@ void ResultSetFloat(MetCallingArgs* callingArgs, float value)
 }
 void ResultSetDouble(MetCallingArgs* callingArgs, double value)
 {
+	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_NUMBER;
 	result.value.num = value;
@@ -64,12 +68,13 @@ void ResultSetDouble(MetCallingArgs* callingArgs, double value)
 }
 void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
 {
+	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_STRING;
 	result.value.str = (uint16_t*)value;
 	callingArgs->result = result;
 }
-
+//TODO: JS_VALUE
 void ResultSetJsValue(MetCallingArgs* callingArgs, jsvalue value)
 {
 	callingArgs->result = value;
@@ -322,6 +327,7 @@ jsvalue ArgGetObject(MetCallingArgs* args, int index)
 		return cctx->ctx->ConvAnyFromV8(arg, obj);
 	}
 	}
+	//TODO: JS_VALUE
 	jsvalue v;
 	// Initialize to a generic error.
 	v.type = JSVALUE_TYPE_NULL;
