@@ -1,5 +1,4 @@
-//BSD 2015, WinterDev
-//MIT, 2015-2017, EngineKit, brezza92
+//MIT, 2015-2017, WinterDev,EngineKit, brezza92
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,7 +11,6 @@
 
 using namespace v8;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 const char MET_ = 0;
 const char MET_GETTER = 1;
@@ -30,8 +28,7 @@ extern "C" {
 
 		//return value to our managed side***
 		//this should be one of out MyJsValue ...
-		MyJsValue* result1;
-		struct jsvalue result;
+		MyJsValue* result;
 	};
 
 	typedef void (CALLINGCONVENTION *del02)(int oIndex, const wchar_t* methodName, MetCallingArgs* args);
@@ -77,7 +74,7 @@ extern "C" {
 	EXPORT void V8Init();
 	EXPORT int TestCallBack();
 
-	
+
 	//this is for espresso-node
 	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb);
 	void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
