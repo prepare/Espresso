@@ -319,43 +319,44 @@ extern "C"
 		return v;
 	}
 	//TODO: JS_VALUE
-	EXPORT void CALLCONV jsvalue_dispose(jsvalue value)
+	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_dispose" << std::endl;
 #endif
 
-		switch (value.type)
+		switch (value->type)
 		{
 		case JSVALUE_TYPE_STRING:
 		case JSVALUE_TYPE_STRING_ERROR:
 		{
-			if (value.value.str != NULL) {
-				delete[] value.value.str;
+			if (value->str != NULL) {
+				delete[] value->str;
 			}
 		}break;
 		case JSVALUE_TYPE_ARRAY:
 		case JSVALUE_TYPE_FUNCTION:
 		{
-			for (int i = value.length - 1; i >= 0; --i) {
-				jsvalue_dispose(value.value.arr[i]);
+			for (int i = value->length - 1; i >= 0; --i) {
+				jsvalue_dispose(value->arr[i]);
 			}
-			if (value.value.arr != NULL) {
-				delete[] value.value.arr;
+			if (value->arr != NULL) {
+				delete[] value->arr;
+
 			}
 		}break;
 		case JSVALUE_TYPE_DICT:
 		{
-			for (int i = (value.length * 2) - 1; i >= 0; --i) {
-				jsvalue_dispose(value.value.arr[i]);
+			for (int i = (value->length * 2) - 1; i >= 0; --i) {
+				jsvalue_dispose(value->arr[i]);
 			}
-			if (value.value.arr != NULL) {
-				delete[] value.value.arr;
+			if (value->arr != NULL) {
+				delete[] value->arr;
 			}
 		}break;
 		case JSVALUE_TYPE_ERROR:
 		{
-			jserror *error = (jserror*)value.value.ptr;
+			jserror *error = (jserror*)value->ptr;
 			jsvalue_dispose(error->resource);
 			jsvalue_dispose(error->message);
 			jsvalue_dispose(error->exception);

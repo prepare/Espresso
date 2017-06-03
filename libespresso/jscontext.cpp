@@ -74,20 +74,17 @@ void JsContext::Dispose()
 	}
 }
 //TODO: JS_VALUE
-jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = NULL)
-{
-	jsvalue v;
+void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsvalue* output)
+{ 
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
-	ctx->Enter();
+	ctx->Enter(); 
 
-
-	TryCatch trycatch;
-
+	TryCatch trycatch; 
 	Handle<String> source = String::NewFromTwoByte(isolate_, str);
 	Handle<Script> script;
 
@@ -102,10 +99,12 @@ jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = N
 	if (!script.IsEmpty()) {
 		Local<Value> result = script->Run();
 
-		if (result.IsEmpty())
+		if (result.IsEmpty()) {
 			v = engine_->ErrorFromV8(trycatch);
-		else
+		}
+		else {
 			v = engine_->AnyFromV8(result);
+		}
 	}
 	else {
 		v = engine_->ErrorFromV8(trycatch);
@@ -115,10 +114,9 @@ jsvalue JsContext::Execute(const uint16_t* str, const uint16_t *resourceName = N
 	return v;
 }
 //TODO: JS_VALUE
-jsvalue JsContext::Execute(JsScript *jsscript)
+void JsContext::Execute(JsScript *jsscript,jsvalue* output)
 {
-	jsvalue v;
-
+	 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
@@ -380,7 +378,7 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
 		}
 	}
 
-	ctx->Exit(); 
+	ctx->Exit();
 	return v;
 }
 //TODO: JS_VALUE

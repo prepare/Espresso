@@ -1,4 +1,4 @@
-//MIT, 2015-2017, WinterDev,EngineKit, brezza92
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,11 +24,9 @@ extern "C" {
 		uint32_t methodCallKind;
 		const v8::FunctionCallbackInfo<Value>* args; //store method input args
 		const v8::PropertyCallbackInfo<Value>* accessorInfo; //accessor info for indexer
-		Local<Value> setterValue;  //value for set this property 
-
-		//return value to our managed side***
-		//this should be one of out MyJsValue ...
-		MyJsValue* result;
+		Local<Value> setterValue;  //value for set this property  
+		//this is
+		jsvalue result;
 	};
 
 	typedef void (CALLINGCONVENTION *del02)(int oIndex, const wchar_t* methodName, MetCallingArgs* args);
@@ -55,11 +53,9 @@ extern "C" {
 		int callBackKind);
 
 	//--------------------------------------------------------------------- 
-	EXPORT int ArgCount(MetCallingArgs* args);
-	//TODO: JS_VALUE
-	EXPORT jsvalue ArgGetThis(MetCallingArgs* args);
-	//TODO: JS_VALUE
-	EXPORT jsvalue ArgGetObject(MetCallingArgs* args, int index);
+	EXPORT int ArgCount(MetCallingArgs* args); 
+	EXPORT void ArgGetThis(MetCallingArgs* args, jsvalue* output); 
+	EXPORT void ArgGetObject(MetCallingArgs* args, int index, jsvalue* output);
 
 	//--------------------------------------------------------------------- 
 	EXPORT void ResultSetBool(MetCallingArgs* result, bool value);
@@ -67,15 +63,16 @@ extern "C" {
 	EXPORT void ResultSetFloat(MetCallingArgs* result, float value);
 	EXPORT void ResultSetDouble(MetCallingArgs* result, double value);
 	EXPORT void ResultSetString(MetCallingArgs* result, wchar_t* value);
-	//TODO: JS_VALUE
-	EXPORT void ResultSetJsValue(MetCallingArgs* result, jsvalue value);
+	EXPORT void ResultSetManagedObjectIndex(MetCallingArgs* result, int32_t managedObjectIndex);
+
+	EXPORT void ResultSetJsNull(MetCallingArgs* result);
+	EXPORT void ResultSetJsVoid(MetCallingArgs* result);
 	//--------------------------------------------------------------------- 
 
 	EXPORT void V8Init();
 	EXPORT int TestCallBack();
-
-
 	//this is for espresso-node
+
 	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb);
 	void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
 

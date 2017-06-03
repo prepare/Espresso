@@ -39,7 +39,7 @@ void ResultSetBool(MetCallingArgs* callingArgs, bool value)
 	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_BOOLEAN;
-	result.value.i32 = value ? 1 : 0;
+	result.i32 = value ? 1 : 0;
 	callingArgs->result = result;
 }
 void ResultSetInt32(MetCallingArgs* callingArgs, int value)
@@ -47,7 +47,7 @@ void ResultSetInt32(MetCallingArgs* callingArgs, int value)
 	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_INTEGER;
-	result.value.i32 = value;
+	result.i32 = value;
 	callingArgs->result = result;
 }
 void ResultSetFloat(MetCallingArgs* callingArgs, float value)
@@ -55,7 +55,7 @@ void ResultSetFloat(MetCallingArgs* callingArgs, float value)
 	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_NUMBER;
-	result.value.num = value;
+	result.num = value;
 	callingArgs->result = result;
 }
 void ResultSetDouble(MetCallingArgs* callingArgs, double value)
@@ -63,7 +63,7 @@ void ResultSetDouble(MetCallingArgs* callingArgs, double value)
 	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_NUMBER;
-	result.value.num = value;
+	result.num = value;
 	callingArgs->result = result;
 }
 void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
@@ -71,15 +71,23 @@ void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
 	//TODO: JS_VALUE
 	jsvalue result;
 	result.type = JSVALUE_TYPE_STRING;
-	result.value.str = (uint16_t*)value;
+	result.str = (uint16_t*)value;
 	callingArgs->result = result;
 }
-//TODO: JS_VALUE
-void ResultSetJsValue(MetCallingArgs* callingArgs, jsvalue value)
+void ResultSetJsNull(MetCallingArgs* callingArgs)
 {
-	callingArgs->result = value;
+	callingArgs->result.type = JSVALUE_TYPE_NULL;
 }
-
+void ResultSetJsVoid(MetCallingArgs* callingArgs)
+{
+	callingArgs->result.type = JSVALUE_TYPE_EMPTY;
+}
+void ResultSetJsVoid(MetCallingArgs* callingArgs, int32_t managedObjectIndex)
+{
+	//TODO: review here
+	callingArgs->result.type = JSVALUE_TYPE_MANAGED;
+	callingArgs->result.i32 = managedObjectIndex;
+}
 ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 {
 
@@ -303,7 +311,7 @@ void ContextRegisterManagedCallback(JsContext* jsContext, void* callback, int ca
 }
 
 
-jsvalue ArgGetObject(MetCallingArgs* args, int index)
+void ArgGetObject(MetCallingArgs* args, int index, jsvalue* output)
 {
 	switch (args->methodCallKind)
 	{
@@ -335,7 +343,7 @@ jsvalue ArgGetObject(MetCallingArgs* args, int index)
 	v.value.str = 0;
 	return v;
 }
-jsvalue ArgGetThis(MetCallingArgs* args)
+void ArgGetThis(MetCallingArgs* args, MyJsValue *output)
 {
 	if (args->accessorInfo == NULL)
 	{

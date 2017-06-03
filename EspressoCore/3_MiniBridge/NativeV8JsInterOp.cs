@@ -224,9 +224,12 @@ namespace Espresso
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetFloat(IntPtr callingArgsPtr, float value);
-
+ 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void ResultSetJsValue(IntPtr callingArgsPtr, JsValue jsvalue);
+        internal static extern void ResultSetJsNull(IntPtr callingArgsPtr);
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void ResultSetJsVoid(IntPtr callingArgsPtr);
+
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

@@ -144,7 +144,28 @@ public:
 	void* ptr; //pointer to native object
 };
 
+struct jsvalue
+{
 
+	int32_t     i32;
+	int64_t     i64;
+	double      num;
+	void       *ptr;
+	uint16_t   *str;
+	jsvalue    *arr;
+	int32_t     type;
+	int32_t     length; // Also used as slot index on the CLR side.
+};
+
+struct jserror
+{
+	jsvalue type;
+	int32_t line;
+	int32_t column;
+	jsvalue* resource;
+	jsvalue* message;
+	jsvalue* exception;
+};
 
 extern "C"
 {
@@ -162,71 +183,29 @@ extern "C"
 	const int MyJsType_Array = 8;
 	//
 	const int MyJsType_ManagedObjectIndex = 9; //slot index of managed object on the CLR side
-	const int MyJsType_NativeObjectPtr = 10; //pointer to 
+	const int MyJsType_NativeObjectPtr = 10; //pointer to  
+	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value);
 
-
-
-	//-------------------------------------------------------------------------------------------
-
-
-	struct jsvalue
-	{
-		// 8 bytes is the maximum CLR alignment; by putting the union first and a
-		// int64_t inside it we make (almost) sure the offset of 'type' will always
-		// be 8 and the total size 16. We add a check to JsContext_new anyway.
-
-		union
-		{
-			int32_t     i32;
-			int64_t     i64;
-			double      num;
-			void       *ptr;
-			uint16_t   *str;
-			jsvalue    *arr;
-		} value;
-
-		int32_t         type;
-		int32_t         length; // Also used as slot index on the CLR side.
-	};
-
-	struct jserror
-	{
-		jsvalue type;
-		int32_t line;
-		int32_t column;
-		jsvalue resource;
-		jsvalue message;
-		jsvalue exception;
-	};
-
-	EXPORT void CALLCONV jsvalue_dispose(jsvalue value);
-}
-
-class JsEngine;
-class JsContext;
-
-// The only way for the C++/V8 side to call into the CLR is to use the function
-// pointers (CLR, delegates) defined below.
-
-extern "C"
-{
 	// We don't have a keepalive_add_f because that is managed on the managed side.
 	// Its definition would be "int (*keepalive_add_f) (ManagedRef obj)".
 
 	typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue value);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_valueof_f) (int context, int id);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue args);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, uint16_t* name);
-	typedef jsvalue(CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id);
+	typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name, jsvalue* output);
+	typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue* value, jsvalue* output);
+	typedef void (CALLINGCONVENTION *keepalive_valueof_f) (int context, int id, jsvalue* output);
+	typedef void (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue* args, jsvalue* output);
+	typedef void (CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, uint16_t* name, jsvalue* output);
+	typedef void (CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id, jsvalue*  output);
 }
+
+//forward decl
+class JsEngine;
+class JsContext;
 
 class JsScript {
 public:
 	static JsScript *New(JsEngine *engine);
-
-	jsvalue Compile(const uint16_t* str, const uint16_t *resourceName);
+	void Compile(const uint16_t* str, const uint16_t* resourceName, jsvalue* output);
 	void Dispose();
 	Persistent<Script> *GetScript() { return script_; }
 
@@ -266,56 +245,48 @@ public:
 		}
 		keepalive_remove_(context, id);
 	}
-	inline jsvalue CallGetPropertyValue(int32_t context, int32_t id, uint16_t* name) {
+	inline void CallGetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue* output) {
+
 		if (keepalive_get_property_value_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		jsvalue value = keepalive_get_property_value_(context, id, name);
-		return value;
+		keepalive_get_property_value_(context, id, name, output);
 	}
-	inline jsvalue CallSetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue value) {
+	inline void CallSetPropertyValue(int32_t context, int32_t id, uint16_t* name, jsvalue* value, jsvalue* output) {
 		if (keepalive_set_property_value_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		return keepalive_set_property_value_(context, id, name, value);
+		keepalive_set_property_value_(context, id, name, value, output);
 	}
-	inline jsvalue CallValueOf(int32_t context, int32_t id) {
+	inline void CallValueOf(int32_t context, int32_t id, jsvalue* output) {
 		if (keepalive_valueof_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		return keepalive_valueof_(context, id);
+		return keepalive_valueof_(context, id, output);
 	}
-	inline jsvalue CallInvoke(int32_t context, int32_t id, jsvalue args) {
+	inline void CallInvoke(int32_t context, int32_t id, jsvalue* args, jsvalue *output) {
 		if (keepalive_invoke_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		return keepalive_invoke_(context, id, args);
+		keepalive_invoke_(context, id, args, output);
 	}
-	inline jsvalue CallDeleteProperty(int32_t context, int32_t id, uint16_t* name) {
+	inline void CallDeleteProperty(int32_t context, int32_t id, uint16_t* name, jsvalue* output) {
 		if (keepalive_delete_property_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		jsvalue value = keepalive_delete_property_(context, id, name);
-		return value;
+		keepalive_delete_property_(context, id, name, output);
 	}
-	inline jsvalue CallEnumerateProperties(int32_t context, int32_t id) {
+	inline void CallEnumerateProperties(int32_t context, int32_t id, jsvalue* output) {
 		if (keepalive_enumerate_properties_ == NULL) {
-			jsvalue v;
-			v.type = JSVALUE_TYPE_NULL;
-			return v;
+			output->type = JSVALUE_TYPE_NULL;
+			return;
 		}
-		jsvalue value = keepalive_enumerate_properties_(context, id);
-		return value;
+		keepalive_enumerate_properties_(context, id, output);
 	}
 
 	// Conversions. Note that all the conversion functions should be called
@@ -374,20 +345,24 @@ class ManagedRef;
 
 class JsContext {
 public:
+
 	static JsContext* New(int id, JsEngine *engine);
 	static JsContext* NewFromExistingContext(int id, JsEngine *engine, Persistent<Context> *context_);
-	// Called by bridge to execute JS from managed code.
-	jsvalue Execute(const uint16_t* str, const uint16_t *resourceName);
-	jsvalue Execute(JsScript *script);
 
-	jsvalue GetGlobal();
-	jsvalue GetVariable(const uint16_t* name);
-	jsvalue SetVariable(const uint16_t* name, jsvalue value);
-	jsvalue GetPropertyNames(Persistent<Object>* obj);
-	jsvalue GetPropertyValue(Persistent<Object>* obj, const uint16_t* name);
-	jsvalue SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value);
-	jsvalue InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args);
-	jsvalue InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args);
+	//--------
+	// Called by bridge to execute JS from managed code.
+	//--------
+	void Execute(const uint16_t* str, const uint16_t *resourceName, jsvalue* output);
+	void Execute(JsScript *script, jsvalue* output);
+
+	void GetGlobal(jsvalue* output);
+	void GetVariable(const uint16_t* name, jsvalue* output);
+	void SetVariable(const uint16_t* name, jsvalue* value, jsvalue* output);
+	void GetPropertyNames(Persistent<Object>* obj, jsvalue* output);
+	void GetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue* output);
+	void SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue* value, jsvalue* output);
+	void InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue* args, jsvalue * output);
+	void InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue* args, jsvalue* output);
 	void Dispose();
 
 
@@ -395,7 +370,7 @@ public:
 	void RegisterManagedCallback(void* callback, int callBackKind);
 	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
-	jsvalue ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg);
+	void ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output);
 	Handle<Value> AnyToV8(jsvalue v);
 
 	inline int32_t GetId() {
@@ -405,9 +380,6 @@ public:
 	inline virtual ~JsContext() {
 		DECREMENT(js_mem_debug_context_count);
 	}
-
-
-
 	del_JsBridge myMangedCallBack;
 private:
 	inline JsContext() {
@@ -441,7 +413,6 @@ public:
 	Handle<Value> GetPropertyValue(Local<String> name);
 	Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
 	Handle<Value> GetValueOf();
-	//Handle<Value> Invoke(const Arguments& args);//(0.10.x)
 	Handle<Value> Invoke(const FunctionCallbackInfo<Value>& args);//(0.12.x)
 	Handle<Boolean> DeleteProperty(Local<String> name);
 	Handle<Array> EnumerateProperties();

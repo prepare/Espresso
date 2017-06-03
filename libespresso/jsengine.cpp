@@ -444,11 +444,10 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
 
 	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg)
+ 
+void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output)
 {
-	jsvalue v;
-
+ 
 	// Initialize to a generic error.
 	v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
 	v.length = 0;
@@ -550,7 +549,7 @@ static void managed_destroy(const v8::WeakCallbackInfo<v8::Local<v8::Object>>& d
 #endif
 	Isolate* isolate = Isolate::GetCurrent();
 	HandleScope scope(isolate);
-	
+
 	void* internalField = data.GetInternalField(0);
 	ManagedRef* ref = (ManagedRef*)internalField;
 	delete ref;
