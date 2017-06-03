@@ -73,7 +73,7 @@ void JsContext::Dispose()
 		delete context_;
 	}
 }
-//TODO: JS_VALUE
+ 
 void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsvalue* output)
 { 
 

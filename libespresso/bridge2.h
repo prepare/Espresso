@@ -17,16 +17,14 @@ const char MET_GETTER = 1;
 const char MET_SETTER = 2;
 
 extern "C" {
-
-	//method calling args can be used store set value to a property,
+	 
 
 	struct MetCallingArgs {
 		uint32_t methodCallKind;
 		const v8::FunctionCallbackInfo<Value>* args; //store method input args
 		const v8::PropertyCallbackInfo<Value>* accessorInfo; //accessor info for indexer
 		Local<Value> setterValue;  //value for set this property  
-		//this is
-		jsvalue result;
+ 		jsvalue result;
 	};
 
 	typedef void (CALLINGCONVENTION *del02)(int oIndex, const wchar_t* methodName, MetCallingArgs* args);

@@ -444,10 +444,10 @@ jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
 
 	return v;
 }
- 
+
 void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output)
 {
- 
+
 	// Initialize to a generic error.
 	v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
 	v.length = 0;
@@ -593,7 +593,7 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
 }
 #endif
 //TODO: JS_VALUE
-Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
+Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 {
 	switch (v.type)
 	{
@@ -602,27 +602,27 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 	case JSVALUE_TYPE_NULL:
 		return Null(isolate_);
 	case JSVALUE_TYPE_BOOLEAN:
-		return Boolean::New(isolate_, v.value.i32 != 0);//TODO
+		return Boolean::New(isolate_, v->i32 != 0);//TODO
 	case JSVALUE_TYPE_INTEGER:
-		return Int32::New(isolate_, v.value.i32);
+		return Int32::New(isolate_, v->i32);
 	case JSVALUE_TYPE_NUMBER:
-		return Number::New(isolate_, v.value.num);
+		return Number::New(isolate_, v->num);
 	case JSVALUE_TYPE_STRING:
-		return String::NewFromTwoByte(isolate_, v.value.str);//::New(v.value.str);
+		return String::NewFromTwoByte(isolate_, v->str);//::New(v.value.str);
 	case JSVALUE_TYPE_DATE:
-		return Date::New(isolate_, v.value.num);
+		return Date::New(isolate_, v->num);
 	case JSVALUE_TYPE_JSTYPEDEF:
 	{
-		ManagedRef* ext = (ManagedRef*)v.value.ptr;
+		ManagedRef* ext = (ManagedRef*)v->ptr;
 		Local<Object> obj = Local<Object>::New(isolate_, ext->v8InstanceHandler);
 
 		return obj;
 	}
 	case JSVALUE_TYPE_ARRAY:
 	{ // Arrays are converted to JS native arrays.
-		Local<Array> a = Array::New(isolate_, v.length);
-		for (int i = 0; i < v.length; i++) {
-			a->Set(i, AnyToV8(v.value.arr[i], contextId));
+		Local<Array> a = Array::New(isolate_, v->length);
+		for (int i = 0; i < v->length; i++) {
+			a->Set(i, AnyToV8(v->arr[i], contextId));
 		}
 		return a;
 	}
@@ -633,8 +633,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 		// cache. We just wrap it and the pointer to the engine inside an External. A
 		// managed error is still a CLR object so it is wrapped exactly as a normal
 		// managed object.
-		ManagedRef* ref = new ManagedRef(this, contextId, v.length, false);
-
+		ManagedRef* ref = new ManagedRef(this, contextId, v->length, false);
 		Local<Object> object = ((FunctionTemplate*)managed_template_)->InstanceTemplate()->NewInstance();
 		if (object.IsEmpty()) {
 			return Null(isolate_);
@@ -653,15 +652,14 @@ Handle<Value> JsEngine::AnyToV8(jsvalue v, int32_t contextId)
 	}
 	return Null(isolate_);
 }
-//TODO: JS_VALUE
-int32_t JsEngine::ArrayToV8Args(jsvalue value, int32_t contextId, Handle<Value> preallocatedArgs[])
+int32_t JsEngine::ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value> preallocatedArgs[])
 {
-	if (value.type != JSVALUE_TYPE_ARRAY)
+	if (value->type != JSVALUE_TYPE_ARRAY)
 		return -1;
 
-	for (int i = 0; i < value.length; i++) {
-		preallocatedArgs[i] = AnyToV8(value.value.arr[i], contextId);
+	int arrLen = value->length;//arr len
+	for (int i = 0; i < arrLen; i++) {
+		preallocatedArgs[i] = AnyToV8(value->arr[i], contextId);
 	}
-
-	return value.length;
+	return arrLen;
 }

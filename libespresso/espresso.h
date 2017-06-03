@@ -152,7 +152,7 @@ struct jsvalue
 	double      num;
 	void       *ptr;
 	uint16_t   *str;
-	jsvalue    *arr;
+	jsvalue    **arr;//array of jsvalue*
 	int32_t     type;
 	int32_t     length; // Also used as slot index on the CLR side.
 };
@@ -297,15 +297,15 @@ public:
 	jsvalue ManagedFromV8(Handle<Object> obj);
 	jsvalue AnyFromV8(Handle<Value> value, Handle<Object> thisArg = Handle<Object>());
 
-	Persistent<Script> *CompileScript(const uint16_t* str, const uint16_t *resourceName, jsvalue *error);
+	Persistent<Script> *CompileScript(const uint16_t* str, const uint16_t* resourceName, jsvalue* error);
 
 	// Converts JS function Arguments to an array of jsvalue to call managed code.
 	//jsvalue ArrayFromArguments(const Arguments& args);//(0.10.x)
 	jsvalue ArrayFromArguments(const FunctionCallbackInfo<Value>& args);//V8(0.12.x)
 
-	Handle<Value> AnyToV8(jsvalue value, int32_t contextId);
+	Handle<Value> AnyToV8(jsvalue* value, int32_t contextId);
 	// Needed to create an array of args on the stack for calling functions.
-	int32_t ArrayToV8Args(jsvalue value, int32_t contextId, Handle<Value> preallocatedArgs[]);
+	int32_t ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value> preallocatedArgs[]);
 
 	// Dispose a Persistent<Object> that was pinned on the CLR side by JsObject.
 	void DisposeObject(Persistent<Object>* obj);
@@ -313,7 +313,7 @@ public:
 	void Dispose();
 
 	void DumpHeapStats();
-	Isolate *GetIsolate() { return isolate_; }
+	Isolate* GetIsolate() { return isolate_; }
 
 	inline virtual ~JsEngine() {
 		DECREMENT(js_mem_debug_engine_count);
@@ -325,11 +325,11 @@ private:
 		INCREMENT(js_mem_debug_engine_count);
 	}
 
-	Isolate *isolate_;
+	Isolate* isolate_;
 
 
-	Persistent<FunctionTemplate> *managed_template_;
-	Persistent<FunctionTemplate> *valueof_function_template_;
+	Persistent<FunctionTemplate>* managed_template_;
+	Persistent<FunctionTemplate>* valueof_function_template_;
 
 	keepalive_remove_f keepalive_remove_;
 	keepalive_get_property_value_f keepalive_get_property_value_;

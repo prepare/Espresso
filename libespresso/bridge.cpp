@@ -147,6 +147,7 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_force_gc" << std::endl;
 #endif
+		//TODO: review here
 		//TODO: 0.12.x not have IdleNotification() and not found represent method
 		//while(!V8::IdleNotification()) {};
 	}
@@ -171,85 +172,80 @@ extern "C"
 		delete obj;
 	}
 
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_execute(JsContext* context, const uint16_t* str, const uint16_t *resourceName)
+	EXPORT void CALLCONV jscontext_execute(JsContext* context, const uint16_t* str, const uint16_t *resourceName, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_execute" << std::endl;
 #endif
-		return context->Execute(str, resourceName);
+		return context->Execute(str, resourceName, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_execute_script(JsContext* context, JsScript *script)
+
+	EXPORT void CALLCONV jscontext_execute_script(JsContext* context, JsScript *script, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_execute_script" << std::endl;
 #endif
-		return context->Execute(script);
+		return context->Execute(script, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_get_global(JsContext* context)
+	EXPORT void CALLCONV jscontext_get_global(JsContext* context, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_global" << std::endl;
 #endif
-		return context->GetGlobal();
+		return context->GetGlobal(output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue value)
+	EXPORT void CALLCONV jscontext_set_variable(JsContext* context, const uint16_t* name, jsvalue* value, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_set_variable" << std::endl;
 #endif
-		return context->SetVariable(name, value);
+		return context->SetVariable(name, value, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_get_variable(JsContext* context, const uint16_t* name)
+	EXPORT void CALLCONV jscontext_get_variable(JsContext* context, const uint16_t* name, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_variable" << std::endl;
 #endif
-		return context->GetVariable(name);
+		return context->GetVariable(name, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name)
+
+	EXPORT void CALLCONV jscontext_get_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_property_value" << std::endl;
 #endif
-		return context->GetPropertyValue(obj, name);
+		return context->GetPropertyValue(obj, name, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+	EXPORT void CALLCONV jscontext_set_property_value(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue* value, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_set_property_value" << std::endl;
 #endif
-		return context->SetPropertyValue(obj, name, value);
+		return context->SetPropertyValue(obj, name, value, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_get_property_names(JsContext* context, Persistent<Object>* obj)
+
+	EXPORT void CALLCONV jscontext_get_property_names(JsContext* context, Persistent<Object>* obj, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_get_property_names" << std::endl;
 #endif
-		return context->GetPropertyNames(obj);
+		return context->GetPropertyNames(obj, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+
+	EXPORT void CALLCONV jscontext_invoke_property(JsContext* context, Persistent<Object>* obj, const uint16_t* name, jsvalue* args, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_invoke_property" << std::endl;
 #endif
-		return context->InvokeProperty(obj, name, args);
+		return context->InvokeProperty(obj, name, args, output);
 	}
 	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jscontext_invoke(JsContext* context, Persistent<Function>* funcArg, Persistent<Object>* thisArg, jsvalue args)
+	EXPORT void CALLCONV jscontext_invoke(JsContext* context, Persistent<Function>* funcArg, Persistent<Object>* thisArg, jsvalue* args, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jscontext_invoke" << std::endl;
 #endif
-		return context->InvokeFunction(funcArg, thisArg, args);
+		return context->InvokeFunction(funcArg, thisArg, args, output);
 	}
 
 	EXPORT JsScript* CALLCONV jsscript_new(JsEngine *engine)
@@ -257,6 +253,7 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsscript_new" << std::endl;
 #endif
+		//create on native heap	  
 		JsScript* script = JsScript::New(engine);
 		return script;
 	}
@@ -269,56 +266,61 @@ extern "C"
 		script->Dispose();
 		delete script;
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jsscript_compile(JsScript* script, const uint16_t* str, const uint16_t *resourceName)
+	EXPORT void CALLCONV jsscript_compile(JsScript* script, const uint16_t* str, const uint16_t *resourceName, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsscript_compile" << std::endl;
 #endif
-		return script->Compile(str, resourceName);
+		return script->Compile(str, resourceName, output);
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jsvalue_alloc_string(const uint16_t* str)
+
+	EXPORT void CALLCONV jsvalue_alloc_string(const uint16_t* str, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_string" << std::endl;
 #endif
-		jsvalue v;
+
 
 		int length = 0;
-		while (str[length] != '\0')
+		while (str[length] != '\0') {
 			length++;
-
-		v.length = length;
-		v.value.str = new uint16_t[length + 1];
-		if (v.value.str != NULL) {
-			for (int i = length - 1; i >= 0; --i)
-			{
-				v.value.str[i] = str[i];
-			}
-			v.value.str[length] = '\0';
-			v.type = JSVALUE_TYPE_STRING;
 		}
 
-		return v;
+		//create on native heap
+		uint16_t* newstr = new uint16_t[length + 1];
+		if (newstr != NULL) {
+			//alloc succeed
+			for (int i = length - 1; i >= 0; --i)
+			{
+				newstr[i] = newstr[i];
+			}
+			//last one, close with null character
+			newstr[length] = '\0';
+			//----------------------------------
+			output->str = newstr; //assign
+			output->type = JSVALUE_TYPE_STRING;
+		}
+		else {
+			output->length = 0;
+		}
 	}
-	//TODO: JS_VALUE
-	EXPORT jsvalue CALLCONV jsvalue_alloc_array(const int32_t length)
+	EXPORT void CALLCONV jsvalue_alloc_array(const int32_t length, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_array" << std::endl;
 #endif
-		jsvalue v;
 
-		v.value.arr = new jsvalue[length];
-		if (v.value.arr != NULL) {
-			v.length = length;
-			v.type = JSVALUE_TYPE_ARRAY;
+		jsvalue* newarr = new jsvalue[length];
+		if (newarr != NULL) {
+			//alloc succeed
+			output->arr = newarr;
+			output->type = JSVALUE_TYPE_ARRAY;
+			output->length = length;
 		}
-
-		return v;
+		else {
+			output->length = 0;
+		}
 	}
-	//TODO: JS_VALUE
 	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value)
 	{
 #ifdef DEBUG_TRACE_API
@@ -364,5 +366,5 @@ extern "C"
 
 		}break;
 		}
-	}
+}
 }
