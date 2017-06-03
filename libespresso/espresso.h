@@ -291,17 +291,17 @@ public:
 
 	// Conversions. Note that all the conversion functions should be called
 	// with an HandleScope already on the stack or sill misarabily fail.
-	jsvalue ErrorFromV8(TryCatch& trycatch);
-	jsvalue StringFromV8(Handle<Value> value);
-	jsvalue WrappedFromV8(Handle<Object> obj);
-	jsvalue ManagedFromV8(Handle<Object> obj);
-	jsvalue AnyFromV8(Handle<Value> value, Handle<Object> thisArg = Handle<Object>());
+	void ErrorFromV8(TryCatch& trycatch, jsvalue* output);
+	void StringFromV8(Handle<Value> value, jsvalue* output);
+	void WrappedFromV8(Handle<Object> obj, jsvalue* output);
+	void ManagedFromV8(Handle<Object> obj, jsvalue* output);
+	void AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output);
 
 	Persistent<Script> *CompileScript(const uint16_t* str, const uint16_t* resourceName, jsvalue* error);
 
 	// Converts JS function Arguments to an array of jsvalue to call managed code.
 	//jsvalue ArrayFromArguments(const Arguments& args);//(0.10.x)
-	jsvalue ArrayFromArguments(const FunctionCallbackInfo<Value>& args);//V8(0.12.x)
+	void ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsvalue* output);
 
 	Handle<Value> AnyToV8(jsvalue* value, int32_t contextId);
 	// Needed to create an array of args on the stack for calling functions.
@@ -371,7 +371,7 @@ public:
 	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
 	void ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output);
-	Handle<Value> AnyToV8(jsvalue v);
+	Handle<Value> AnyToV8(jsvalue* v);
 
 	inline int32_t GetId() {
 		return id_;

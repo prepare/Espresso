@@ -95,7 +95,7 @@ void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsval
 	else {
 		script = Script::Compile(source);
 	}
-
+	///
 	if (!script.IsEmpty()) {
 		Local<Value> result = script->Run();
 

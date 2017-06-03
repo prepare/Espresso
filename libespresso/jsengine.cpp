@@ -319,17 +319,18 @@ void JsEngine::DisposeObject(Persistent<Object>* obj)
 	obj->Reset();
 }
 //TODO: JS_VALUE
-jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
+void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 {
-	jsvalue v;
+	//TODO: review TryCatch again
+
 
 	HandleScope scope(isolate_);
 
 	Local<Value> exception = trycatch.Exception();
 
-	v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
-	v.value.str = 0;
-	v.length = 0;
+	output->type = JSVALUE_TYPE_UNKNOWN_ERROR;
+	output->str = NULL; //?
+	output->length = 0;
 
 	// If this is a managed exception we need to place its ID inside the jsvalue
 	// and set the type JSVALUE_TYPE_MANAGED_ERROR to make sure the CLR side will
@@ -340,13 +341,14 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
 		if (obj->InternalFieldCount() == 1) {
 			Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
 			ManagedRef* ref = (ManagedRef*)wrap->Value();
-			v.type = JSVALUE_TYPE_MANAGED_ERROR;
-			v.length = ref->Id();
-			return v;
+			output->type = JSVALUE_TYPE_MANAGED_ERROR;
+			output->length = ref->Id();
+			return;
 		}
 	}
 
-	jserror *error = new jserror();
+	//TODO: review here
+	jserror* error = new jserror(); //ONHEAP 
 	memset(error, 0, sizeof(jserror));
 
 	Local<Message> message = trycatch.Message();
@@ -354,19 +356,24 @@ jsvalue JsEngine::ErrorFromV8(TryCatch& trycatch)
 	if (!message.IsEmpty()) {
 		error->line = message->GetLineNumber();
 		error->column = message->GetStartColumn();
-		error->resource = AnyFromV8(message->GetScriptResourceName());
-		error->message = AnyFromV8(message->Get());
+
+		error->resource = new jsvalue();
+		error->message = new jsvalue();
+
+		AnyFromV8(message->GetScriptResourceName(), error->resource);
+		AnyFromV8(message->Get(), error->message);
 	}
 	if (exception->IsObject()) {
 		Local<Object> obj2 = Local<Object>::Cast(exception);
 		error->type = AnyFromV8(obj2->GetConstructorName());
 	}
 
-	error->exception = AnyFromV8(exception);
-	v.type = JSVALUE_TYPE_ERROR;
-	v.value.ptr = error;
+	error->exception = new jsvalue();
+	AnyFromV8(exception, error->exception);
 
-	return v;
+	output->type = JSVALUE_TYPE_ERROR;
+	output->ptr = error;
+
 }
 //TODO: JS_VALUE
 jsvalue JsEngine::StringFromV8(Handle<Value> value)
@@ -431,113 +438,109 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 	return v;
 }
 //TODO: JS_VALUE
-jsvalue JsEngine::ManagedFromV8(Handle<Object> obj)
+void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output)
 {
-	jsvalue v;
-
 	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
-
-	v.type = ref->IsJsTypeDef() ? JSVALUE_TYPE_JSTYPEDEF : JSVALUE_TYPE_MANAGED;
-	v.length = ref->Id();
-	v.value.str = 0;
-
-	return v;
+	output->type = ref->IsJsTypeDef() ? JSVALUE_TYPE_JSTYPEDEF : JSVALUE_TYPE_MANAGED;
+	output->length = ref->Id();
+	output->str = NULL;//? 
 }
 
 void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output)
 {
 
 	// Initialize to a generic error.
-	v.type = JSVALUE_TYPE_UNKNOWN_ERROR;
-	v.length = 0;
-	v.value.str = 0;
+	output->type = JSVALUE_TYPE_UNKNOWN_ERROR;
+	output->length = 0;
+	output->str = 0;
 
 	if (value->IsNull() || value->IsUndefined()) {
-		v.type = JSVALUE_TYPE_NULL;
+		output->type = JSVALUE_TYPE_NULL;
 	}
 	else if (value->IsBoolean()) {
-		v.type = JSVALUE_TYPE_BOOLEAN;
-		v.value.i32 = value->BooleanValue() ? 1 : 0;
+		output->type = JSVALUE_TYPE_BOOLEAN;
+		output->i32 = value->BooleanValue() ? 1 : 0;
 	}
 	else if (value->IsInt32()) {
-		v.type = JSVALUE_TYPE_INTEGER;
-		v.value.i32 = value->Int32Value();
+		output->type = JSVALUE_TYPE_INTEGER;
+		output->i32 = value->Int32Value();
 	}
 	else if (value->IsUint32()) {
-		v.type = JSVALUE_TYPE_INDEX;
-		v.value.i64 = value->Uint32Value();
+		output->type = JSVALUE_TYPE_INDEX;
+		output->i64 = value->Uint32Value();
 	}
 	else if (value->IsNumber()) {
-		v.type = JSVALUE_TYPE_NUMBER;
-		v.value.num = value->NumberValue();
+		output->type = JSVALUE_TYPE_NUMBER;
+		output->num = value->NumberValue();
 	}
 	else if (value->IsString()) {
-		v = StringFromV8(value);
+		StringFromV8(value, output);
 	}
 	else if (value->IsDate()) {
-		v.type = JSVALUE_TYPE_DATE;
+		output->type = JSVALUE_TYPE_DATE;
 		//v.value.num = value->NumberValue();		
-		v.value.i64 = value->IntegerValue();
+		output->i64 = value->IntegerValue();
 	}
 	else if (value->IsArray()) {
 		Handle<Array> object = Handle<Array>::Cast(value->ToObject());
-		v.length = object->Length();
-		//TODO: JS_VALUE
-		jsvalue* arr = new jsvalue[v.length];
+		output->length = object->Length();
+
+		//ON HEAP
+		jsvalue** arr = new jsvalue*[output->length];
 		if (arr != NULL) {
-			for (int i = 0; i < v.length; i++) {
-				arr[i] = AnyFromV8(object->Get(i));
+
+			auto handle_object = Handle<Object>();
+			for (int i = 0; i < output->length; i++) {
+				AnyFromV8(object->Get(i), handle_object, arr[i]);
 			}
-			v.type = JSVALUE_TYPE_ARRAY;
-			v.value.arr = arr;
+			output->type = JSVALUE_TYPE_ARRAY;
+			output->arr = arr;
 		}
 	}
 	else if (value->IsFunction()) {
-		//TODO: JS_VALUE
+
 		Handle<Function> function = Handle<Function>::Cast(value);
-		jsvalue* arr = new jsvalue[2];
+		//ON HEAP
+		jsvalue** arr = new jsvalue*[2];
 		if (arr != NULL) {
-			arr[0].value.ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
-			arr[0].length = 0;
-			arr[0].type = JSVALUE_TYPE_WRAPPED;
+			arr[0]->ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
+			arr[0]->length = 0;
+			arr[0]->type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
 				Persistent<Object> *persistent = new Persistent<Object>();
 				persistent->Reset(isolate_, Persistent<Object>(isolate_, thisArg));
-				arr[1].value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
-				arr[1].length = 0;
-				arr[1].type = JSVALUE_TYPE_WRAPPED;
+				arr[1]->type = JSVALUE_TYPE_WRAPPED;
+				arr[1]->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
+				arr[1]->length = 0;
+
 			}
 			else {
-				arr[1].value.ptr = NULL;
-				arr[1].length = 0;
-				arr[1].type = JSVALUE_TYPE_NULL;
+				arr[1]->type = JSVALUE_TYPE_NULL;
+				arr[1]->ptr = NULL;
+				arr[1]->length = 0;
 			}
-			v.type = JSVALUE_TYPE_FUNCTION;
-			v.value.arr = arr;
+			output->type = JSVALUE_TYPE_FUNCTION;
+			output->arr = arr;
 		}
 	}
 	else if (value->IsObject()) {
 		Handle<Object> obj = Handle<Object>::Cast(value);
 		if (obj->InternalFieldCount() == 1)
-			v = ManagedFromV8(obj);
+			ManagedFromV8(obj, output);
 		else
-			v = WrappedFromV8(obj);
+			WrappedFromV8(obj, output);
 	}
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args)
+ 
+void JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsvalue* output)
 {
 	jsvalue v = jsvalue_alloc_array(args.Length());
 	Local<Object> thisArg = args.Holder();
 	for (int i = 0; i < v.length; i++)
 	{
-		v.value.arr[i] = AnyFromV8(args[i], thisArg);
+		AnyFromV8(args[i], thisArg, output->arr[i]);
 	}
-
-	return v;
 }
 
 
@@ -633,6 +636,8 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 		// cache. We just wrap it and the pointer to the engine inside an External. A
 		// managed error is still a CLR object so it is wrapped exactly as a normal
 		// managed object.
+
+		//ON_NATIVE_HEAP
 		ManagedRef* ref = new ManagedRef(this, contextId, v->length, false);
 		Local<Object> object = ((FunctionTemplate*)managed_template_)->InstanceTemplate()->NewInstance();
 		if (object.IsEmpty()) {
