@@ -116,9 +116,6 @@
     <Compile Include="..\..\EspressoCore\1_Core\JsValue.cs">
       <Link>1_Core\JsValue.cs</Link>
     </Compile>
-    <Compile Include="..\..\EspressoCore\1_Core\JsValueType.cs">
-      <Link>1_Core\JsValueType.cs</Link>
-    </Compile>
     <Compile Include="..\..\EspressoCore\1_Core\KeepAliveDictionaryStore.cs">
       <Link>1_Core\KeepAliveDictionaryStore.cs</Link>
     </Compile>

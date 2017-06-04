@@ -1,3 +1,6 @@
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -55,5 +58,30 @@ namespace Espresso
         /// index to managed slot
         /// </summary>
         public int Index;
+    }
+
+    enum JsValueType
+    {
+        UnknownError = -1,
+        Empty = 0,
+        Null = 1,
+        Boolean = 2,
+        Integer = 3,
+        Number = 4,
+        String = 5,
+        Date = 6,
+        Index = 7,
+        Array = 10,
+        StringError = 11,
+        Managed = 12,
+        ManagedError = 13,
+        Wrapped = 14,
+        Dictionary = 15,
+        Error = 16,
+        Function = 17,
+
+        //---------------
+        //my extension
+        JsTypeWrap = 18
     }
 }
