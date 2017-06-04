@@ -27,7 +27,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Espresso.Extension;
@@ -36,7 +36,7 @@ namespace Espresso
 {
 
     public partial class JsContext : IDisposable
-    { 
+    {
 
         readonly int _id;
         readonly JsEngine _engine;
@@ -62,8 +62,8 @@ namespace Espresso
             _engine = engine;
             _keepalives = new KeepAliveDictionaryStore();
             //create native js context
-            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
-            _convert = new JsConvert(this);
+            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler)); 
+            _convert2 = new JsConvert2(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
 
@@ -89,7 +89,7 @@ namespace Espresso
             _keepalives = new KeepAliveDictionaryStore();
             //create native js context
             _context = new HandleRef(this, nativeJsContext);
-            _convert = new JsConvert(this);
+            _convert2 = new JsConvert2(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
 
@@ -107,9 +107,10 @@ namespace Espresso
             return this.proxyStore.GetProxyObject(index);
         }
 
-        internal JsConvert Converter
+
+        internal JsConvert2 Converter2
         {
-            get { return this._convert; }
+            get { return this._convert2; }
         }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
         {
@@ -189,8 +190,8 @@ namespace Espresso
             get { return _context; }
         }
 
-        readonly JsConvert _convert;
 
+        readonly JsConvert2 _convert2;
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
 
@@ -227,12 +228,13 @@ namespace Espresso
             object res;
             try
             {
-                JsValue v = jscontext_execute_script(_context, script.Handle);
-                res = _convert.FromJsValue(v);
+                JsInterOpValue v = new JsInterOpValue();
+                jscontext_execute_script(_context, script.Handle, ref v);
+                res = _convert2.FromJsValue(ref v);
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
-                jsvalue_dispose(v);
+                jsvalue_dispose(ref v);
             }
             finally
             {
@@ -280,16 +282,18 @@ namespace Espresso
             try
             {
                 //watch2.Start();
+#if DEBUG
+                int ver = getVersion();//just check version
+#endif
+                JsInterOpValue output = new JsInterOpValue();
+                jscontext_execute(_context, code, name ?? "<Unnamed Script>", ref output);
 
-                int ver = getVersion();
-                JsValue v = jscontext_execute(_context, code, name ?? "<Unnamed Script>");
-
-                //watch2.Stop();
-                res = _convert.FromJsValue(v);
+                //watch2.Stop();                 
+                res = _convert2.FromJsValue(ref output);
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
-                jsvalue_dispose(v);
+                jsvalue_dispose(ref output);
             }
             catch (Exception ex)
             {
@@ -319,9 +323,10 @@ namespace Espresso
         public object GetGlobal()
         {
             CheckDisposed();
-            JsValue v = jscontext_get_global(_context);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
+            JsInterOpValue v = new JsInterOpValue();
+            jscontext_get_global(_context, ref v);
+            object res = _convert2.FromJsValue(ref v);
+            jsvalue_dispose(ref v);
 
             Exception e = res as JsException;
             if (e != null)
@@ -336,12 +341,13 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsValue v = jscontext_get_variable(_context, name);
-            object res = _convert.FromJsValue(v);
+            JsInterOpValue v = new JsInterOpValue();
+            jscontext_get_variable(_context, name, ref v);
+            object res = _convert2.FromJsValue(ref v);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value get variable.");
 #endif
-            jsvalue_dispose(v);
+            jsvalue_dispose(ref v);
 
             Exception e = res as JsException;
             if (e != null)
@@ -462,7 +468,7 @@ namespace Espresso
             if (typeof(IDictionary).IsAssignableFrom(type))
             {
                 IDictionary dictionary = (IDictionary)obj;
-                dictionary[name] = _convert.FromJsValue(value);
+                dictionary[name] = _convert2.FromJsValue(value);
                 return true;
             }
 
@@ -753,16 +759,18 @@ namespace Espresso
             return false;
         }
 #endif
-        internal JsValue KeepAliveGetPropertyValue(int slot, string name)
+        internal void KeepAliveGetPropertyValue(int slot, string name, ref JsInterOpValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("getting prop " + name);
 #endif
             // we need to fall back to the prototype verison we set up because v8 won't call an object as a function, it needs
             // to be from a proper FunctionTemplate.
+            //TODO: review here again
             if (!string.IsNullOrEmpty(name) && name.Equals("valueOf", StringComparison.OrdinalIgnoreCase))
             {
-                return JsValue.Empty;
+                output.Type = JsValueType.Empty;
+                return;
             }
 
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
@@ -1151,18 +1159,18 @@ namespace Espresso
             if (funcPtr == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 function is empty (IntPtr is Zero)");
 
-            JsValue a = JsValue.Null; // Null value unless we're given args.
+            JsInterOpValue a = new JsInterOpValue();
             if (args != null)
             {
-                a = _convert.AnyToJsValue(args);
+                _convert2.AnyToJsValue(args, ref a);
             }
 
-
-            JsValue v = jscontext_invoke(_context, funcPtr, thisPtr, a);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
-            jsvalue_dispose(a);
-
+            JsInterOpValue v = new JsInterOpValue();
+            jscontext_invoke(_context, funcPtr, thisPtr, ref a, ref v);
+            object res = _convert2.FromJsValue(ref v);
+            jsvalue_dispose(ref v);
+            jsvalue_dispose(ref a);
+            //
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -1185,13 +1193,15 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsValue a = _convert.AnyToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
             // TODO: Check the result of the operation for errors.
         }
 
@@ -1202,13 +1212,15 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
         public void SetVariable(string name, int value)
         {
@@ -1217,13 +1229,15 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
         public void SetVariable(string name, double value)
         {
@@ -1231,14 +1245,15 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
         public void SetVariable(string name, long value)
         {
@@ -1246,14 +1261,16 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
 
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
         public void SetVariable(string name, DateTime value)
         {
@@ -1261,14 +1278,16 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
 
-            JsValue a = _convert.ToJsValue(value);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            _convert2.AnyToJsValue(value, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
         public void SetVariable(string name, INativeScriptable proxy)
         {
@@ -1276,14 +1295,15 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-
-            JsValue a = _convert.ToJsValue(proxy);
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+            _convert2.AnyToJsValue(proxy, ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
             // TODO: Check the result of the operation for errors.
         }
         public void SetVariableNull(string name)
@@ -1293,13 +1313,16 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsValue a = _convert.ToJsValueNull();
-            JsValue b = jscontext_set_variable(_context, name, a);
+            JsInterOpValue a = new JsInterOpValue();
+            JsInterOpValue b = new JsInterOpValue();
+
+            _convert2.ToJsValueNull(ref a);
+            jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(a);
-            jsvalue_dispose(b);
+            jsvalue_dispose(ref a);
+            jsvalue_dispose(ref b);
         }
 
         public void SetVariableAutoWrap<T>(string name, T result)
@@ -1309,7 +1332,7 @@ namespace Espresso
             var jsTypeDef = this.GetJsTypeDefinition(actualType);
             var proxy = this.CreateWrapper(result, jsTypeDef);
             this.SetVariable(name, proxy);
-        } 
+        }
         public JsTypeDefinition GetJsTypeDefinition(Type actualType)
         {
 
@@ -1325,8 +1348,6 @@ namespace Espresso
 
             return found;
         }
-
-
         //----------------------------------------------------------------------------------------
 
 

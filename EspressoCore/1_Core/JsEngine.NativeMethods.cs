@@ -12,9 +12,14 @@ namespace Espresso
     {
 
         delegate void KeepaliveRemoveDelegate(int context, int slot);
-        delegate void KeepAliveGetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsInterOpValue output);
-        delegate void KeepAliveSetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name,
-            ref JsInterOpValue value, ref JsInterOpValue output);
+        delegate void KeepAliveGetPropertyValueDelegate(int context, int slot,
+            [MarshalAs(UnmanagedType.LPWStr)] string name, 
+            ref JsInterOpValue output);
+        delegate void KeepAliveSetPropertyValueDelegate(int context, 
+            int slot,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue value, 
+            ref JsInterOpValue output);
         delegate void KeepAliveValueOfDelegate(int context, int slot, ref JsInterOpValue output);
         delegate void KeepAliveInvokeDelegate(int context, int slot, ref JsInterOpValue args, ref JsInterOpValue output);
         delegate void KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsInterOpValue output);

@@ -6,9 +6,12 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
+    //---------------------------------------
+    //2017-06-04
     //for internal inter-op only
     //for inter-op with native lib, .net core on macOS x64 dose not support explicit layout
     //so we need sequential layout
+    //---------------------------------------
     [StructLayout(LayoutKind.Sequential)]
     struct JsInterOpValue
     {
@@ -69,7 +72,8 @@ namespace Espresso
             ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern void jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str,
+        static internal extern void jsvalue_alloc_string(
+            [MarshalAs(UnmanagedType.LPWStr)] string str,
             ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

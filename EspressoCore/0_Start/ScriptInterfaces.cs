@@ -377,15 +377,16 @@ namespace Espresso
         }
         public object GetThisArg()
         {
-            JsValue value = NativeV8JsInterOp.ArgGetThis(this.metArgsPtr);
-            return this.context.Converter.FromJsValue(value);
+            JsInterOpValue output = new JsInterOpValue();
+            NativeV8JsInterOp.ArgGetThis(this.metArgsPtr, ref output);
+            return this.context.Converter2.FromJsValue(ref output);
         }
         public object GetArgAsObject(int index)
         {
-            JsValue value = NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index);
-            return this.context.Converter.FromJsValue(value);
+            JsInterOpValue output = new JsInterOpValue();
+            NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index, ref output);
+            return this.context.Converter2.FromJsValue(ref output);
         }
-
         //--------------------------------------------------------------------
         public void SetResult(bool value)
         {
@@ -418,8 +419,10 @@ namespace Espresso
         }
         public void SetResultObj(object result)
         {
+           
+
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
-                this.context.Converter.AnyToJsValue(result));
+                this.context.Converter2.AnyToJsValue(result));
         }
 
         public void SetResultObj(object result, JsTypeDefinition jsTypeDef)
@@ -430,7 +433,7 @@ namespace Espresso
             }
 
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
-
+            this.context.Converter2.AnyToJsValue()
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                this.context.Converter.ToJsValue(proxy));
         }
@@ -441,7 +444,7 @@ namespace Espresso
             Type actualType = result.GetType();
             JsTypeDefinition jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
-            
+
             NativeV8JsInterOp.ResultSetJsValue(metArgsPtr,
                this.context.Converter.ToJsValue(proxy));
         }
