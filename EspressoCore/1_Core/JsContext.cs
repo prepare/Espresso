@@ -62,7 +62,7 @@ namespace Espresso
             _engine = engine;
             _keepalives = new KeepAliveDictionaryStore();
             //create native js context
-            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler)); 
+            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
             _convert2 = new JsConvert2(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
@@ -461,14 +461,18 @@ namespace Espresso
 
         #endregion
 
-#if NET20
-        internal bool TrySetMemberValue(Type type, object obj, string name, JsValue value)
+
+        internal bool TrySetMemberValue(Type type, object obj, string name, ref JsInterOpValue value)
         {
             // dictionaries.
-            if (typeof(IDictionary).IsAssignableFrom(type))
+            if (typeof(IDictionary).ExtIsAssignableFrom(type))
             {
+
                 IDictionary dictionary = (IDictionary)obj;
-                dictionary[name] = _convert2.FromJsValue(value);
+                _convert2.FromJsValue(ref value);
+                //we get member from this type 
+                throw new NotSupportedException();
+                //dictionary[name] = _convert2.FromJsValue(value);
                 return true;
             }
 
@@ -485,48 +489,14 @@ namespace Espresso
             PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
             if (pi != null)
             {
-                pi.SetValue(obj, _convert.FromJsValue(value), null);
+                pi.SetValue(obj, _convert2.FromJsValue(ref value), null);
                 return true;
             }
 
             return false;
         }
-#else
-        internal bool TrySetMemberValue(Type type, object obj, string name, JsValue value)
-        {
-            // dictionaries.
-            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
-            {
-                IDictionary dictionary = (IDictionary)obj;
-                dictionary[name] = _convert.FromJsValue(value);
-                return true;
-            }
 
-            //BindingFlags flags;
-            //if (type == obj)
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Static;
-            //}
-            //else
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Instance;
-            //}
-            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
-            PropertyInfo pi = type.GetRuntimeProperty(name);
-            //foreach(var p in ps)
-            //{
-
-            //}
-            if (pi != null)
-            {
-                pi.SetValue(obj, _convert.FromJsValue(value), null);
-                return true;
-            }
-
-            return false;
-        }
-#endif
-        internal JsValue KeepAliveSetPropertyValue(int slot, string name, JsValue value)
+        internal void KeepAliveSetPropertyValue(int slot, string name, ref JsInterOpValue v)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("setting prop " + name);
@@ -552,65 +522,70 @@ namespace Espresso
                 {
                     if (!string.IsNullOrEmpty(name))
                     {
-                        var upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1);
-                        if (TrySetMemberValue(type, obj, upperCamelCase, value))
+                        string upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1);
+                        if (TrySetMemberValue(type, obj, upperCamelCase, ref v))
                         {
-                            return JsValue.Null;
+                            //no error
+                            v.Type = JsValueType.Null;
+                            return;
                         }
-                        if (TrySetMemberValue(type, obj, name, value))
+                        if (TrySetMemberValue(type, obj, name, ref v))
                         {
-                            return JsValue.Null;
+                            //no error
+                            v.Type = JsValueType.Null;
+                            return;
                         }
                     }
-
-                    return JsValue.Error(KeepAliveAdd(
-                        new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name))));
+                    //TODO: review how to handle error again
+                    throw new NotSupportedException();
+                    //return JsValue.Error(KeepAliveAdd(
+                    //    new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name))));
                 }
                 catch (Exception e)
                 {
-                    return JsValue.Error(KeepAliveAdd(e));
+                    //TODO: review how to handle error again
+                    //return JsValue.Error(KeepAliveAdd(e));
                 }
             }
-
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            throw new NotSupportedException();
+            //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
-#if NET20
-        internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
+
+        internal bool TryGetMemberValue(Type type, object obj, string name, ref JsInterOpValue value)
         {
             object result;
-
             // dictionaries.
-            if (typeof(IDictionary).IsAssignableFrom(type))
+            if (typeof(IDictionary).ExtIsAssignableFrom(type))
             {
                 IDictionary dictionary = (IDictionary)obj;
                 if (dictionary.Contains(name))
                 {
                     result = dictionary[name];
-                    value = _convert.AnyToJsValue(result);
+                    _convert2.AnyToJsValue(result, ref value);
                 }
                 else
                 {
-                    value = JsValue.Null;
+                    value.Type = JsValueType.Null;
                 }
                 return true;
             }
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
 
             // First of all try with a public property (the most common case).
-            PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
+            PropertyInfo pi = type.ExtGetProperty(obj, name);// type.GetProperty(name, flags | BindingFlags.GetProperty);
             if (pi != null)
             {
                 result = pi.GetValue(obj, null);
-                value = _convert.AnyToJsValue(result);
+                _convert2.AnyToJsValue(result, ref value);
                 return true;
             }
 
@@ -619,7 +594,7 @@ namespace Espresso
             if (fi != null)
             {
                 result = fi.GetValue(obj);
-                value = _convert.AnyToJsValue(result);
+                _convert2.AnyToJsValue(result, ref value);
                 return true;
             }
 
@@ -642,7 +617,7 @@ namespace Espresso
                     {
                         result = new WeakDelegate(obj, name);
                     }
-                    value = _convert.AnyToJsValue(result);
+                    _convert2.AnyToJsValue(result, ref value);
                     return true;
                 }
             }
@@ -660,107 +635,109 @@ namespace Espresso
             //    return true;
             //}
 
-            value = JsValue.Null;
+            value.Type = JsValueType.Null;
             return false;
         }
-#else
 
-        internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
-        {
-            object result;
-            // dictionaries.
-            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
-            {
-                IDictionary dictionary = (IDictionary)obj;
-                if (dictionary.Contains(name))
-                {
-                    result = dictionary[name];
-                    value = _convert.AnyToJsValue(result);
-                }
-                else
-                {
-                    value = JsValue.Null;
-                }
-                return true;
-            }
 
-            //BindingFlags flags;
-            //if (type == obj)
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Static;
-            //}
-            //else
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Instance;
-            //}
+        //internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
+        //{
+        //    object result;
+        //    // dictionaries.
+        //    if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+        //    {
+        //        IDictionary dictionary = (IDictionary)obj;
+        //        if (dictionary.Contains(name))
+        //        {
+        //            result = dictionary[name];
+        //            value = _convert.AnyToJsValue(result);
+        //        }
+        //        else
+        //        {
+        //            value = JsValue.Null;
+        //        }
+        //        return true;
+        //    }
 
-            // First of all try with a public property (the most common case).
-            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
-            PropertyInfo pi = type.GetRuntimeProperty(name);
+        //    //BindingFlags flags;
+        //    //if (type == obj)
+        //    //{
+        //    //    flags = BindingFlags.Public | BindingFlags.Static;
+        //    //}
+        //    //else
+        //    //{
+        //    //    flags = BindingFlags.Public | BindingFlags.Instance;
+        //    //}
 
-            if (pi != null)
-            {
-                result = pi.GetValue(obj, null);
-                value = _convert.AnyToJsValue(result);
-                return true;
-            }
+        //    // First of all try with a public property (the most common case).
+        //    //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
+        //    PropertyInfo pi = type.GetRuntimeProperty(name);
 
-            // try field.
-            FieldInfo fi = type.GetRuntimeField(name);
-            //FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
+        //    if (pi != null)
+        //    {
+        //        result = pi.GetValue(obj, null);
+        //        value = _convert.AnyToJsValue(result);
+        //        return true;
+        //    }
 
-            if (fi != null)
-            {
-                result = fi.GetValue(obj);
-                value = _convert.AnyToJsValue(result);
-                return true;
-            }
+        //    // try field.
+        //    FieldInfo fi = type.GetRuntimeField(name);
+        //    //FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
 
-            // Then with an instance method: the problem is that we don't have a list of
-            // parameter types so we just check if any method with the given name exists
-            // and then keep alive a "weak delegate", i.e., just a name and the target.
-            //// The real method will be resolved during the invokation itself.
-            //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+        //    if (fi != null)
+        //    {
+        //        result = fi.GetValue(obj);
+        //        value = _convert.AnyToJsValue(result);
+        //        return true;
+        //    }
 
-            // TODO: This is probably slooow.
-            
-            MemberInfo[] members = type.GetMembers();
-            foreach (var met in members)
-            {
-                if (met.Name == name)
-                {
-                    if (type == obj)
-                    {
-                        result = new WeakDelegate(type, name);
-                    }
-                    else
-                    {
-                        result = new WeakDelegate(obj, name);
-                    }
-                    value = _convert.AnyToJsValue(result);
-                    return true;
-                }
-            }
-            //if (type.GetMethods(mFlags).Any(x => x.Name == name))
-            //{
-            //    if (type == obj)
-            //    {
-            //        result = new WeakDelegate(type, name);
-            //    }
-            //    else
-            //    {
-            //        result = new WeakDelegate(obj, name);
-            //    }
-            //    value = _convert.ToJsValue(result);
-            //    return true;
-            //}
+        //    // Then with an instance method: the problem is that we don't have a list of
+        //    // parameter types so we just check if any method with the given name exists
+        //    // and then keep alive a "weak delegate", i.e., just a name and the target.
+        //    //// The real method will be resolved during the invokation itself.
+        //    //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
-            value = JsValue.Null;
-            return false;
-        }
-#endif
+        //    // TODO: This is probably slooow.
+
+        //    MemberInfo[] members = type.GetMembers();
+        //    foreach (var met in members)
+        //    {
+        //        if (met.Name == name)
+        //        {
+        //            if (type == obj)
+        //            {
+        //                result = new WeakDelegate(type, name);
+        //            }
+        //            else
+        //            {
+        //                result = new WeakDelegate(obj, name);
+        //            }
+        //            value = _convert.AnyToJsValue(result);
+        //            return true;
+        //        }
+        //    }
+        //    //if (type.GetMethods(mFlags).Any(x => x.Name == name))
+        //    //{
+        //    //    if (type == obj)
+        //    //    {
+        //    //        result = new WeakDelegate(type, name);
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        result = new WeakDelegate(obj, name);
+        //    //    }
+        //    //    value = _convert.ToJsValue(result);
+        //    //    return true;
+        //    //}
+
+        //    value = JsValue.Null;
+        //    return false;
+        //}
+
         internal void KeepAliveGetPropertyValue(int slot, string name, ref JsInterOpValue output)
         {
+
+            //TODO: review exception again
 #if DEBUG_TRACE_API
 			Console.WriteLine("getting prop " + name);
 #endif
@@ -794,41 +771,43 @@ namespace Espresso
                     if (!string.IsNullOrEmpty(name))
                     {
                         var upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1);
-                        JsValue value;
-                        if (TryGetMemberValue(type, obj, upperCamelCase, out value))
+
+                        if (TryGetMemberValue(type, obj, upperCamelCase, ref output))
                         {
-                            return value;
+                            return;
                         }
-                        if (TryGetMemberValue(type, obj, name, out value))
+                        if (TryGetMemberValue(type, obj, name, ref output))
                         {
-                            return value;
+                            return;
                         }
                     }
-
+                    throw new NotSupportedException();
                     // Else an error.
-                    return JsValue.Error(KeepAliveAdd(
-                        new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name))));
+                    //return JsValue.Error(KeepAliveAdd(
+                    //    new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name))));
                 }
                 catch (TargetInvocationException e)
                 {
                     // Client code probably isn't interested in the exception part related to
                     // reflection, so we unwrap it and pass to V8 only the real exception thrown.
-                    if (e.InnerException != null)
-                        return JsValue.Error(KeepAliveAdd(e.InnerException));
-                    throw;
+                    //if (e.InnerException != null)
+                    //    return JsValue.Error(KeepAliveAdd(e.InnerException));
+                    //throw;
                 }
                 catch (Exception e)
                 {
-                    return JsValue.Error(KeepAliveAdd(e));
+                    throw new NotSupportedException();
+                    //return JsValue.Error(KeepAliveAdd(e));
                 }
             }
-
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            //TODO: review exception again
+            throw new NotSupportedException();
+            //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
-        internal JsValue KeepAliveValueOf(int slot)
+        internal void KeepAliveValueOf(int slot, ref JsInterOpValue output)
         {
-            var obj = KeepAliveGet(slot);
+            object obj = KeepAliveGet(slot);
             if (obj != null)
             {
 
@@ -842,15 +821,19 @@ namespace Espresso
                 if (mi != null)
                 {
                     object result = mi.Invoke(obj, new object[0]);
-                    return _convert.AnyToJsValue(result);
+                    _convert2.AnyToJsValue(result, ref output);
+                    return;
                 }
-                return _convert.AnyToJsValue(obj);
+                _convert2.AnyToJsValue(obj, ref output);
+                return;
             }
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            //error
+            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+
         }
 
-#if NET20
-        internal JsValue KeepAliveInvoke(int slot, JsValue args)
+
+        internal void KeepAliveInvoke(int slot, ref JsInterOpValue args, ref JsInterOpValue output)
         {
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
 #if DEBUG_TRACE_API
@@ -867,8 +850,9 @@ namespace Espresso
 #if DEBUG_TRACE_API
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
-                    object[] constructorArgs = (object[])_convert.FromJsValue(args);
-                    return _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
+                    object[] constructorArgs = (object[])_convert2.FromJsValue(ref args);
+                    _convert2.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
+                    return;
                 }
 
                 WeakDelegate func = obj as WeakDelegate;
@@ -881,7 +865,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
 #endif
-                object[] a = (object[])_convert.FromJsValue(args);
+
+                object[] a = (object[])_convert2.FromJsValue(ref args);
 
                 BindingFlags flags = BindingFlags.Public
                         | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
@@ -917,93 +902,100 @@ namespace Espresso
                 try
                 {
                     object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                    return _convert.AnyToJsValue(result);
+                    _convert2.AnyToJsValue(result, ref output);
+                    return;
                 }
                 catch (TargetInvocationException e)
                 {
-                    return JsValue.Error(KeepAliveAdd(e.InnerException));
+                    throw new NotSupportedException();
+                    //return JsValue.Error(KeepAliveAdd(e.InnerException));
+                    return;
                 }
                 catch (Exception e)
                 {
-                    return JsValue.Error(KeepAliveAdd(e));
+                    //review set error
+                    throw new NotSupportedException();
+                    //return JsValue.Error(KeepAliveAdd(e));
+                    return;
                 }
             }
-
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            throw new NotSupportedException();
+            //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            return;
         }
 
 
 
-#else
-        internal JsValue KeepAliveInvoke(int slot, JsValue args)
-        {
-            // TODO: This is pretty slow: use a cache of generated code to make it faster.
-#if DEBUG_TRACE_API
-			Console.WriteLine("invoking");
-#endif
-            //   Console.WriteLine(args);
 
-            var obj = KeepAliveGet(slot);
-            if (obj != null)
-            {
-                Type constructorType = obj as Type;
-                if (constructorType != null)
-                {
-#if DEBUG_TRACE_API
-					Console.WriteLine("constructing " + constructorType.Name);
-#endif
-                    object[] constructorArgs = (object[])_convert.FromJsValue(args);
-                    return _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
-                }
+        //        internal JsValue KeepAliveInvoke(int slot, JsValue args)
+        //        {
+        //            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+        //#if DEBUG_TRACE_API
+        //			Console.WriteLine("invoking");
+        //#endif
+        //            //   Console.WriteLine(args);
 
-                WeakDelegate func = obj as WeakDelegate;
-                if (func == null)
-                {
-                    throw new Exception("not a function.");
-                }
+        //            var obj = KeepAliveGet(slot);
+        //            if (obj != null)
+        //            {
+        //                Type constructorType = obj as Type;
+        //                if (constructorType != null)
+        //                {
+        //#if DEBUG_TRACE_API
+        //					Console.WriteLine("constructing " + constructorType.Name);
+        //#endif
+        //                    object[] constructorArgs = (object[])_convert.FromJsValue(args);
+        //                    return _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs));
+        //                }
 
-                Type type = func.Target != null ? func.Target.GetType() : func.Type;
-#if DEBUG_TRACE_API
-				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
-#endif
-                object[] a = (object[])_convert.FromJsValue(args);
+        //                WeakDelegate func = obj as WeakDelegate;
+        //                if (func == null)
+        //                {
+        //                    throw new Exception("not a function.");
+        //                }
+
+        //                Type type = func.Target != null ? func.Target.GetType() : func.Type;
+        //#if DEBUG_TRACE_API
+        //				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
+        //#endif
+        //                object[] a = (object[])_convert.FromJsValue(args);
 
 
-                // need to convert methods from JsFunction's into delegates?
-                foreach (var a_elem in a)
-                {
-                    if (a.GetType() == typeof(JsFunction))
-                    {
-                        CheckAndResolveJsFunctions(type, func.MethodName, a);
-                        break;
-                    }
-                }
-                //if (a.Any(z => z != null && z.GetType() == typeof(JsFunction)))
-                //{
-                //    CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
-                //}
+        //                // need to convert methods from JsFunction's into delegates?
+        //                foreach (var a_elem in a)
+        //                {
+        //                    if (a.GetType() == typeof(JsFunction))
+        //                    {
+        //                        CheckAndResolveJsFunctions(type, func.MethodName, a);
+        //                        break;
+        //                    }
+        //                }
+        //                //if (a.Any(z => z != null && z.GetType() == typeof(JsFunction)))
+        //                //{
+        //                //    CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
+        //                //}
 
-                try
-                {
-                    var method = type.GetRuntimeMethod(func.MethodName, null);
-                    object result = method.Invoke(func.Target, a);
-                    //object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                    return _convert.AnyToJsValue(result);
-                }
-                catch (TargetInvocationException e)
-                {
-                    return JsValue.Error(KeepAliveAdd(e.InnerException));
-                }
-                catch (Exception e)
-                {
-                    return JsValue.Error(KeepAliveAdd(e));
-                }
-            }
+        //                try
+        //                {
+        //                    var method = type.GetRuntimeMethod(func.MethodName, null);
+        //                    object result = method.Invoke(func.Target, a);
+        //                    //object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
+        //                    return _convert.AnyToJsValue(result);
+        //                }
+        //                catch (TargetInvocationException e)
+        //                {
+        //                    return JsValue.Error(KeepAliveAdd(e.InnerException));
+        //                }
+        //                catch (Exception e)
+        //                {
+        //                    return JsValue.Error(KeepAliveAdd(e));
+        //                }
+        //            }
 
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
-        }
-#endif
-#if NET20
+        //            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+        //        }
+
+
         private static void CheckAndResolveJsFunctions(Type type, string methodName, BindingFlags flags, object[] args)
         {
             MethodInfo mi = type.GetMethod(methodName, flags);
@@ -1018,28 +1010,60 @@ namespace Espresso
                 }
             }
         }
-#else
-        private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
+
+        //private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
+        //{
+
+        //    //MethodInfo mi = type.GetMethod(methodName, flags);
+        //    MethodInfo mi = type.GetRuntimeMethod(methodName, null);
+        //    //TODO: type.GetRuntimeMethods();
+        //    ParameterInfo[] paramTypes = mi.GetParameters();
+
+        //    for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
+        //    {
+        //        if (args[i] != null && args[i].GetType() == typeof(JsFunction))
+        //        {
+        //            JsFunction function = (JsFunction)args[i];
+        //            args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
+        //        }
+        //    }
+        //}
+
+
+
+        internal void KeepAliveDeleteProperty(int slot, string name, ref JsInterOpValue output)
         {
-
-            //MethodInfo mi = type.GetMethod(methodName, flags);
-            MethodInfo mi = type.GetRuntimeMethod(methodName, null);
-            //TODO: type.GetRuntimeMethods();
-            ParameterInfo[] paramTypes = mi.GetParameters();
-
-            for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
+#if DEBUG_TRACE_API
+			Console.WriteLine("deleting prop " + name);
+#endif
+            // TODO: This is pretty slow: use a cache of generated code to make it faster.
+            var obj = KeepAliveGet(slot);
+            if (obj != null)
             {
-                if (args[i] != null && args[i].GetType() == typeof(JsFunction))
+#if DEBUG_TRACE_API
+				Console.WriteLine("deleting prop " + name + " type " + type);
+#endif 
+
+                if (typeof(IDictionary).ExtIsAssignableFrom(obj.GetType()))
                 {
-                    JsFunction function = (JsFunction)args[i];
-                    args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
+                    IDictionary dictionary = (IDictionary)obj;
+                    if (dictionary.Contains(name))
+                    {
+                        dictionary.Remove(name);
+                        _convert2.ToJsValue(true, ref output);
+                        return;
+                    }
                 }
+                _convert2.ToJsValue(false, ref output);
+                return;
             }
+            throw new NotSupportedException();
+            //TODO review err again ***
+            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            return;
         }
 
-#endif
-
-        internal JsValue KeepAliveDeleteProperty(int slot, string name)
+        internal void KeepAliveEnumerateProperties(int slot, ref JsInterOpValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("deleting prop " + name);
@@ -1053,66 +1077,22 @@ namespace Espresso
 #endif
 
 
-#if NET20
-                if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
+                Type obj_type = obj.GetType();
+                if (typeof(IDictionary).ExtIsAssignableFrom(obj_type))
                 {
                     IDictionary dictionary = (IDictionary)obj;
-                    if (dictionary.Contains(name))
-                    {
-                        dictionary.Remove(name);
-                        return _convert.ToJsValue(true);
-                    }
-                }
-                return _convert.ToJsValue(false);
-#else
-                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
-                {
-                    IDictionary dictionary = (IDictionary)obj;
-                    if (dictionary.Contains(name))
-                    {
-                        dictionary.Remove(name);
-                        return _convert.ToJsValue(true);
-                    }
-                }
-                return _convert.ToJsValue(false);
-#endif
-            }
-
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
-        }
-
-        internal JsValue KeepAliveEnumerateProperties(int slot)
-        {
-#if DEBUG_TRACE_API
-			Console.WriteLine("deleting prop " + name);
-#endif
-            // TODO: This is pretty slow: use a cache of generated code to make it faster.
-            var obj = KeepAliveGet(slot);
-            if (obj != null)
-            {
-#if DEBUG_TRACE_API
-				Console.WriteLine("deleting prop " + name + " type " + type);
-#endif
-
-#if NET20
-
-                if (typeof(IDictionary).IsAssignableFrom(obj.GetType()))
-                {
-                    IDictionary dictionary = (IDictionary)obj;
-                    //string[] keys = dictionary.Keys.Cast<string>().ToArray();
-
                     var keys01 = new System.Collections.Generic.List<string>();
                     foreach (var k in dictionary.Keys)
                     {
                         keys01.Add(k.ToString());
                     }
 
-                    return _convert.ToJsValue(keys01.ToArray());
+                    _convert2.AnyToJsValue(keys01.ToArray(), ref output);
+                    return;
                 }
 
                 var mbNameList = new System.Collections.Generic.List<string>();
-                foreach (var mb in obj.GetType().GetMembers(BindingFlags.Public |
-                    BindingFlags.Instance))
+                foreach (var mb in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
                 {
                     var met = mb as MethodBase;
                     if (met != null && !met.IsSpecialName)
@@ -1121,35 +1101,39 @@ namespace Espresso
                     }
                 }
 
-#else
-                if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
-                {
-                    IDictionary dictionary = (IDictionary)obj;
-                    //string[] keys = dictionary.Keys.Cast<string>().ToArray();
 
-                    var keys01 = new System.Collections.Generic.List<string>();
-                    foreach (var k in dictionary.Keys)
-                    {
-                        keys01.Add(k.ToString());
-                    }
+                //if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
+                //{
+                //    IDictionary dictionary = (IDictionary)obj;
+                //    //string[] keys = dictionary.Keys.Cast<string>().ToArray();
 
-                    return _convert.ToJsValue(keys01.ToArray());
-                }
+                //    var keys01 = new System.Collections.Generic.List<string>();
+                //    foreach (var k in dictionary.Keys)
+                //    {
+                //        keys01.Add(k.ToString());
+                //    }
 
-                var mbNameList = new System.Collections.Generic.List<string>();
-                foreach (var mb in obj.GetType().GetMembers())
-                {
-                    var met = mb as MethodBase;
-                    if (met != null && !met.IsSpecialName)
-                    {
-                        mbNameList.Add(mb.Name);
-                    }
-                }
-              
-#endif
-                return _convert.ToJsValue(mbNameList.ToArray());
+                //    return _convert.ToJsValue(keys01.ToArray());
+                //}
+
+                //var mbNameList = new System.Collections.Generic.List<string>();
+                //foreach (var mb in obj.GetType().GetMembers())
+                //{
+                //    var met = mb as MethodBase;
+                //    if (met != null && !met.IsSpecialName)
+                //    {
+                //        mbNameList.Add(mb.Name);
+                //    }
+                //}
+
+                _convert2.AnyToJsValue(mbNameList.ToArray(), ref output);
+                return;
             }
-            return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+
+            //TODO: review here again
+            throw new NotSupportedException();
+            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+
         }
 
         public object Invoke(IntPtr funcPtr, IntPtr thisPtr, object[] args)

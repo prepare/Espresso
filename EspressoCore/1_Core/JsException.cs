@@ -1,3 +1,5 @@
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -23,6 +25,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+
+
 using System;
 namespace Espresso
 {
@@ -30,14 +34,14 @@ namespace Espresso
     public class JsException : Exception
     {
 
-        internal static JsException Create(JsConvert convert, JsError error)
+        internal static JsException Create(JsConvert2 convert, JsError error)
         {
-            string type = (string)convert.FromJsValue(error.Type);
-            string resource = (string)convert.FromJsValue(error.Resource);
-            string message = (string)convert.FromJsValue(error.Message);
+            string type = (string)convert.FromJsValue(ref error.Type);
+            string resource = (string)convert.FromJsValue(ref error.Resource);
+            string message = (string)convert.FromJsValue(ref error.Message);
             int line = error.Line;
             int column = error.Column + 1; // because zero based.
-            JsObject nativeException = (JsObject)convert.FromJsValue(error.Exception);
+            JsObject nativeException = (JsObject)convert.FromJsValue(ref error.Exception);
 
             JsException exception;
             if (type == "SyntaxError")

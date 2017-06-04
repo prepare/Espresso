@@ -22,7 +22,7 @@ namespace Espresso
 
             JsInterOpValue v = new JsInterOpValue();
             jscontext_get_property_names(_context, obj.Handle, ref v);
-            object res = _convert.FromJsValue(ref v);
+            object res = _convert2.FromJsValue(ref v);
             jsvalue_dispose(ref v);
 
             Exception e = res as JsException;
@@ -54,7 +54,7 @@ namespace Espresso
             JsInterOpValue output = new JsInterOpValue();
             jscontext_get_property_value(_context, obj.Handle, name, ref output);
             //
-            object res = _convert.FromJsValue(ref output);
+            object res = _convert2.FromJsValue(ref output);
             //TODO: review here
             //we should dispose only type that contains native data***
             jsvalue_dispose(ref output);
@@ -85,7 +85,7 @@ namespace Espresso
 
             //TODO: review exceptio here
             //not need to convert all the time if we not have error
-            object res = _convert.FromJsValue(ref output);
+            object res = _convert2.FromJsValue(ref output);
             jsvalue_dispose(ref output);
             jsvalue_dispose(ref a);
 

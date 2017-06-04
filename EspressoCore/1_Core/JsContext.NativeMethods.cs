@@ -1,29 +1,30 @@
 ﻿//2013 MIT, Federico Di Gregorio<fog@initd.org>
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Espresso
 {
     //---------------------------------------
     //2017-06-04
-    //for internal inter-op only
+    //1. for internal inter-op only -> always be private
     //for inter-op with native lib, .net core on macOS x64 dose not support explicit layout
     //so we need sequential layout
+    //2. this is a quite large object, and is designed to be used on stack,
+    //pass by reference to native side
     //---------------------------------------
     [StructLayout(LayoutKind.Sequential)]
     struct JsInterOpValue
     {
-        public int I32;
-        public long I64;
-        public double Num;
+        public int I32;//4
+        public long I64;//8
+        public double Num;//8
         /// <summary>
         /// native ptr
         /// </summary>
-        public IntPtr Ptr;
+        public IntPtr Ptr;//8 on 64 bits
         //type
-        public JsValueType Type;
+        public JsValueType Type; //4
         //len of string and array
         public int Length;
         /// <summary>

@@ -4,14 +4,17 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
-    [StructLayout(LayoutKind.Sequential)]
-    struct JsError
+     
+    unsafe struct JsError
     {
-        public JsValue Type;
+        //TODO: review this struct again ***
         public int Line;
         public int Column;
-        public JsValue Resource;
-        public JsValue Message;
-        public JsValue Exception;
+        IntPtr nativeErr;
+
+        //public JsInterOpValue* Type; 
+        //public JsInterOpValue* Resource;
+        //public JsInterOpValue* Message;
+        //public JsInterOpValue* Exception;
     }
 }
