@@ -91,58 +91,6 @@ extern long js_mem_debug_context_count;
 extern long js_mem_debug_managedref_count;
 extern long js_mem_debug_script_count;
 
-struct MetCallingArgs;
-
-
-class MyJsValue {
-public:
-	int32_t type;
-};
-class MyJsValueI32 :MyJsValue {
-	//int32_t type; //type of this value (+ flags)
-public:
-	int32_t i32; //value 32 bits (also used with i8,u8,i16,u16,u32)
-};
-class MyJsValueI64 :MyJsValue {
-	//int32_t type;//type of this value (+ flags)
-public:
-	int64_t i64;//int64, (also used with uint64)
-};
-class MyJsValueF32 :MyJsValue {//float32 bits
-	//int32_t type; //type of this value (+ flags)
-public:
-	float valueF32;
-};
-
-class MyJsValueF64 :MyJsValue { //float64 bits => double
-	//int32_t type; //type of this value (+ flags) 
-public:
-	double valueF64;
-};
-
-class MyJsValueArray :MyJsValue {
-	//int32_t type; //type of this value (+ flags)
-public:
-	int32_t length;//array len 
-	void* ptr; //pointer to array of anytype
-};
-class MyJsValueString :MyJsValue {
-	//int32_t type; //type of this value (+ flags)
-public:
-	int32_t length;//string len
-	uint16_t *str;//pointer to string buffer
-};
-
-class MyJsValueManagedObjectIndex :MyJsValue {
-	//int32_t type; //type of this value (+ flags)
-public:
-	int32_t managedObjectIndex;  // slot index on the CLR side.
-};
-class MyJsValueNativeObject :MyJsValue {
-	//int32_t type; //type of this value (+ flags)
-public:
-	void* ptr; //pointer to native object
-};
 
 struct jsvalue
 {
@@ -150,9 +98,9 @@ struct jsvalue
 	int32_t     i32;
 	int64_t     i64;
 	double      num;
-	void       *ptr;
-	uint16_t   *str;
-	jsvalue    **arr;//array of jsvalue*
+	void*		ptr;
+	uint16_t*   str;
+	jsvalue**   arr;//array of jsvalue*
 	int32_t     type;
 	int32_t     length; // Also used as slot index on the CLR side.
 };
@@ -167,28 +115,16 @@ struct jserror
 	jsvalue* exception;
 };
 
+struct MetCallingArgs; //forward decl
+
 extern "C"
 {
 	//delegate
 	typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex, int methodKind, MetCallingArgs* result);
 	//-------------------------------------------------------------------------------------------
-
-	const int MyJsType_I32 = 1;
-	const int MyJsType_U32 = 2;
-	const int MyJsType_I64 = 3;
-	const int MyJsType_U64 = 4;
-	const int MyJsType_Float32 = 5;
-	const int MyJsType_Float64 = 6;
-	const int MyJsType_String = 7;
-	const int MyJsType_Array = 8;
-	//
-	const int MyJsType_ManagedObjectIndex = 9; //slot index of managed object on the CLR side
-	const int MyJsType_NativeObjectPtr = 10; //pointer to  
-	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value);
-
+	EXPORT  void CALLCONV jsvalue_dispose(jsvalue* value);
 	// We don't have a keepalive_add_f because that is managed on the managed side.
-	// Its definition would be "int (*keepalive_add_f) (ManagedRef obj)".
-
+	// Its definition would be "int (*keepalive_add_f) (ManagedRef obj)". 
 	typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
 	typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name, jsvalue* output);
 	typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue* value, jsvalue* output);
