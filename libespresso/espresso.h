@@ -120,44 +120,55 @@ struct jserror
 // We don't have a keepalive_add_f because that is managed on the managed side.
 // Its definition would be "int (*keepalive_add_f) (ManagedRef obj)". 
 typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
-typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name, jsvalue* output);
-typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue* value, jsvalue* output);
-typedef void (CALLINGCONVENTION *keepalive_valueof_f) (int context, int id, jsvalue* output);
-typedef void (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue* args, jsvalue* output);
-typedef void (CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, uint16_t* name, jsvalue* output);
-typedef void (CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id, jsvalue*  output);
+typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, const uint16_t* name, const jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, const uint16_t* name, jsvalue* value, const jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_valueof_f) (int context, int id, const jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, const jsvalue* args, const jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, const uint16_t* name, const jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id, const jsvalue*  output);
 
 extern "C"
 {
 	//delegate	
 	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value);
-
 }
-struct MetCallingArgs; //forward decl
-typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex, int methodKind, MetCallingArgs* result);
+
+struct MetCallingArgs {
+	uint32_t methodCallKind;
+	const v8::FunctionCallbackInfo<Value>* args; //store method input args
+	const v8::PropertyCallbackInfo<Value>* accessorInfo; //accessor info for indexer
+	Local<Value> setterValue;  //value for set this property  
+	jsvalue result;
+};
+
+typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex, int methodKind, const MetCallingArgs* result);
 
 //forward decl
-class JsEngine;
-class JsContext;
-
-class JsScript {
+class BinaryStreamReader
+{
 public:
-	static JsScript *New(JsEngine *engine);
-	void Compile(const uint16_t* str, const uint16_t* resourceName, jsvalue* output);
-	void Dispose();
-	Persistent<Script> *GetScript() { return script_; }
-
-	inline virtual ~JsScript() {
-		DECREMENT(js_mem_debug_script_count);
-	}
-
-private:
-	inline JsScript() {
-		INCREMENT(js_mem_debug_script_count);
-	}
-	JsEngine *engine_;
-	Persistent<Script> *script_;
+	const char* stream;
+	int length;
+	int pos; 
+	BinaryStreamReader(const char* stream, int length);
+	int ReadInt16();
+	int ReadInt32();
+	std::wstring ReadUtf16String();
 };
+
+class ExternalTypeDefinition
+{
+
+public:
+	int managedIndex;
+	int memberkind;
+	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate;
+	ExternalTypeDefinition(int mIndex);
+	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader);
+};
+
+
+
 
 // JsEngine is a single isolated v8 interpreter and is the referenced as an IntPtr
 // by the JsEngine on the CLR side.
@@ -278,9 +289,74 @@ private:
 	keepalive_enumerate_properties_f keepalive_enumerate_properties_;
 };
 
-class ExternalTypeDefinition;
-class ManagedRef;
+class JsScript {
+public:
+	static JsScript *New(JsEngine *engine);
+	void Compile(const uint16_t* str, const uint16_t* resourceName, jsvalue* output);
+	void Dispose();
+	Persistent<Script> *GetScript() { return script_; }
 
+	inline virtual ~JsScript() {
+		DECREMENT(js_mem_debug_script_count);
+	}
+
+private:
+	inline JsScript() {
+		INCREMENT(js_mem_debug_script_count);
+	}
+	JsEngine *engine_;
+	Persistent<Script> *script_;
+};
+
+
+
+
+
+
+class ManagedRef {
+public:
+
+
+	inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id, bool isJsTypeDef) :
+		engine_(engine),
+		contextId_(contextId),
+		id_(id),
+		isJsTypeDef_(isJsTypeDef)
+	{
+
+		INCREMENT(js_mem_debug_managedref_count);
+	}
+	inline int32_t Id() { return id_; }
+	inline bool IsJsTypeDef() { return isJsTypeDef_; }
+
+	Handle<Value> GetPropertyValue(Local<String> name);
+	Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
+	Handle<Value> GetValueOf();
+	Handle<Value> Invoke(const FunctionCallbackInfo<Value>& args);//(0.12.x)
+	Handle<Boolean> DeleteProperty(Local<String> name);
+	Handle<Array> EnumerateProperties();
+
+	v8::Persistent<v8::Object> v8InstanceHandler;
+
+
+	~ManagedRef()
+	{
+		engine_->CallRemove(contextId_, id_);
+		DECREMENT(js_mem_debug_managedref_count);
+	}
+
+private:
+	ManagedRef()
+	{
+		INCREMENT(js_mem_debug_managedref_count);
+	}
+	int32_t contextId_;
+	JsEngine *engine_;
+	int32_t id_;
+	bool isJsTypeDef_;
+};
+
+ 
 class JsContext {
 public:
 
@@ -332,48 +408,6 @@ private:
 
 };
 
-class ManagedRef {
-public:
-
-
-	inline explicit ManagedRef(JsEngine *engine, int32_t contextId, int id, bool isJsTypeDef) :
-		engine_(engine),
-		contextId_(contextId),
-		id_(id),
-		isJsTypeDef_(isJsTypeDef)
-	{
-
-		INCREMENT(js_mem_debug_managedref_count);
-	}
-	inline int32_t Id() { return id_; }
-	inline bool IsJsTypeDef() { return isJsTypeDef_; }
-
-	Handle<Value> GetPropertyValue(Local<String> name);
-	Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
-	Handle<Value> GetValueOf();
-	Handle<Value> Invoke(const FunctionCallbackInfo<Value>& args);//(0.12.x)
-	Handle<Boolean> DeleteProperty(Local<String> name);
-	Handle<Array> EnumerateProperties();
-
-	v8::Persistent<v8::Object> v8InstanceHandler;
-
-
-	~ManagedRef()
-	{
-		engine_->CallRemove(contextId_, id_);
-		DECREMENT(js_mem_debug_managedref_count);
-	}
-
-private:
-	ManagedRef()
-	{
-		INCREMENT(js_mem_debug_managedref_count);
-	}
-	int32_t contextId_;
-	JsEngine *engine_;
-	int32_t id_;
-	bool isJsTypeDef_;
-};
 
 
 
@@ -386,30 +420,6 @@ public:
 
 
 
-class BinaryStreamReader
-{
-
-public:
-	const char* stream;
-	int length;
-	int pos;
-
-	BinaryStreamReader(const char* stream, int length);
-	int ReadInt16();
-	int ReadInt32();
-	std::wstring ReadUtf16String();
-};
-
-class ExternalTypeDefinition
-{
-
-public:
-	int managedIndex;
-	int memberkind;
-	Persistent<v8::ObjectTemplate> handlerToJsObjectTemplate;
-	ExternalTypeDefinition(int mIndex);
-	void ReadTypeDefinitionFromStream(BinaryStreamReader* reader);
-};
 
 
 #endif
