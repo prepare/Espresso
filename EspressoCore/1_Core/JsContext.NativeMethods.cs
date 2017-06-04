@@ -6,6 +6,29 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
+    //for internal inter-op only
+    //for inter-op with native lib, .net core on macOS x64 dose not support explicit layout
+    //so we need sequential layout
+    [StructLayout(LayoutKind.Sequential)]
+    struct JsInterOpValue
+    {
+        public int I32;
+        public long I64;
+        public double Num;
+        /// <summary>
+        /// native ptr
+        /// </summary>
+        public IntPtr Ptr;
+        //type
+        public JsValueType Type;
+        //len of string and array
+        public int Length;
+        /// <summary>
+        /// index to managed slot
+        /// </summary>
+        public int Index;
+    }
+
     partial class JsContext
     {
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -17,51 +40,75 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void jscontext_dispose(HandleRef engine);
 
+        //TODO: review remove this?
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jscontext_force_gc();
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        static extern JsValue jscontext_execute(HandleRef context,
+        static extern void jscontext_execute(HandleRef context,
             [MarshalAs(UnmanagedType.LPWStr)] string str,
-            [MarshalAs(UnmanagedType.LPWStr)] string name);
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        static extern JsValue jscontext_execute_script(HandleRef context, HandleRef script);
+        static extern void jscontext_execute_script(HandleRef context, HandleRef script, ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_get_global(HandleRef engine);
+        static extern void jscontext_get_global(HandleRef engine, ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_get_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name);
+        static extern void jscontext_get_variable(HandleRef engine,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_set_variable(HandleRef engine, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
+        static extern void jscontext_set_variable(HandleRef engine,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue value,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern JsValue jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str);
+        static internal extern void jsvalue_alloc_string([MarshalAs(UnmanagedType.LPWStr)] string str,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern JsValue jsvalue_alloc_array(int length);
+        static internal extern void jsvalue_alloc_array(int length,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern void jsvalue_dispose(JsValue value);
+        static internal extern void jsvalue_dispose(ref JsInterOpValue value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern JsValue jscontext_invoke(HandleRef engine, IntPtr funcPtr, IntPtr thisPtr, JsValue args);
+        static internal extern void jscontext_invoke(HandleRef engine,
+            IntPtr funcPtr,
+            IntPtr thisPtr,
+            ref JsInterOpValue value,
+            ref JsInterOpValue output);
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_get_property_names(HandleRef engine, IntPtr ptr);
+        static extern void jscontext_get_property_names(
+            HandleRef engine,
+            IntPtr ptr,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_get_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name);
+        static extern void jscontext_get_property_value(HandleRef engine, IntPtr ptr,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_set_property_value(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
+        static extern void jscontext_set_property_value(HandleRef engine,
+            IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue value,
+            ref JsInterOpValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern JsValue jscontext_invoke_property(HandleRef engine, IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue args);
+        static extern void jscontext_invoke_property(HandleRef engine, IntPtr ptr,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue args,
+            ref JsInterOpValue output);
 
     }
 }

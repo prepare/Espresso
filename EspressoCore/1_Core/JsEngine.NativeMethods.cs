@@ -1,8 +1,10 @@
 ﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading;
+
 
 namespace Espresso
 {
@@ -10,12 +12,13 @@ namespace Espresso
     {
 
         delegate void KeepaliveRemoveDelegate(int context, int slot);
-        delegate JsValue KeepAliveGetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name);
-        delegate JsValue KeepAliveSetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, JsValue value);
-        delegate JsValue KeepAliveValueOfDelegate(int context, int slot);
-        delegate JsValue KeepAliveInvokeDelegate(int context, int slot, JsValue args);
-        delegate JsValue KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name);
-        delegate JsValue KeepAliveEnumeratePropertiesDelegate(int context, int slot);
+        delegate void KeepAliveGetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsInterOpValue output);
+        delegate void KeepAliveSetPropertyValueDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsInterOpValue value, ref JsInterOpValue output);
+        delegate void KeepAliveValueOfDelegate(int context, int slot, ref JsInterOpValue output);
+        delegate void KeepAliveInvokeDelegate(int context, int slot, ref JsInterOpValue args, ref JsInterOpValue output);
+        delegate void KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsInterOpValue output);
+        delegate void KeepAliveEnumeratePropertiesDelegate(int context, int slot, ref JsInterOpValue output);
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -92,7 +95,7 @@ namespace Espresso
         }
         //-------------------------------------------------------------------------------------------------------
         [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb); 
+        static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb);
 
     }
 }

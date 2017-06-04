@@ -167,7 +167,7 @@ namespace Espresso
         //basic 
 
         static ManagedListenerDel engineListenerDel;
-       
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();
@@ -202,12 +202,12 @@ namespace Espresso
         public static extern int ArgCount(IntPtr callingArgsPtr);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern JsValue ArgGetThis(IntPtr callingArgsPtr);
+        internal static extern void ArgGetThis(IntPtr callingArgsPtr, ref JsInterOpValue output);
 
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern JsValue ArgGetObject(IntPtr callingArgsPtr, int index);
+        internal static extern void ArgGetObject(IntPtr callingArgsPtr, int index, ref JsInterOpValue output);
         //---------------------------------------------------------------------------------
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -224,7 +224,7 @@ namespace Espresso
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetFloat(IntPtr callingArgsPtr, float value);
- 
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void ResultSetJsNull(IntPtr callingArgsPtr);
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -244,7 +244,7 @@ namespace Espresso
         {
             //prepare 
             engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
-           
+
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -253,7 +253,7 @@ namespace Espresso
                  System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mListenerDel),
                 (int)ManagedCallbackKind.Listener);
         }
-       
+
         internal static void CtxRegisterManagedMethodCall(JsContext jsContext, ManagedMethodCallDel mMethodCall)
         {
             //register managed method to js context
