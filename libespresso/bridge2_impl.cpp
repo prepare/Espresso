@@ -336,7 +336,7 @@ void ArgGetThis(MetCallingArgs* args, jsvalue* output)
 		CallingContext* cctx = (CallingContext*)ext->Value();
 
 		Handle<Object> obj = Handle<Object>::Cast(args->args->This());
-		cctx->ctx->ConvAnyFromV8(obj, output);
+		cctx->ctx->ConvAnyFromV8(obj, Handle<Object>(), output);
 		return;
 	}
 	else
@@ -347,10 +347,9 @@ void ArgGetThis(MetCallingArgs* args, jsvalue* output)
 		CallingContext* cctx = (CallingContext*)ext->Value();
 
 		Handle<Object> obj = Handle<Object>::Cast(args->accessorInfo->This());
-		return cctx->ctx->ConvAnyFromV8(obj, obj);
+		return cctx->ctx->ConvAnyFromV8(obj, obj, output);
 	}
 }
-
 //====================================================== 
 ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
 {

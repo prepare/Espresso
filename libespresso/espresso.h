@@ -159,9 +159,9 @@ struct jsvalue
 
 struct jserror
 {
-	jsvalue type;
 	int32_t line;
 	int32_t column;
+	jsvalue* type; //?
 	jsvalue* resource;
 	jsvalue* message;
 	jsvalue* exception;

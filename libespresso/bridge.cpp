@@ -310,7 +310,7 @@ extern "C"
 		std::wcout << "jsvalue_alloc_array" << std::endl;
 #endif
 
-		jsvalue* newarr = new jsvalue[length];
+		jsvalue** newarr = new jsvalue*[length];
 		if (newarr != NULL) {
 			//alloc succeed
 			output->arr = newarr;

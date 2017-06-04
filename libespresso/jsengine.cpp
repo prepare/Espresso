@@ -6,11 +6,11 @@
 #include "espresso.h"
 
 long js_mem_debug_engine_count;
-//TODO: JS_VALUE
-extern "C" jsvalue CALLCONV jsvalue_alloc_array(const int32_t length);
+
+
+extern "C" void CALLCONV jsvalue_alloc_array(const int32_t length, jsvalue* output);
 
 static const int Mega = 1024 * 1024;
-
 
 static void managed_prop_get(Local<String> name, const PropertyCallbackInfo<Value>& info)
 {
@@ -225,7 +225,7 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1, int32_t max_old_space = -1
 
 	return engine;
 }
-//TODO: JS_VALUE
+
 Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t *resourceName, jsvalue *error) {
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -240,16 +240,14 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 
 	if (resourceName != NULL) {
 		Handle<String> name = String::NewFromTwoByte(isolate_, resourceName);
-
 		script = Script::Compile(source, name);
 	}
 	else {
-
 		script = Script::Compile(source);
 	}
 
 	if (script.IsEmpty()) {
-		*error = ErrorFromV8(trycatch);
+		ErrorFromV8(trycatch, error);
 	}
 
 	((Context*)global_context_)->Exit();
@@ -353,6 +351,7 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 
 	Local<Message> message = trycatch.Message();
 
+	auto thisHandle = Handle<Object>();
 	if (!message.IsEmpty()) {
 		error->line = message->GetLineNumber();
 		error->column = message->GetStartColumn();
@@ -360,56 +359,54 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 		error->resource = new jsvalue();
 		error->message = new jsvalue();
 
-		AnyFromV8(message->GetScriptResourceName(), error->resource);
-		AnyFromV8(message->Get(), error->message);
+		AnyFromV8(message->GetScriptResourceName(), thisHandle, error->resource);
+		AnyFromV8(message->Get(), thisHandle, error->message);
 	}
 	if (exception->IsObject()) {
 		Local<Object> obj2 = Local<Object>::Cast(exception);
-		error->type = AnyFromV8(obj2->GetConstructorName());
+		error->type = new jsvalue();
+		AnyFromV8(obj2->GetConstructorName(), thisHandle, error->type);
 	}
 
 	error->exception = new jsvalue();
-	AnyFromV8(exception, error->exception);
+	AnyFromV8(exception, thisHandle, error->exception);
 
 	output->type = JSVALUE_TYPE_ERROR;
 	output->ptr = error;
 
 }
-//TODO: JS_VALUE
-jsvalue JsEngine::StringFromV8(Handle<Value> value)
-{
-	jsvalue v;
 
+void JsEngine::StringFromV8(Handle<Value> value, jsvalue* output)
+{
+
+	//TODO: review here again
 	Local<String> s = value->ToString();
-	v.length = s->Length();
-	v.value.str = new uint16_t[v.length + 1];
-	if (v.value.str != NULL) {
-		s->Write(v.value.str);
-		v.type = JSVALUE_TYPE_STRING;
+	output->length = s->Length();
+	output->str = new uint16_t[output->length + 1];
+	if (output->str != NULL) {
+		s->Write(output->str);
+		output->type = JSVALUE_TYPE_STRING;
 	}
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
+
+void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output)
 {
-	jsvalue v;
 
 	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
-		v.type = JSVALUE_TYPE_WRAPPED;
-		v.length = 0;
+		output->type = JSVALUE_TYPE_WRAPPED;
+		output->length = 0;
 		// A Persistent<Object> is exactly the size of an IntPtr, right?
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
 		// it in a union: going scary and scarier here.    
 		Persistent<Object> *persistent = new Persistent<Object>();
 		//persistent->Reset(isolate_,obj);
-		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
+		output->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 	}
 	else {
 
-		v.type = JSVALUE_TYPE_WRAPPED;
-		v.length = 0;
+		output->type = JSVALUE_TYPE_WRAPPED;
+		output->length = 0;
 		// A Persistent<Object> is exactly the size of an IntPtr, right?
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
@@ -417,7 +414,7 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 		//v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
 		Persistent<Object> *persistent = new Persistent<Object>();
 		persistent->Reset(isolate_, Persistent<Object>(isolate_, obj));
-		v.value.ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
+		output->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 
 		//-------------------------------------------------------------------------
 		/*v.type = JSVALUE_TYPE_DICT;
@@ -434,10 +431,8 @@ jsvalue JsEngine::WrappedFromV8(Handle<Object> obj)
 			v.value.arr = values;
 		}*/
 	}
-
-	return v;
 }
-//TODO: JS_VALUE
+
 void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output)
 {
 	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
@@ -532,12 +527,13 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 			WrappedFromV8(obj, output);
 	}
 }
- 
+
 void JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsvalue* output)
 {
-	jsvalue v = jsvalue_alloc_array(args.Length());
+	int arg_len = args.Length();
+	jsvalue_alloc_array(arg_len, output);
 	Local<Object> thisArg = args.Holder();
-	for (int i = 0; i < v.length; i++)
+	for (int i = 0; i < arg_len; i++)
 	{
 		AnyFromV8(args[i], thisArg, output->arr[i]);
 	}
@@ -595,10 +591,10 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
 	//object.Reset();
 }
 #endif
-//TODO: JS_VALUE
+ 
 Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 {
-	switch (v.type)
+	switch (v->type)
 	{
 	case JSVALUE_TYPE_EMPTY:
 		return Handle<Value>();
