@@ -115,24 +115,26 @@ struct jserror
 	jsvalue* exception;
 };
 
-struct MetCallingArgs; //forward decl
+
+
+// We don't have a keepalive_add_f because that is managed on the managed side.
+// Its definition would be "int (*keepalive_add_f) (ManagedRef obj)". 
+typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
+typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name, jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue* value, jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_valueof_f) (int context, int id, jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue* args, jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, uint16_t* name, jsvalue* output);
+typedef void (CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id, jsvalue*  output);
 
 extern "C"
 {
-	//delegate
-	typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex, int methodKind, MetCallingArgs* result);
-	//-------------------------------------------------------------------------------------------
-	EXPORT  void CALLCONV jsvalue_dispose(jsvalue* value);
-	// We don't have a keepalive_add_f because that is managed on the managed side.
-	// Its definition would be "int (*keepalive_add_f) (ManagedRef obj)". 
-	typedef void (CALLINGCONVENTION *keepalive_remove_f) (int context, int id);
-	typedef void (CALLINGCONVENTION *keepalive_get_property_value_f) (int context, int id, uint16_t* name, jsvalue* output);
-	typedef void (CALLINGCONVENTION *keepalive_set_property_value_f) (int context, int id, uint16_t* name, jsvalue* value, jsvalue* output);
-	typedef void (CALLINGCONVENTION *keepalive_valueof_f) (int context, int id, jsvalue* output);
-	typedef void (CALLINGCONVENTION *keepalive_invoke_f) (int context, int id, jsvalue* args, jsvalue* output);
-	typedef void (CALLINGCONVENTION *keepalive_delete_property_f) (int context, int id, uint16_t* name, jsvalue* output);
-	typedef void (CALLINGCONVENTION *keepalive_enumerate_properties_f) (int context, int id, jsvalue*  output);
+	//delegate	
+	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value);
+
 }
+struct MetCallingArgs; //forward decl
+typedef void (CALLINGCONVENTION *del_JsBridge)(int mIndex, int methodKind, MetCallingArgs* result);
 
 //forward decl
 class JsEngine;
