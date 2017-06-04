@@ -9,11 +9,10 @@ JsScript *JsScript::New(JsEngine *engine) {
 	jsscript->script_ = NULL;
 	return jsscript;
 }
-//TODO: JS_VALUE
-void JsScript::Compile(const uint16_t* str, const uint16_t *resourceName,jsvalue* output) {
-	 
+void JsScript::Compile(const uint16_t* str, const uint16_t *resourceName, jsvalue* output) {
+
 	output->type = 0;
-	script_ = engine_->CompileScript(str, resourceName, output);	
+	script_ = engine_->CompileScript(str, resourceName, output);
 }
 
 void JsScript::Dispose() {

@@ -73,18 +73,18 @@ void JsContext::Dispose()
 		delete context_;
 	}
 }
- 
+
 void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsvalue* output)
-{ 
+{
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
-	ctx->Enter(); 
+	ctx->Enter();
 
-	TryCatch trycatch; 
+	TryCatch trycatch;
 	Handle<String> source = String::NewFromTwoByte(isolate_, str);
 	Handle<Script> script;
 
@@ -100,23 +100,23 @@ void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsval
 		Local<Value> result = script->Run();
 
 		if (result.IsEmpty()) {
-			v = engine_->ErrorFromV8(trycatch);
+			engine_->ErrorFromV8(trycatch, output);
 		}
 		else {
-			v = engine_->AnyFromV8(result);
+			engine_->AnyFromV8(result, Handle<Object>(), output);
 		}
 	}
 	else {
-		v = engine_->ErrorFromV8(trycatch);
+		engine_->ErrorFromV8(trycatch, output);
 	}
 
 	ctx->Exit();
-	return v;
+
 }
 //TODO: JS_VALUE
-void JsContext::Execute(JsScript *jsscript,jsvalue* output)
+void JsContext::Execute(JsScript *jsscript, jsvalue* output)
 {
-	 
+
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
 	HandleScope scope(isolate_);
@@ -124,27 +124,20 @@ void JsContext::Execute(JsScript *jsscript,jsvalue* output)
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 	TryCatch trycatch;
-
-
 	Persistent<Script>* script = jsscript->GetScript();
-
 	Local<Script> scriptHandle = Local<Script>::New(isolate_, *script);//0.12.x
 	if (!((*script).IsEmpty())) {
-
 		Local<Value> result = scriptHandle->Run();
-
 		if (result.IsEmpty())
-			v = engine_->ErrorFromV8(trycatch);
+			engine_->ErrorFromV8(trycatch, output);
 		else
-			v = engine_->AnyFromV8(result);
+			engine_->AnyFromV8(result, Handle<Object>(), output);
 	}
 
 	ctx->Exit();
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
+
+void JsContext::SetVariable(const uint16_t* name, jsvalue* value, jsvalue* output)
 {
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -162,11 +155,10 @@ jsvalue JsContext::SetVariable(const uint16_t* name, jsvalue value)
 
 	ctx->Exit();
 
-	return engine_->AnyFromV8(Null(isolate_));
+	engine_->AnyFromV8(Null(isolate_), Handle<Object>(), output);
 }
-//TODO: JS_VALUE
-jsvalue JsContext::GetGlobal() {
-	jsvalue v;
+void JsContext::GetGlobal(jsvalue* output) {
+
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -180,20 +172,17 @@ jsvalue JsContext::GetGlobal() {
 
 	Local<Value> value = ctx->Global();
 	if (!value.IsEmpty()) {
-		v = engine_->AnyFromV8(value);
+		engine_->AnyFromV8(value, Handle<Object>(), output);
 	}
 	else {
-		v = engine_->ErrorFromV8(trycatch);
+		engine_->ErrorFromV8(trycatch, output);
 	}
 
 	ctx->Exit();
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsContext::GetVariable(const uint16_t* name)
+
+void JsContext::GetVariable(const uint16_t* name, jsvalue* output)
 {
-	jsvalue v;
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -206,19 +195,16 @@ jsvalue JsContext::GetVariable(const uint16_t* name)
 
 	Local<Value> value = ctx->Global()->Get(String::NewFromTwoByte(isolate_, name));
 	if (!value.IsEmpty()) {
-		v = engine_->AnyFromV8(value);
+		engine_->AnyFromV8(value, Handle<Object>(), output);
 	}
 	else {
-		v = engine_->ErrorFromV8(trycatch);
+		engine_->ErrorFromV8(trycatch, output);
 	}
-
 	ctx->Exit();
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsContext::GetPropertyNames(Persistent<Object>* obj) {
-	jsvalue v;
+
+void JsContext::GetPropertyNames(Persistent<Object>* obj, jsvalue* output) {
+
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -226,27 +212,23 @@ jsvalue JsContext::GetPropertyNames(Persistent<Object>* obj) {
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
-
 
 	TryCatch trycatch;
 
 	Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
 	Local<Value> value = objLocal->GetPropertyNames();
 	if (!value.IsEmpty()) {
-		v = engine_->AnyFromV8(value);
+		engine_->AnyFromV8(value, Handle<Object>(), output);
 	}
 	else {
-		v = engine_->ErrorFromV8(trycatch);
+		engine_->ErrorFromV8(trycatch, output);
 	}
-
 	ctx->Exit();
-
-	return v;
 }
-//TODO: JS_VALUE
-jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* name)
+
+void JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue* output)
 {
-	jsvalue v;
+
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -254,7 +236,6 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
-
 
 	TryCatch trycatch;
 
@@ -262,28 +243,25 @@ jsvalue JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
 	Local<Value> value = objLocal->Get(String::NewFromTwoByte(isolate_, name));
 	if (!value.IsEmpty()) {
 
-		Local<v8::Object> obj_handle = Local<v8::Object>::New(isolate_, *obj);//TODO
-		v = engine_->AnyFromV8(value, obj_handle);
+		//TODO-> review here
+		Local<v8::Object> obj_handle = Local<v8::Object>::New(isolate_, *obj);
+		engine_->AnyFromV8(value, obj_handle, output);
 	}
 	else {
-		v = engine_->ErrorFromV8(trycatch);
+		engine_->ErrorFromV8(trycatch, output);
 	}
-
 	ctx->Exit();
-
-	return v;
 }
 
-//TODO: JS_VALUE
-jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue value)
+
+void JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* name, jsvalue* value, jsvalue* output)
 {
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
-	HandleScope scope(isolate_);//0.12.x
+	HandleScope scope(isolate_);
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
-
 
 	Handle<Value> v = engine_->AnyToV8(value, id_);
 
@@ -294,11 +272,10 @@ jsvalue JsContext::SetPropertyValue(Persistent<Object>* obj, const uint16_t* nam
 
 	ctx->Exit();
 
-	return engine_->AnyFromV8(Null(isolate_));
+	engine_->AnyFromV8(Null(isolate_), Handle<Object>(), output);
 }
-//TODO: JS_VALUE
-jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue args) {
-	jsvalue v;
+void JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* thisArg, jsvalue* args, jsvalue* output) {
+
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -312,40 +289,38 @@ jsvalue JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>
 
 	Local<Function> prop = Local<Function>::New(isolate_, *func);
 	if (prop.IsEmpty() || !prop->IsFunction()) {
-		v = engine_->StringFromV8(String::NewFromUtf8(isolate_, "isn't a function"));
-		v.type = JSVALUE_TYPE_STRING_ERROR;
+
+		engine_->StringFromV8(String::NewFromUtf8(isolate_, "isn't a function"), output);
+		output->type = JSVALUE_TYPE_STRING_ERROR;
+		return;//?
 	}
-
-
 	Local<Object> reciever = Local<Object>::New(isolate_, *thisArg);
 	if (reciever.IsEmpty()) {
 		reciever = ctx->Global();
 	}
 
 	else {
-		std::vector<Local<Value> > argv(args.length);
+
+		std::vector<Local<Value> > argv(args->length);
 		engine_->ArrayToV8Args(args, id_, &argv[0]);
 		// TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
 		Local<Function> func = Local<Function>::Cast(prop);
-		Local<Value> value = func->Call(reciever, args.length, &argv[0]);
+		Local<Value> value = func->Call(reciever, args->length, &argv[0]);
 		if (!value.IsEmpty()) {
-			v = engine_->AnyFromV8(value);
+			engine_->AnyFromV8(value, Handle<Object>(), output);
 		}
 		else {
-			v = engine_->ErrorFromV8(trycatch);
+			engine_->ErrorFromV8(trycatch, output);
 		}
 	}
-
 	ctx->Exit();
-
-	return v;
 
 }
 
-//TODO: JS_VALUE
-jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue args)
+
+void JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, jsvalue* args, jsvalue* output)
 {
-	jsvalue v;
+
 
 	Locker locker(isolate_);
 	Isolate::Scope isolate_scope(isolate_);
@@ -359,35 +334,35 @@ jsvalue JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name,
 	Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
 	Local<Value> prop = objLocal->Get(String::NewFromTwoByte(isolate_, name));
 	if (prop.IsEmpty() || !prop->IsFunction()) {
-		v = engine_->StringFromV8(String::NewFromUtf8(isolate_, "property not found or isn't a function"));
-		v.type = JSVALUE_TYPE_STRING_ERROR;
+		engine_->StringFromV8(String::NewFromUtf8(isolate_, "property not found or isn't a function"), output);
+		output->type = JSVALUE_TYPE_STRING_ERROR;
 	}
 	else {
-		std::vector<Local<Value> > argv(args.length);
+		std::vector<Local<Value> > argv(args->length);
 		engine_->ArrayToV8Args(args, id_, &argv[0]);
 		// TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
 		Local<Function> func = Local<Function>::Cast(prop);
 
 
-		Local<Value> value = func->Call(objLocal, args.length, &argv[0]);
+		Local<Value> value = func->Call(objLocal, args->length, &argv[0]);
 		if (!value.IsEmpty()) {
-			v = engine_->AnyFromV8(value);
+			engine_->AnyFromV8(value, Handle<Object>(), output);
 		}
 		else {
-			v = engine_->ErrorFromV8(trycatch);
+			engine_->ErrorFromV8(trycatch, output);
 		}
 	}
 
 	ctx->Exit();
-	return v;
+
 }
-//TODO: JS_VALUE
-jsvalue JsContext::ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg)
+
+void JsContext::ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output)
 {
-	return this->engine_->AnyFromV8(value, thisArg);
+	this->engine_->AnyFromV8(value, thisArg, output);
 }
-//TODO: JS_VALUE
-Handle<Value> JsContext::AnyToV8(jsvalue v)
+
+Handle<Value> JsContext::AnyToV8(jsvalue* v)
 {
 
 	EscapableHandleScope h01(isolate_);

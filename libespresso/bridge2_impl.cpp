@@ -137,7 +137,7 @@ void DoMethodCall(const FunctionCallbackInfo<Value>& args)
 		MET_, //method kind
 		&callingArgs);
 
-	args.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
+	args.GetReturnValue().Set(cctx->ctx->AnyToV8(&callingArgs.result));
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Val
 	cctx->ctx->myMangedCallBack(m_index, MET_GETTER, &callingArgs);
 
 	//close and return value
-	info.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
+	info.GetReturnValue().Set(cctx->ctx->AnyToV8(&callingArgs.result));
 }
 
 void DoSetterProperty(Local<String> propertyName,
