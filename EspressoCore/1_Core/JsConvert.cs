@@ -113,12 +113,12 @@ namespace Espresso
                     return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
                 case JsValueType.Managed:
-                    return _context.KeepAliveGet(v.Index);
+                    return _context.KeepAliveGet(v.I32);
                 case JsValueType.JsTypeWrap:
                     //auto unwrap
-                    return this._context.GetObjectProxy(v.Index).WrapObject;
+                    return this._context.GetObjectProxy(v.I32).WrapObject;
                 case JsValueType.ManagedError:
-                    Exception inner = _context.KeepAliveGet(v.Index) as Exception;
+                    Exception inner = _context.KeepAliveGet(v.I32) as Exception;
                     string msg = null;
                     if (v.Ptr != IntPtr.Zero)
                     {
@@ -242,7 +242,7 @@ namespace Espresso
 
             output.Type = JsValueType.JsTypeWrap;
             output.Ptr = jsInstance.UnmanagedPtr;
-            output.Index = jsInstance.ManagedIndex;
+            output.I32 = jsInstance.ManagedIndex;
 
             //return new JsValue
             //{
@@ -258,7 +258,7 @@ namespace Espresso
             int len = arr.Length;
             JsContext.jsvalue_alloc_array(len, ref output);
 
-            if (output.Length != len)
+            if (output.I32 != len)
             {
                 throw new JsInteropException("can't allocate memory on the unmanaged side");
             }
@@ -291,7 +291,7 @@ namespace Espresso
                 int keepAliveId = _context.KeepAliveAdd(obj);
                 output.Type = JsValueType.JsTypeWrap;
                 output.Ptr = prox.UnmanagedPtr;
-                output.Index = keepAliveId;
+                output.I32 = keepAliveId;
                 return;
             }
             //-----
@@ -299,7 +299,7 @@ namespace Espresso
 
             // Check for nullable types (we will cast the value out of the box later).
 
-          
+
             type = type.ExtGetInnerTypeIfNullableValue();
 
 
@@ -405,7 +405,7 @@ namespace Espresso
                 //alloc space for array
                 int arrLen = array.Length;
                 JsContext.jsvalue_alloc_array(arrLen, ref output);
-                if (output.Length != arrLen)
+                if (output.I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
 
 
@@ -433,7 +433,7 @@ namespace Espresso
             //
             output.Type = JsValueType.JsTypeWrap;
             output.Ptr = prox2.UnmanagedPtr;
-            output.Index = prox2.ManagedIndex;
+            output.I32 = prox2.ManagedIndex;
 
         }
 

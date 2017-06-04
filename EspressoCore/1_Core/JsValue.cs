@@ -43,21 +43,17 @@ namespace Espresso
     [StructLayout(LayoutKind.Sequential)]
     struct JsInterOpValue
     {
-        public int I32;//4
+        public JsValueType Type; //4
+        /// <summary>
+        /// this for 32 bits values, also be used as string len, array len  and index to managed slot index
+        /// </summary>
+        public int I32;//4 
         public long I64;//8
-        public double Num;//8
+        public double Num;//8 
         /// <summary>
         /// native ptr
         /// </summary>
-        public IntPtr Ptr;//8 on 64 bits
-        //type
-        public JsValueType Type; //4
-        //len of string and array
-        public int Length;
-        /// <summary>
-        /// index to managed slot
-        /// </summary>
-        public int Index;
+        public IntPtr Ptr;//8 on 64 bits 
     }
 
     enum JsValueType
