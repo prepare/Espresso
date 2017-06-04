@@ -28,59 +28,32 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
-    [StructLayout(LayoutKind.Explicit)]
-    struct JsValue
+
+    //---------------------------------------
+    //2017-06-04
+    //1. for internal inter-op only -> always be private
+    //for inter-op with native lib, .net core on macOS x64 dose not support explicit layout
+    //so we need sequential layout
+    //2. this is a quite large object, and is designed to be used on stack,
+    //pass by reference to native side
+    //---------------------------------------
+    [StructLayout(LayoutKind.Sequential)]
+    struct JsInterOpValue
     {
-        [FieldOffset(0)]
-        public int I32;
-        [FieldOffset(0)]
-        public long I64;
-        [FieldOffset(0)]
-        public double Num;
+        public int I32;//4
+        public long I64;//8
+        public double Num;//8
         /// <summary>
-        /// ptr from native side
+        /// native ptr
         /// </summary>
-        [FieldOffset(0)]
-        public IntPtr Ptr;
-
-        /// <summary>
-        /// offset(8)See JsValueType, marshaled as integer. 
-        /// </summary>
-        [FieldOffset(8)]
-        public JsValueType Type;
-
-        /// <summary>
-        /// offset(12) Length of array or string 
-        /// </summary>
-        [FieldOffset(12)]
+        public IntPtr Ptr;//8 on 64 bits
+        //type
+        public JsValueType Type; //4
+        //len of string and array
         public int Length;
         /// <summary>
-        /// offset(12) managed object keepalive index. 
+        /// index to managed slot
         /// </summary>
-        [FieldOffset(12)]
         public int Index;
-
-
-
-
-        public static JsValue Null
-        {
-            get { return new JsValue() { Type = JsValueType.Null }; }
-        }
-
-        public static JsValue Empty
-        {
-            get { return new JsValue() { Type = JsValueType.Empty }; }
-        }
-
-        public static JsValue Error(int slot)
-        {
-            return new JsValue { Type = JsValueType.ManagedError, Index = slot };
-        }
-
-        public override string ToString()
-        {
-            return string.Format("[JsValue({0})]", Type);
-        }
     }
 }

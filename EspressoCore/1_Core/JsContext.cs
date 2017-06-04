@@ -730,7 +730,7 @@ namespace Espresso
                 return;
             }
             //error
-            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
 
         }
 
@@ -974,7 +974,7 @@ namespace Espresso
             }
             throw new NotSupportedException();
             //TODO review err again ***
-            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
             return;
         }
 
@@ -1015,7 +1015,7 @@ namespace Espresso
 
             //TODO: review here again
             throw new NotSupportedException();
-            JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
 
         }
 
