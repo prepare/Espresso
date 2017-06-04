@@ -29,6 +29,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Espresso.Extension;
+
 namespace Espresso
 {
     class JsConvert2
@@ -267,7 +269,7 @@ namespace Espresso
 
             }
         }
-       
+
         public void ToJsValueNull(ref JsInterOpValue output)
         {
             output.Type = JsValueType.Null;
@@ -294,11 +296,12 @@ namespace Espresso
             }
             //-----
             Type type = obj.GetType();
+
             // Check for nullable types (we will cast the value out of the box later).
 
-            //TODO: review here again
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                type = type.GetGenericArguments()[0];
+          
+            type = type.ExtGetInnerTypeIfNullableValue();
+
 
             if (type == typeof(Boolean))
             {

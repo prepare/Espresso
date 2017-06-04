@@ -184,7 +184,7 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-            context.KeepAliveDeleteProperty(slot, name);
+            context.KeepAliveDeleteProperty(slot, name, ref output);
         }
 
         private void KeepAliveEnumerateProperties(int contextId, int slot, ref JsInterOpValue output)

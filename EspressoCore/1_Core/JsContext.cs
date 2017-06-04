@@ -475,23 +475,23 @@ namespace Espresso
                 //dictionary[name] = _convert2.FromJsValue(value);
                 return true;
             }
+            throw new NotSupportedException();
+            //BindingFlags flags;
+            //if (type == obj)
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Static;
+            //}
+            //else
+            //{
+            //    flags = BindingFlags.Public | BindingFlags.Instance;
+            //}
 
-            BindingFlags flags;
-            if (type == obj)
-            {
-                flags = BindingFlags.Public | BindingFlags.Static;
-            }
-            else
-            {
-                flags = BindingFlags.Public | BindingFlags.Instance;
-            }
-
-            PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
-            if (pi != null)
-            {
-                pi.SetValue(obj, _convert2.FromJsValue(ref value), null);
-                return true;
-            }
+            //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.SetProperty);
+            //if (pi != null)
+            //{
+            //    pi.SetValue(obj, _convert2.FromJsValue(ref value), null);
+            //    return true;
+            //}
 
             return false;
         }
@@ -570,15 +570,6 @@ namespace Espresso
                 return true;
             }
 
-            //BindingFlags flags;
-            //if (type == obj)
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Static;
-            //}
-            //else
-            //{
-            //    flags = BindingFlags.Public | BindingFlags.Instance;
-            //}
 
             // First of all try with a public property (the most common case).
             PropertyInfo pi = type.ExtGetProperty(obj, name);// type.GetProperty(name, flags | BindingFlags.GetProperty);
@@ -590,7 +581,7 @@ namespace Espresso
             }
 
             // try field.
-            FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
+            FieldInfo fi = type.ExtGetField(obj, name);
             if (fi != null)
             {
                 result = fi.GetValue(obj);
@@ -602,137 +593,48 @@ namespace Espresso
             // parameter types so we just check if any method with the given name exists
             // and then keep alive a "weak delegate", i.e., just a name and the target.
             // The real method will be resolved during the invokation itself.
-            BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
-            // TODO: This is probably slooow.
-            foreach (var met in type.GetMembers(flags))
-            {
-                if (met.Name == name)
-                {
-                    if (type == obj)
-                    {
-                        result = new WeakDelegate(type, name);
-                    }
-                    else
-                    {
-                        result = new WeakDelegate(obj, name);
-                    }
-                    _convert2.AnyToJsValue(result, ref value);
-                    return true;
-                }
-            }
-            //if (type.GetMethods(mFlags).Any(x => x.Name == name))
+            throw new NotSupportedException();
+
+            //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
+
+            //// TODO: This is probably slooow.
+            //foreach (var met in type.GetMembers(flags))
             //{
-            //    if (type == obj)
+            //    //TODO: review here
+            //    //only 1 ?
+            //    //or list of all method with the same name
+            //    if (met.Name == name)
             //    {
-            //        result = new WeakDelegate(type, name);
+            //        if (type == obj)
+            //        {
+            //            result = new WeakDelegate(type, name);
+            //        }
+            //        else
+            //        {
+            //            result = new WeakDelegate(obj, name);
+            //        }
+            //        _convert2.AnyToJsValue(result, ref value);
+            //        return true;
             //    }
-            //    else
-            //    {
-            //        result = new WeakDelegate(obj, name);
-            //    }
-            //    value = _convert.ToJsValue(result);
-            //    return true;
             //}
+            ////if (type.GetMethods(mFlags).Any(x => x.Name == name))
+            ////{
+            ////    if (type == obj)
+            ////    {
+            ////        result = new WeakDelegate(type, name);
+            ////    }
+            ////    else
+            ////    {
+            ////        result = new WeakDelegate(obj, name);
+            ////    }
+            ////    value = _convert.ToJsValue(result);
+            ////    return true;
+            ////}
 
             value.Type = JsValueType.Null;
             return false;
         }
-
-
-        //internal bool TryGetMemberValue(Type type, object obj, string name, out JsValue value)
-        //{
-        //    object result;
-        //    // dictionaries.
-        //    if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
-        //    {
-        //        IDictionary dictionary = (IDictionary)obj;
-        //        if (dictionary.Contains(name))
-        //        {
-        //            result = dictionary[name];
-        //            value = _convert.AnyToJsValue(result);
-        //        }
-        //        else
-        //        {
-        //            value = JsValue.Null;
-        //        }
-        //        return true;
-        //    }
-
-        //    //BindingFlags flags;
-        //    //if (type == obj)
-        //    //{
-        //    //    flags = BindingFlags.Public | BindingFlags.Static;
-        //    //}
-        //    //else
-        //    //{
-        //    //    flags = BindingFlags.Public | BindingFlags.Instance;
-        //    //}
-
-        //    // First of all try with a public property (the most common case).
-        //    //PropertyInfo pi = type.GetProperty(name, flags | BindingFlags.GetProperty);
-        //    PropertyInfo pi = type.GetRuntimeProperty(name);
-
-        //    if (pi != null)
-        //    {
-        //        result = pi.GetValue(obj, null);
-        //        value = _convert.AnyToJsValue(result);
-        //        return true;
-        //    }
-
-        //    // try field.
-        //    FieldInfo fi = type.GetRuntimeField(name);
-        //    //FieldInfo fi = type.GetField(name, flags | BindingFlags.GetProperty);
-
-        //    if (fi != null)
-        //    {
-        //        result = fi.GetValue(obj);
-        //        value = _convert.AnyToJsValue(result);
-        //        return true;
-        //    }
-
-        //    // Then with an instance method: the problem is that we don't have a list of
-        //    // parameter types so we just check if any method with the given name exists
-        //    // and then keep alive a "weak delegate", i.e., just a name and the target.
-        //    //// The real method will be resolved during the invokation itself.
-        //    //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
-
-        //    // TODO: This is probably slooow.
-
-        //    MemberInfo[] members = type.GetMembers();
-        //    foreach (var met in members)
-        //    {
-        //        if (met.Name == name)
-        //        {
-        //            if (type == obj)
-        //            {
-        //                result = new WeakDelegate(type, name);
-        //            }
-        //            else
-        //            {
-        //                result = new WeakDelegate(obj, name);
-        //            }
-        //            value = _convert.AnyToJsValue(result);
-        //            return true;
-        //        }
-        //    }
-        //    //if (type.GetMethods(mFlags).Any(x => x.Name == name))
-        //    //{
-        //    //    if (type == obj)
-        //    //    {
-        //    //        result = new WeakDelegate(type, name);
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        result = new WeakDelegate(obj, name);
-        //    //    }
-        //    //    value = _convert.ToJsValue(result);
-        //    //    return true;
-        //    //}
-
-        //    value = JsValue.Null;
-        //    return false;
-        //}
 
         internal void KeepAliveGetPropertyValue(int slot, string name, ref JsInterOpValue output)
         {
@@ -866,58 +768,43 @@ namespace Espresso
 				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
 #endif
 
+                //review delegate invocation again  
                 object[] a = (object[])_convert2.FromJsValue(ref args);
 
-                BindingFlags flags = BindingFlags.Public
-                        | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
-
-                if (func.Target != null)
-                {
-                    flags |= BindingFlags.Instance;
-                }
-                else
-                {
-                    flags |= BindingFlags.Static;
-                }
-
-                if (obj is BoundWeakDelegate)
-                {
-                    flags |= BindingFlags.NonPublic;
-                }
-
-                // need to convert methods from JsFunction's into delegates?
                 foreach (var a_elem in a)
                 {
-                    if (a.GetType() == typeof(JsFunction))
+                    if (a_elem.GetType() == typeof(JsFunction))
                     {
-                        CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
+                        CheckAndResolveJsFunctions(func, (JsFunction)a_elem, obj, type, func.MethodName, a);
                         break;
                     }
                 }
+
+                throw new NotSupportedException();
                 //if (a.Any(z => z != null && z.GetType() == typeof(JsFunction)))
                 //{
                 //    CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
                 //}
 
-                try
-                {
-                    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                    _convert2.AnyToJsValue(result, ref output);
-                    return;
-                }
-                catch (TargetInvocationException e)
-                {
-                    throw new NotSupportedException();
-                    //return JsValue.Error(KeepAliveAdd(e.InnerException));
-                    return;
-                }
-                catch (Exception e)
-                {
-                    //review set error
-                    throw new NotSupportedException();
-                    //return JsValue.Error(KeepAliveAdd(e));
-                    return;
-                }
+                //try
+                //{
+                //    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
+                //    _convert2.AnyToJsValue(result, ref output);
+                //    return;
+                //}
+                //catch (TargetInvocationException e)
+                //{
+                //    throw new NotSupportedException();
+                //    //return JsValue.Error(KeepAliveAdd(e.InnerException));
+                //    return;
+                //}
+                //catch (Exception e)
+                //{
+                //    //review set error
+                //    throw new NotSupportedException();
+                //    //return JsValue.Error(KeepAliveAdd(e));
+                //    return;
+                //}
             }
             throw new NotSupportedException();
             //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
@@ -996,19 +883,47 @@ namespace Espresso
         //        }
 
 
-        private static void CheckAndResolveJsFunctions(Type type, string methodName, BindingFlags flags, object[] args)
+        private static void CheckAndResolveJsFunctions(WeakDelegate weakDel,
+            JsFunction func,
+            object obj,
+            Type type,
+            string methodName,
+            object[] args)
         {
-            MethodInfo mi = type.GetMethod(methodName, flags);
-            ParameterInfo[] paramTypes = mi.GetParameters();
+#if NET20
+            //find proper method
+            BindingFlags flags = BindingFlags.Public
+                    | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
 
-            for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
+            if (weakDel.Target != null)
             {
-                if (args[i] != null && args[i].GetType() == typeof(JsFunction))
-                {
-                    JsFunction function = (JsFunction)args[i];
-                    args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
-                }
+                flags |= BindingFlags.Instance;
             }
+            else
+            {
+                flags |= BindingFlags.Static;
+            }
+
+            if (obj is BoundWeakDelegate)
+            {
+                flags |= BindingFlags.NonPublic;
+            }
+#else
+
+#endif
+            // need to convert methods from JsFunction's into delegates?
+            throw new NotSupportedException();
+            //MethodInfo mi = type.GetMethod(methodName, flags);
+            //ParameterInfo[] paramTypes = mi.GetParameters();
+
+            //for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
+            //{
+            //    if (args[i] != null && args[i].GetType() == typeof(JsFunction))
+            //    {
+            //        JsFunction function = (JsFunction)args[i];
+            //        args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
+            //    }
+            //}
         }
 
         //private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
@@ -1042,7 +957,7 @@ namespace Espresso
             {
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
-#endif 
+#endif
 
                 if (typeof(IDictionary).ExtIsAssignableFrom(obj.GetType()))
                 {
@@ -1092,39 +1007,7 @@ namespace Espresso
                 }
 
                 var mbNameList = new System.Collections.Generic.List<string>();
-                foreach (var mb in obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance))
-                {
-                    var met = mb as MethodBase;
-                    if (met != null && !met.IsSpecialName)
-                    {
-                        mbNameList.Add(mb.Name);
-                    }
-                }
-
-
-                //if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
-                //{
-                //    IDictionary dictionary = (IDictionary)obj;
-                //    //string[] keys = dictionary.Keys.Cast<string>().ToArray();
-
-                //    var keys01 = new System.Collections.Generic.List<string>();
-                //    foreach (var k in dictionary.Keys)
-                //    {
-                //        keys01.Add(k.ToString());
-                //    }
-
-                //    return _convert.ToJsValue(keys01.ToArray());
-                //}
-
-                //var mbNameList = new System.Collections.Generic.List<string>();
-                //foreach (var mb in obj.GetType().GetMembers())
-                //{
-                //    var met = mb as MethodBase;
-                //    if (met != null && !met.IsSpecialName)
-                //    {
-                //        mbNameList.Add(mb.Name);
-                //    }
-                //}
+                obj_type.AddPublicMembers(mbNameList);
 
                 _convert2.AnyToJsValue(mbNameList.ToArray(), ref output);
                 return;

@@ -36,23 +36,24 @@ namespace Espresso
 
         internal static JsException Create(JsConvert2 convert, JsError error)
         {
-            string type = (string)convert.FromJsValue(ref error.Type);
-            string resource = (string)convert.FromJsValue(ref error.Resource);
-            string message = (string)convert.FromJsValue(ref error.Message);
-            int line = error.Line;
-            int column = error.Column + 1; // because zero based.
-            JsObject nativeException = (JsObject)convert.FromJsValue(ref error.Exception);
+            throw new NotSupportedException();
+            //string type = (string)convert.FromJsValue(ref error.Type);
+            //string resource = (string)convert.FromJsValue(ref error.Resource);
+            //string message = (string)convert.FromJsValue(ref error.Message);
+            //int line = error.Line;
+            //int column = error.Column + 1; // because zero based.
+            //JsObject nativeException = (JsObject)convert.FromJsValue(ref error.Exception);
 
-            JsException exception;
-            if (type == "SyntaxError")
-            {
-                exception = new JsSyntaxError(type, resource, message, line, column);
-            }
-            else
-            {
-                exception = new JsException(type, resource, message, line, column, nativeException);
-            }
-            return exception;
+            //JsException exception;
+            //if (type == "SyntaxError")
+            //{
+            //    exception = new JsSyntaxError(type, resource, message, line, column);
+            //}
+            //else
+            //{
+            //    exception = new JsException(type, resource, message, line, column, nativeException);
+            //}
+            //return exception;
         }
 
         public JsException()
