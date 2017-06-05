@@ -108,7 +108,7 @@ namespace Espresso
         }
 
 
-        internal JsConvert Converter2
+        internal JsConvert Converter
         {
             get { return this._convert; }
         }

@@ -8,11 +8,12 @@ using System.IO;
 namespace Espresso
 {
 
-
+    //TODO: review delegate call convention
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate void ManagedListenerDel(int mIndex,
       [MarshalAs(UnmanagedType.LPWStr)]string methodName,
       IntPtr args);
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate void JsEngineSetupCallbackDel(IntPtr nativeJsEngine, IntPtr currentNativeJsContext);
 

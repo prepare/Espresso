@@ -379,13 +379,13 @@ namespace Espresso
         {
             JsValue output = new JsValue();
             NativeV8JsInterOp.ArgGetThis(this.metArgsPtr, ref output);
-            return this.context.Converter2.FromJsValue(ref output);
+            return this.context.Converter.FromJsValue(ref output);
         }
         public object GetArgAsObject(int index)
         {
             JsValue output = new JsValue();
             NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index, ref output);
-            return this.context.Converter2.FromJsValue(ref output);
+            return this.context.Converter.FromJsValue(ref output);
         }
         //--------------------------------------------------------------------
         public void SetResult(bool value)
@@ -420,7 +420,7 @@ namespace Espresso
         public void SetResultObj(object result)
         {
             JsValue output = new JsValue();
-            this.context.Converter2.AnyToJsValue(result, ref output);
+            this.context.Converter.AnyToJsValue(result, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
         }
 
@@ -433,7 +433,7 @@ namespace Espresso
 
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter2.AnyToJsValue(proxy, ref output);
+            this.context.Converter.AnyToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
         }
         public void SetResultAutoWrap<T>(T result)
@@ -444,7 +444,7 @@ namespace Espresso
             JsTypeDefinition jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter2.AnyToJsValue(proxy, ref output);
+            this.context.Converter.AnyToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
              
         }
