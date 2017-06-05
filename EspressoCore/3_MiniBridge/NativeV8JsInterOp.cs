@@ -211,8 +211,8 @@ namespace Espresso
         internal static extern void ArgGetObject(IntPtr callingArgsPtr, int index, ref JsValue output);
         //---------------------------------------------------------------------------------
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetString(IntPtr callingArgsPtr, [MarshalAs(UnmanagedType.LPWStr)] string value);
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        public static extern void ResultSetString(IntPtr callingArgsPtr, string value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetBool(IntPtr callingArgsPtr, bool value);
@@ -299,7 +299,7 @@ namespace Espresso
                 //3. method
                 //4. indexer get/set   
                 binWriter.Write((short)1);//start marker 
-                context.CollectionTypeMembers(jsTypeDefinition); 
+                context.CollectionTypeMembers(jsTypeDefinition);
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();
@@ -310,7 +310,7 @@ namespace Espresso
                         ContextRegisterTypeDefinition(
                         context.NativeContextHandle.Handle,
                         0, tt, finalBuffer.Length));
-                } 
+                }
             }
         }
         public static void CreateNativePart(JsContext context, INativeScriptable proxyObj)

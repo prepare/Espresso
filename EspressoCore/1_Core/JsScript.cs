@@ -87,8 +87,8 @@ namespace Espresso
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         static extern void jsscript_compile(HandleRef script,
-            [MarshalAs(UnmanagedType.LPWStr)] string str,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string str,
+            string name,
             ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]

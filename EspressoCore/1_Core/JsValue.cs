@@ -76,7 +76,18 @@ namespace Espresso
             //TODO:
             //if v dose not contain unmanaged data 
             //then we don't send it back to delete on unmanaged side
-            jsvalue_dispose(ref this);
+            switch (this.Type)
+            {
+                case JsValueType.Number:
+                case JsValueType.Boolean:
+                case JsValueType.Date:
+                case JsValueType.Empty:
+                    break;
+                default:
+                    jsvalue_dispose(ref this);
+                    break;
+            }
+
         }
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsvalue_dispose(ref JsValue value);
