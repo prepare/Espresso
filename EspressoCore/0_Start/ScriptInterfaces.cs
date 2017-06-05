@@ -431,9 +431,9 @@ namespace Espresso
                 this.context.RegisterTypeDefinition(jsTypeDef);
             }
 
-            var proxy = this.context.CreateWrapper(result, jsTypeDef);
+            INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter.AnyToJsValue(proxy, ref output);
+            this.context.Converter.ToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
         }
         public void SetResultAutoWrap<T>(T result)
@@ -444,9 +444,9 @@ namespace Espresso
             JsTypeDefinition jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter.AnyToJsValue(proxy, ref output);
+            this.context.Converter.ToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
-             
+
         }
 
     }

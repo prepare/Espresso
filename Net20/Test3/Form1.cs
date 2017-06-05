@@ -179,30 +179,20 @@ namespace Test3
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Start();
 
-                TestMe1 t1 = new TestMe1();
-                var proxy = ctx.CreateWrapper(t1, jstypedef);
 
+                TestMe1 t1 = new TestMe1();
+                //wrap t1 with custom js type definition
+                INativeScriptable proxy = ctx.CreateWrapper(t1, jstypedef);
+                ctx.SetVariableFromAny("x", proxy);
                 for (int i = 2000; i >= 0; --i)
                 {
-                    ctx.SetVariableFromAny("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return x.B();}else{return 0;}})()");
                 }
-                //for (int i = 1; i >= 0; --i)
-                //{
-                //    ctx.SetVariableFromAny("x", proxy);
-                //    object result = ctx.Execute(@"
-                //    var http = require('http'); 
-                //    var server = http.createServer(function(req, res) {
-                //    res.writeHead(200);
-                //    res.end('Hello Http');
-                //    });
-                //    server.listen(8080);
-                //    ");
-                //}
+
                 stwatch.Stop();
 
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
-                //Assert.That(result, Is.EqualTo(100));
+
             }
 
         }
@@ -926,6 +916,6 @@ namespace Test3
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
             }
         }
-         
+
     }
 }

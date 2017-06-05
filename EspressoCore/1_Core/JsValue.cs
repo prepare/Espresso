@@ -81,7 +81,7 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsvalue_dispose(ref JsValue value);
     }
-     
+
 
 
     enum JsValueType : int
@@ -113,9 +113,10 @@ namespace Espresso
     {
         Empty,
         SetPropertyError,
+        SetPropertyNotFound,
         GetPropertyNotFound,
         SetKeepAliveError,
         NotFoundManagedObjectId,
-
+        TargetInvocationError,
     }
 }

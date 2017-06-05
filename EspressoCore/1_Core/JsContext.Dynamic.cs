@@ -1,7 +1,8 @@
-﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+
 using System;
 using System.Collections.Generic;
-
 
 namespace Espresso
 {
@@ -57,7 +58,7 @@ namespace Espresso
             object res = _convert.FromJsValue(ref output);
             //TODO: review here
             //we should dispose only type that contains native data***
-             
+
             output.Dispose();
             Exception e = res as JsException;
             if (e != null)

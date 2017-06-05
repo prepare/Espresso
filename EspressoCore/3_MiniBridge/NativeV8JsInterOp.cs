@@ -263,7 +263,7 @@ namespace Espresso
         {
             //register managed method to js context
             ContextRegisterManagedCallback(
-                jsContext.Handle.Handle,
+                jsContext.NativeContextHandle.Handle,
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
                 (int)ManagedCallbackKind.MethodCall);
         }
@@ -298,12 +298,8 @@ namespace Espresso
                 //2. fields
                 //3. method
                 //4. indexer get/set   
-                binWriter.Write((short)1);//start marker
-
-
-                context.CollectionTypeMembers(jsTypeDefinition);
-                //------------------------------------------------
-
+                binWriter.Write((short)1);//start marker 
+                context.CollectionTypeMembers(jsTypeDefinition); 
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();
@@ -312,11 +308,9 @@ namespace Espresso
                 {
                     proxObject.SetUnmanagedPtr(
                         ContextRegisterTypeDefinition(
-                        context.Handle.Handle,
+                        context.NativeContextHandle.Handle,
                         0, tt, finalBuffer.Length));
-                }
-
-                //ms.Close();
+                } 
             }
         }
         public static void CreateNativePart(JsContext context, INativeScriptable proxyObj)
@@ -325,7 +319,7 @@ namespace Espresso
             {
                 proxyObj.SetUnmanagedPtr(
                     CreateWrapperForManagedObject(
-                        context.Handle.Handle,
+                        context.NativeContextHandle.Handle,
                         proxyObj.ManagedIndex,
                         proxyObj.UnmanagedTypeDefinitionPtr));
             }

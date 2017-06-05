@@ -94,9 +94,6 @@
     <Compile Include="..\..\EspressoCore\1_Core\JsObject.Dynamic.cs">
       <Link>1_Core\JsObject.Dynamic.cs</Link>
     </Compile>
-    <Compile Include="..\..\EspressoCore\1_Core\JsObjectMarshalType.cs">
-      <Link>1_Core\JsObjectMarshalType.cs</Link>
-    </Compile>
     <Compile Include="..\..\EspressoCore\1_Core\JsScript.cs">
       <Link>1_Core\JsScript.cs</Link>
     </Compile>

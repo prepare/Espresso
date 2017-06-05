@@ -30,7 +30,7 @@
 
 using namespace v8;
 
-int32_t js_object_marshal_type;
+ 
 
 extern "C"
 {
@@ -40,13 +40,7 @@ extern "C"
 	}
 
 
-	EXPORT void CALLCONV js_set_object_marshal_type(int32_t type)
-	{
-#ifdef DEBUG_TRACE_API
-		std::wcout << "js_object_marshal_type " << type << std::endl;
-#endif
-		js_object_marshal_type = type;
-	}
+	 
 
 	EXPORT JsEngine* CALLCONV jsengine_new(keepalive_remove_f keepalive_remove,
 		keepalive_get_property_value_f keepalive_get_property_value,

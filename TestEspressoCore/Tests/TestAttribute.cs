@@ -1,10 +1,7 @@
-﻿using System;
-using System.IO;
-using Espresso;
-
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+using System;
 namespace TestEspressoCore
 {
-
     class TestAttribute : Attribute
     {
         public TestAttribute() { }
