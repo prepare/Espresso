@@ -93,4 +93,11 @@ namespace Espresso
         //my extension
         JsTypeWrap = 18
     }
+
+    enum JsManagedError
+    {
+        Empty,
+        SetPropertyError,
+        SetKeepAliveError
+    }
 }

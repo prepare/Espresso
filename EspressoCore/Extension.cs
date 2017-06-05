@@ -46,6 +46,23 @@ namespace Espresso.Extension
             return a.GetRuntimeProperty(name);
 #endif
         }
+        public static PropertyInfo ExtGetPropertySetter(this Type a, object obj, string name)
+        {
+#if NET20
+            BindingFlags flags;
+            if (obj == null)
+            {
+                flags = BindingFlags.Public | BindingFlags.Static;
+            }
+            else
+            {
+                flags = BindingFlags.Public | BindingFlags.Instance;
+            }
+            return a.GetProperty(name, flags | BindingFlags.SetProperty);
+#else
+            return a.GetRuntimeProperty(name);      
+#endif
+        }
         public static FieldInfo ExtGetField(this Type a, object obj, string name)
         {
 #if NET20
