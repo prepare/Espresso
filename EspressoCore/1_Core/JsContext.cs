@@ -917,7 +917,7 @@ namespace Espresso
                 throw e;
             return res;
         }
-
+      
         public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
             return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
