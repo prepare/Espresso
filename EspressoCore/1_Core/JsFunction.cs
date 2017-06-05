@@ -2,7 +2,6 @@
 //MIT, 2013, Federico Di Gregorio <fog@initd.org>
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 namespace Espresso
 {
@@ -163,9 +162,7 @@ namespace Espresso
             return newTemplate.CreateNewDelegate(targetDelegateType, this);
 
         }
-
-
-        #region IDisposable implementation
+         
 
         bool _disposed;
 
@@ -173,8 +170,7 @@ namespace Espresso
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
+        } 
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -195,6 +191,6 @@ namespace Espresso
                 Dispose(false);
         }
 
-        #endregion
+
     }
 }

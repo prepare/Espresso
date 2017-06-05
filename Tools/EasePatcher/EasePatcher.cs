@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Xml;
 namespace EasePatcher
 {
     delegate void SimpleAction();
@@ -39,6 +38,7 @@ namespace EasePatcher
         {
 
         }
+
         public void DoPatch()
         {
             //1. copy file from espresso's patch folder 
@@ -61,7 +61,7 @@ namespace EasePatcher
             //create targetdir
             Directory.CreateDirectory(targetDir);
             //copy the following file to target folder
-            string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"\libespresso");
+            string[] libEsprCoreFiles = Directory.GetFiles(_espresso_src + @"/libespresso");
             int j = libEsprCoreFiles.Length;
             _newHeaderFiles.Clear();
             _newCppImplFiles.Clear();
@@ -324,31 +324,94 @@ namespace EasePatcher
 
     class LinuxAndMacPatcher : PatcherBase
     {
+
         public void Setup(string original_node_src, string espresso_src, string initBuildParameters = "")
         {
             _buildState = BuildState.Zero;
             this._original_node_src_dir = original_node_src;
             this._espresso_src = espresso_src;
         }
-        public void Build(SimpleAction nextAction)
+        public void PatchGyp(SimpleAction nextAction)
         {
-            //1. configure
-            //2. make
+
             _buildState = BuildState.InitBuild;
             ThreadPool.QueueUserWorkItem(delegate
-            {
-                UnixConfigure();
-                UnixMake();
+            {   
+                InternalPatchGyp(); 
+                //we patch the gyp *** 
+                //UnixConfigure();
+                //UnixMake();
                 if (nextAction != null)
                 {
                     nextAction();
                 }
             });
-
         }
+        void InternalPatchGyp()
+        {
+            string src_dir = _original_node_src_dir;
+            List<string> lines = new List<string>();
+            using (FileStream fs = new FileStream(src_dir + "/" + "node.gyp", FileMode.Open))
+            using (StreamReader reader = new StreamReader(fs))
+            {
+                string line = reader.ReadLine();
+                while (line != null)
+                {
+                    lines.Add(line);
+                    line = reader.ReadLine();
+                }
+            }
+            //-------------------
+            //find specific location and insert src
+            string[] new_patches = new string[]
+            {
+                "src/libespresso/bridge.cpp",
+                "src/libespresso/bridge2_impl.cpp",
+                "src/libespresso/jscontext.cpp",
+                "src/libespresso/jsengine.cpp",
+                "src/libespresso/jsscript.cpp",
+                "src/libespresso/managedref.cpp",
+                "src/libespresso/mini_BinaryReaderWriter.cpp",
+                "src/libespresso/libespr_nodemain.cpp",
+                "src/libespresso/bridge2.h",
+                "src/libespresso/espresso.h",
+                "src/libespresso/jsscript.h",
+            };
+
+            int j = lines.Count;
+
+            for (int i = j - 1; i >= 0; --i)
+            {
+                string line = lines[i].Trim();
+                if (line == "'src/node.cc',")
+                {
+                    //insert 
+                    //and break
+                    foreach (string patchFileName in new_patches)
+                    {
+                        lines.Insert(i, "'" + patchFileName + "',");
+                    }
+                    break;
+                }
+            }
+            //----------      
+            //save gyp 
+            j = lines.Count;
+            using (FileStream fs = new FileStream(src_dir + "/" + "node.gyp", FileMode.Create))
+            using (StreamWriter writer = new StreamWriter(fs))
+            {
+                for (int i = 0; i < j; ++i)
+                {
+                    writer.WriteLine(lines[i]);
+                }
+                writer.Flush();
+            }
+        }
+
+
         void UnixConfigure()
         {
-            ProcessStartInfo stInfo = new ProcessStartInfo(_espresso_src + "/configure");
+            ProcessStartInfo stInfo = new ProcessStartInfo(_original_node_src_dir + "/configure");
             stInfo.WorkingDirectory = _original_node_src_dir;
             //
             Process proc = Process.Start(stInfo);
@@ -358,7 +421,6 @@ namespace EasePatcher
         {
             ProcessStartInfo stInfo = new ProcessStartInfo("make");
             stInfo.WorkingDirectory = _original_node_src_dir;
-            //
             Process proc = Process.Start(stInfo);
             proc.WaitForExit();
         }

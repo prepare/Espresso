@@ -29,6 +29,10 @@ namespace Espresso
 {
     class WeakDelegate
     {
+        public Type Type;
+        public object Target;
+        public string MethodName;
+
         public WeakDelegate(object target, string name)
         {
             Target = target;
@@ -40,8 +44,6 @@ namespace Espresso
             MethodName = name;
         }
 
-        public Type Type;
-        public object Target;
-        public string MethodName;
+       
     }
 }

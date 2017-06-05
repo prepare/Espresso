@@ -24,8 +24,6 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using Espresso;
 
 namespace Sandbox
@@ -71,7 +69,7 @@ namespace Sandbox
             {
                 //Stopwatch watch = new Stopwatch();
                 //	watch.Start();
-                JsScript script = engine.CompileScript("3+3");
+                JsScript script = engine.CompileScript("3+3", "<unnamed>");
                 using (JsContext ctx = engine.CreateContext())
                 {
                     ctx.Execute(script);
@@ -87,7 +85,7 @@ namespace Sandbox
             while (true)
             {
                 using (JsEngine js = new JsEngine(4, 32))
-                {   
+                {
                     using (JsContext context = js.CreateContext())
                     {
                         //context.SetVariable("dbg", dbg);

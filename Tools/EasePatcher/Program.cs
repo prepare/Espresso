@@ -1,14 +1,17 @@
 ﻿//MIT, 2017, EngineKit
 using System;
+
 namespace EasePatcher
 {
     class Program
     {
+
         static void Main(string[] args)
         {
             Console.WriteLine("Espresso's EasePatcher");
             Console.WriteLine("Start Build....");
-            //------------------------------------    
+             
+
             switch (PatcherBase.GetPatcherOS())
             {
                 case PatcherOS.Windows:
@@ -33,15 +36,33 @@ namespace EasePatcher
                     }
                     break;
                 case PatcherOS.Mac:
+                    {
+                        var patcher = new LinuxAndMacPatcher();
+                        patcher.PatchSubFolder = "node_patches/node7.10_modified";
+                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
+                          @"../../../Espresso",
+                          "x64 --shared --xcode");
+                        Console.WriteLine("Building ...");
+
+                        //patch before configure
+                        patcher.PatchGyp(() =>
+                        {
+                            patcher.DoPatch();
+                            Console.WriteLine("Finish!");
+                        });
+
+                    }
+                    break;
                 case PatcherOS.Linux:
                     {
                         var patcher = new LinuxAndMacPatcher();
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
-                        patcher.Setup(@"~/Downloads/node-v7.10.0", //specific target 
-                          @"~/Downloads/Espresso",
-                          "release");
+                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
+                          @"../../../Espresso",
+                          "x64 --shared");
                         Console.WriteLine("Building ...");
-                        patcher.Build(() =>
+                        //
+                        patcher.PatchGyp(() =>
                         {
                             patcher.DoPatch();
                             Console.WriteLine("Finish!");
@@ -51,7 +72,7 @@ namespace EasePatcher
                 default:
                     throw new NotSupportedException();
             }
-            
+
             string userReadLine = Console.ReadLine();
         }
     }

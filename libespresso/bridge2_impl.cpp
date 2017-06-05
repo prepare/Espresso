@@ -3,10 +3,10 @@
 
 #include <v8.h>
 #include "libplatform/libplatform.h"
-
+#include <cstring>
 //#include "src/libplatform/default-platform.h"
 //#include "de src/base/platform/platform.h"
- 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
@@ -30,49 +30,59 @@ int TestCallBack()
 {
 	MetCallingArgs a;
 	memset(&a, 0, sizeof(MetCallingArgs));
-	managedListner(0, L"OKOK001", &a);
+
+
+	std::u16string u16str = u"OKOK001";
+	managedListner(0, u16str.c_str(), &a);
 	return 1;
 }
 
 void ResultSetBool(MetCallingArgs* callingArgs, bool value)
 {
-	jsvalue result;
-	result.type = JSVALUE_TYPE_BOOLEAN;
-	result.value.i32 = value ? 1 : 0;
-	callingArgs->result = result;
+	callingArgs->result.type = JSVALUE_TYPE_BOOLEAN;
+	callingArgs->result.i32 = value ? 1 : 0;
 }
 void ResultSetInt32(MetCallingArgs* callingArgs, int value)
 {
-	jsvalue result;
-	result.type = JSVALUE_TYPE_INTEGER;
-	result.value.i32 = value;
-	callingArgs->result = result;
+	//TODO: JS_VALUE
+
+	callingArgs->result.type = JSVALUE_TYPE_INTEGER;
+	callingArgs->result.i32 = value;
 }
 void ResultSetFloat(MetCallingArgs* callingArgs, float value)
 {
-	jsvalue result;
-	result.type = JSVALUE_TYPE_NUMBER;
-	result.value.num = value;
-	callingArgs->result = result;
+	callingArgs->result.type = JSVALUE_TYPE_NUMBER;
+	callingArgs->result.num = value;
 }
 void ResultSetDouble(MetCallingArgs* callingArgs, double value)
 {
-	jsvalue result;
-	result.type = JSVALUE_TYPE_NUMBER;
-	result.value.num = value;
-	callingArgs->result = result;
+	callingArgs->result.type = JSVALUE_TYPE_NUMBER;
+	callingArgs->result.num = value;
 }
-void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
+void ResultSetString(MetCallingArgs* callingArgs, uint16_t* value)
 {
-	jsvalue result;
-	result.type = JSVALUE_TYPE_STRING;
-	result.value.str = (uint16_t*)value;
-	callingArgs->result = result;
+	//TODO: review here
+	callingArgs->result.type = JSVALUE_TYPE_STRING;
+	callingArgs->result.ptr = value;
 }
-
-void ResultSetJsValue(MetCallingArgs* callingArgs, jsvalue value)
+void ResultSetJsNull(MetCallingArgs* callingArgs)
 {
-	callingArgs->result = value;
+	callingArgs->result.type = JSVALUE_TYPE_NULL;
+}
+void ResultSetJsVoid(MetCallingArgs* callingArgs)
+{
+	callingArgs->result.type = JSVALUE_TYPE_EMPTY;
+}
+void ResultSetManagedObjectIndex(MetCallingArgs* callingArgs, int32_t managedObjectIndex)
+{
+	//TODO: review here
+	callingArgs->result.type = JSVALUE_TYPE_MANAGED;
+	callingArgs->result.i32 = managedObjectIndex;
+}
+void ResultSetValue(MetCallingArgs* callingArgs, jsvalue* value)
+{
+	//copy all value to
+	callingArgs->result = *value;
 }
 
 ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
@@ -136,7 +146,7 @@ void DoMethodCall(const FunctionCallbackInfo<Value>& args)
 		MET_, //method kind
 		&callingArgs);
 
-	args.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
+	args.GetReturnValue().Set(cctx->ctx->AnyToV8(&callingArgs.result));
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +171,7 @@ void DoGetterProperty(Local<String> propertyName, const PropertyCallbackInfo<Val
 	cctx->ctx->myMangedCallBack(m_index, MET_GETTER, &callingArgs);
 
 	//close and return value
-	info.GetReturnValue().Set(cctx->ctx->AnyToV8(callingArgs.result));
+	info.GetReturnValue().Set(cctx->ctx->AnyToV8(&callingArgs.result));
 }
 
 void DoSetterProperty(Local<String> propertyName,
@@ -224,7 +234,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	//--------------------------------------------------------------
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
-	wstring typeDefName = binReader.ReadUtf16String();
+	std::u16string typeDefName = binReader.ReadUtf16String();
 
 	//4. num of fields 
 	int nfields = binReader.ReadInt16();
@@ -234,7 +244,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 		//we not support in this version ?
 		int flags = binReader.ReadInt16();
 		int fieldId = binReader.ReadInt16();
-		std::wstring fieldname = binReader.ReadUtf16String();
+		std::u16string fieldname = binReader.ReadUtf16String();
 		//accessor ?
 
 	}
@@ -244,7 +254,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	{
 		int flags = binReader.ReadInt16();
 		int methodId = binReader.ReadInt16();
-		std::wstring metName = binReader.ReadUtf16String();
+		std::u16string metName = binReader.ReadUtf16String();
 
 
 		CallingContext* callingContext = new CallingContext();
@@ -265,7 +275,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 		int flags_getter = binReader.ReadInt16();
 		int property_id = binReader.ReadInt16();
 		//name
-		std::wstring propName = binReader.ReadUtf16String();
+		std::u16string propName = binReader.ReadUtf16String();
 
 		CallingContext* callingContext = new CallingContext();
 		callingContext->ctx = this;
@@ -298,7 +308,7 @@ void ContextRegisterManagedCallback(JsContext* jsContext, void* callback, int ca
 }
 
 
-jsvalue ArgGetObject(MetCallingArgs* args, int index)
+void ArgGetObject(MetCallingArgs* args, int index, jsvalue* output)
 {
 	switch (args->methodCallKind)
 	{
@@ -307,11 +317,10 @@ jsvalue ArgGetObject(MetCallingArgs* args, int index)
 		//1 arg
 		Local<v8::External> ext = Local<v8::External>::Cast(args->accessorInfo->Data());
 		Handle<Object> obj = Handle<Object>::Cast(args->accessorInfo->This());
-
 		CallingContext* cctx = (CallingContext*)ext->Value();
-		return cctx->ctx->ConvAnyFromV8(args->setterValue, obj);
-
-	}break;
+		cctx->ctx->ConvAnyFromV8(args->setterValue, obj, output);
+		return;
+	}
 	case MET_:
 	{
 		Local<v8::External> ext = Local<v8::External>::Cast(args->args->Data());
@@ -319,17 +328,16 @@ jsvalue ArgGetObject(MetCallingArgs* args, int index)
 
 		Local<v8::Value> arg = (Local<v8::Value>)(*(args->args))[index];
 		Handle<Object> obj = Handle<Object>::Cast(args->args->This());
-		return cctx->ctx->ConvAnyFromV8(arg, obj);
+		cctx->ctx->ConvAnyFromV8(arg, obj, output);
+		return;
 	}
+	default:
+		output->type = JSVALUE_TYPE_NULL;//null?, review again
+		break;
 	}
-	jsvalue v;
-	// Initialize to a generic error.
-	v.type = JSVALUE_TYPE_NULL;
-	v.length = 0;
-	v.value.str = 0;
-	return v;
+
 }
-jsvalue ArgGetThis(MetCallingArgs* args)
+void ArgGetThis(MetCallingArgs* args, jsvalue* output)
 {
 	if (args->accessorInfo == NULL)
 	{
@@ -337,7 +345,8 @@ jsvalue ArgGetThis(MetCallingArgs* args)
 		CallingContext* cctx = (CallingContext*)ext->Value();
 
 		Handle<Object> obj = Handle<Object>::Cast(args->args->This());
-		return cctx->ctx->ConvAnyFromV8(obj, obj);
+		cctx->ctx->ConvAnyFromV8(obj, Handle<Object>(), output);
+		return;
 	}
 	else
 	{
@@ -347,10 +356,9 @@ jsvalue ArgGetThis(MetCallingArgs* args)
 		CallingContext* cctx = (CallingContext*)ext->Value();
 
 		Handle<Object> obj = Handle<Object>::Cast(args->accessorInfo->This());
-		return cctx->ctx->ConvAnyFromV8(obj, obj);
+		return cctx->ctx->ConvAnyFromV8(obj, obj, output);
 	}
 }
-
 //====================================================== 
 ExternalTypeDefinition::ExternalTypeDefinition(int mIndex)
 {

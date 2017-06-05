@@ -55,12 +55,12 @@ namespace Espresso
                 //this.members[name] = value;
             }
         }
- 
+
         public virtual bool TryGetMember(string mbname, out object result)
         {
             result = null;
             return false;
-        } 
+        }
         public virtual bool TrySetMember(string mbname, object value)
         {
             return false;
@@ -70,10 +70,13 @@ namespace Espresso
             return null;
         }
     }
-     
+
 
     public class JsObject : DynamicObject, IDisposable
     {
+        readonly JsContext _context;
+        readonly IntPtr _handle;
+
         public JsObject(JsContext context, IntPtr ptr)
         {
             if (ptr == IntPtr.Zero)
@@ -83,8 +86,6 @@ namespace Espresso
             _handle = ptr;
         }
 
-        readonly JsContext _context;
-        readonly IntPtr _handle;
 
         public IntPtr Handle
         {
@@ -95,25 +96,25 @@ namespace Espresso
             result = _context.InvokeProperty(this, name, args);
             return true;
         }
-       
+
         public override bool TryGetMember(string mbname, out object result)
         {
             return (result = _context.GetPropertyValue(this, mbname)) != null;
 
         }
-        
+
         public override bool TrySetMember(string mbname, object value)
         {
             _context.SetPropertyValue(this, mbname, value);
             return true;
         }
-        
+
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return _context.GetMemberNames(this);
         }
 
-        #region IDisposable implementation
+
 
         bool _disposed;
 
@@ -139,7 +140,6 @@ namespace Espresso
                 Dispose(false);
         }
 
-        #endregion
     }
 
 }

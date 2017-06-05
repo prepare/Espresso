@@ -1,4 +1,5 @@
-﻿using System;
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+using System;
 using Espresso;
 
 namespace TestEspressoCore

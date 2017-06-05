@@ -48,7 +48,7 @@ namespace Espresso
             get { return _store.Count; }
         }
 
-        public int Add(object obj)
+        public int Register(object obj)
         {
             _store.Add(_store_index, obj);
             return _store_index++;

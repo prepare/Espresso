@@ -8,11 +8,12 @@ using System.IO;
 namespace Espresso
 {
 
-
+    //TODO: review delegate call convention
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate void ManagedListenerDel(int mIndex,
       [MarshalAs(UnmanagedType.LPWStr)]string methodName,
       IntPtr args);
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate void JsEngineSetupCallbackDel(IntPtr nativeJsEngine, IntPtr currentNativeJsContext);
 
@@ -167,7 +168,7 @@ namespace Espresso
         //basic 
 
         static ManagedListenerDel engineListenerDel;
-       
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int TestCallBack();
@@ -202,16 +203,16 @@ namespace Espresso
         public static extern int ArgCount(IntPtr callingArgsPtr);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern JsValue ArgGetThis(IntPtr callingArgsPtr);
+        internal static extern void ArgGetThis(IntPtr callingArgsPtr, ref JsValue output);
 
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern JsValue ArgGetObject(IntPtr callingArgsPtr, int index);
+        internal static extern void ArgGetObject(IntPtr callingArgsPtr, int index, ref JsValue output);
         //---------------------------------------------------------------------------------
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetString(IntPtr callingArgsPtr, [MarshalAs(UnmanagedType.LPWStr)] string value);
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        public static extern void ResultSetString(IntPtr callingArgsPtr, string value);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetBool(IntPtr callingArgsPtr, bool value);
@@ -225,8 +226,15 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResultSetFloat(IntPtr callingArgsPtr, float value);
 
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void ResultSetJsValue(IntPtr callingArgsPtr, JsValue jsvalue);
+        public static extern void ResultSetValue(IntPtr callingArgsPtr, ref JsValue jsvalue);
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void ResultSetJsNull(IntPtr callingArgsPtr);
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void ResultSetJsVoid(IntPtr callingArgsPtr);
+
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -241,7 +249,7 @@ namespace Espresso
         {
             //prepare 
             engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
-           
+
         }
 
         static void RegisterManagedListener(ManagedListenerDel mListenerDel)
@@ -250,12 +258,12 @@ namespace Espresso
                  System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mListenerDel),
                 (int)ManagedCallbackKind.Listener);
         }
-       
+
         internal static void CtxRegisterManagedMethodCall(JsContext jsContext, ManagedMethodCallDel mMethodCall)
         {
             //register managed method to js context
             ContextRegisterManagedCallback(
-                jsContext.Handle.Handle,
+                jsContext.NativeContextHandle.Handle,
                 System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(mMethodCall),
                 (int)ManagedCallbackKind.MethodCall);
         }
@@ -290,12 +298,8 @@ namespace Espresso
                 //2. fields
                 //3. method
                 //4. indexer get/set   
-                binWriter.Write((short)1);//start marker
-
-
+                binWriter.Write((short)1);//start marker 
                 context.CollectionTypeMembers(jsTypeDefinition);
-                //------------------------------------------------
-
                 jsTypeDefinition.WriteDefinitionToStream(binWriter);
                 //------------------------------------------------
                 finalBuffer = ms.ToArray();
@@ -304,11 +308,9 @@ namespace Espresso
                 {
                     proxObject.SetUnmanagedPtr(
                         ContextRegisterTypeDefinition(
-                        context.Handle.Handle,
+                        context.NativeContextHandle.Handle,
                         0, tt, finalBuffer.Length));
                 }
-
-                //ms.Close();
             }
         }
         public static void CreateNativePart(JsContext context, INativeScriptable proxyObj)
@@ -317,7 +319,7 @@ namespace Espresso
             {
                 proxyObj.SetUnmanagedPtr(
                     CreateWrapperForManagedObject(
-                        context.Handle.Handle,
+                        context.NativeContextHandle.Handle,
                         proxyObj.ManagedIndex,
                         proxyObj.UnmanagedTypeDefinitionPtr));
             }
