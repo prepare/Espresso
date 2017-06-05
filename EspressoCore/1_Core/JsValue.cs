@@ -40,23 +40,36 @@ namespace Espresso
     //2. this is a quite large object, and is designed to be used on stack,
     //pass by reference to native side
     //---------------------------------------
+    /// <summary>
+    /// for internal inter-op only -> always be private,used on stack,pass by reference
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     struct JsInterOpValue
     {
-        public JsValueType Type; //4
+        /// <summary>
+        /// type and flags
+        /// </summary>
+        public JsValueType Type; //
         /// <summary>
         /// this for 32 bits values, also be used as string len, array len  and index to managed slot index
         /// </summary>
-        public int I32;//4 
-        public long I64;//8
-        public double Num;//8 
+        public int I32;//
         /// <summary>
-        /// native ptr
+        /// native ptr (may point to native object, native array, native string)
         /// </summary>
-        public IntPtr Ptr;//8 on 64 bits 
+        public IntPtr Ptr;
+        /// <summary>
+        /// store float or double
+        /// </summary>
+        public double Num;// 
+        /// <summary>
+        /// store 64 bits value
+        /// </summary>
+        public long I64;//
     }
 
-    enum JsValueType
+
+    enum JsValueType : int
     {
         UnknownError = -1,
         Empty = 0,
