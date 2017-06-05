@@ -117,7 +117,7 @@ namespace Espresso
             j = properties.Count;
             for (int i = 0; i < j; ++i)
             {
-                var p = properties[i];
+                JsPropertyDefinition p = properties[i];
                 p.SetMemberId(registerProperties.Count);
                 registerProperties.Add(p);
             }
@@ -365,13 +365,11 @@ namespace Espresso
         public void Flush()
         {
             jscontext_force_gc();
-        }
-
-
+        } 
 
         internal int KeepAliveAdd(object obj)
         {
-            return _keepalives.Add(obj);
+            return _keepalives.Register(obj);
         }
 
         internal object KeepAliveGet(int slot)
