@@ -22,7 +22,7 @@ namespace Espresso
 
             JsInterOpValue v = new JsInterOpValue();
             jscontext_get_property_names(_context, obj.Handle, ref v);
-            object res = _convert2.FromJsValue(ref v);
+            object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
 
             Exception e = res as JsException;
@@ -54,7 +54,7 @@ namespace Espresso
             JsInterOpValue output = new JsInterOpValue();
             jscontext_get_property_value(_context, obj.Handle, name, ref output);
             //
-            object res = _convert2.FromJsValue(ref output);
+            object res = _convert.FromJsValue(ref output);
             //TODO: review here
             //we should dispose only type that contains native data***
             jsvalue_dispose(ref output);
@@ -80,12 +80,12 @@ namespace Espresso
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue output = new JsInterOpValue();
 
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_property_value(_context, obj.Handle, name, ref a, ref output);
 
             //TODO: review exceptio here
             //not need to convert all the time if we not have error
-            object res = _convert2.FromJsValue(ref output);
+            object res = _convert.FromJsValue(ref output);
             jsvalue_dispose(ref output);
             jsvalue_dispose(ref a);
 
@@ -111,12 +111,12 @@ namespace Espresso
             a.Type = JsValueType.Null;
             if (args != null)
             {
-                _convert2.AnyToJsValue(args, ref a);
+                _convert.AnyToJsValue(args, ref a);
             }
 
             JsInterOpValue v = new JsInterOpValue();
             jscontext_invoke_property(_context, obj.Handle, name, ref a, ref v);
-            object res = _convert2.FromJsValue(ref v);
+            object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
             jsvalue_dispose(ref a);
 

@@ -34,7 +34,7 @@ namespace Espresso
     public class JsException : Exception
     {
 
-        internal static JsException Create(JsConvert2 convert, JsError error)
+        internal static JsException Create(JsConvert convert, JsError error)
         {
             throw new NotSupportedException();
             //string type = (string)convert.FromJsValue(ref error.Type);

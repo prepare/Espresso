@@ -33,16 +33,16 @@ using Espresso.Extension;
 
 namespace Espresso
 {
-    class JsConvert2
+    class JsConvert
     {
         public static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static readonly DateTime EPOCH_LocalTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        static JsConvert2()
+        static JsConvert()
         {
 
         }
-        public JsConvert2(JsContext context)
+        public JsConvert(JsContext context)
         {
             _context = context;
         }

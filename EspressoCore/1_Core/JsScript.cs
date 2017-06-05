@@ -22,7 +22,7 @@ namespace Espresso
         readonly int _id;
         readonly JsEngine _engine;
         readonly HandleRef _script;
-        internal JsScript(int id, JsEngine engine, HandleRef engineHandle, JsConvert2 convert, string code, string name, Action<int> notifyDispose)
+        internal JsScript(int id, JsEngine engine, HandleRef engineHandle, JsConvert convert, string code, string name, Action<int> notifyDispose)
         {
             _id = id;
             _engine = engine;

@@ -61,9 +61,9 @@ namespace Espresso
             _notifyDispose = notifyDispose;
             _engine = engine;
             _keepalives = new KeepAliveDictionaryStore();
-            //create native js context
+             
             _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
-            _convert2 = new JsConvert2(this);
+            _convert = new JsConvert(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
 
@@ -89,7 +89,7 @@ namespace Espresso
             _keepalives = new KeepAliveDictionaryStore();
             //create native js context
             _context = new HandleRef(this, nativeJsContext);
-            _convert2 = new JsConvert2(this);
+            _convert = new JsConvert(this);
 
             this.jsTypeDefBuilder = jsTypeDefBuilder;
 
@@ -108,9 +108,9 @@ namespace Espresso
         }
 
 
-        internal JsConvert2 Converter2
+        internal JsConvert Converter2
         {
-            get { return this._convert2; }
+            get { return this._convert; }
         }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
         {
@@ -191,7 +191,7 @@ namespace Espresso
         }
 
 
-        readonly JsConvert2 _convert2;
+        readonly JsConvert _convert;
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
 
@@ -230,7 +230,7 @@ namespace Espresso
             {
                 JsInterOpValue v = new JsInterOpValue();
                 jscontext_execute_script(_context, script.Handle, ref v);
-                res = _convert2.FromJsValue(ref v);
+                res = _convert.FromJsValue(ref v);
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
@@ -289,7 +289,7 @@ namespace Espresso
                 jscontext_execute(_context, code, name ?? "<Unnamed Script>", ref output);
 
                 //watch2.Stop();                 
-                res = _convert2.FromJsValue(ref output);
+                res = _convert.FromJsValue(ref output);
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
@@ -325,7 +325,7 @@ namespace Espresso
             CheckDisposed();
             JsInterOpValue v = new JsInterOpValue();
             jscontext_get_global(_context, ref v);
-            object res = _convert2.FromJsValue(ref v);
+            object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
 
             Exception e = res as JsException;
@@ -343,7 +343,7 @@ namespace Espresso
 
             JsInterOpValue v = new JsInterOpValue();
             jscontext_get_variable(_context, name, ref v);
-            object res = _convert2.FromJsValue(ref v);
+            object res = _convert.FromJsValue(ref v);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value get variable.");
 #endif
@@ -469,7 +469,7 @@ namespace Espresso
             {
 
                 IDictionary dictionary = (IDictionary)obj;
-                _convert2.FromJsValue(ref value);
+                _convert.FromJsValue(ref value);
                 //we get member from this type 
                 throw new NotSupportedException();
                 //dictionary[name] = _convert2.FromJsValue(value);
@@ -561,7 +561,7 @@ namespace Espresso
                 if (dictionary.Contains(name))
                 {
                     result = dictionary[name];
-                    _convert2.AnyToJsValue(result, ref value);
+                    _convert.AnyToJsValue(result, ref value);
                 }
                 else
                 {
@@ -576,7 +576,7 @@ namespace Espresso
             if (pi != null)
             {
                 result = pi.GetValue(obj, null);
-                _convert2.AnyToJsValue(result, ref value);
+                _convert.AnyToJsValue(result, ref value);
                 return true;
             }
 
@@ -585,7 +585,7 @@ namespace Espresso
             if (fi != null)
             {
                 result = fi.GetValue(obj);
-                _convert2.AnyToJsValue(result, ref value);
+                _convert.AnyToJsValue(result, ref value);
                 return true;
             }
 
@@ -723,10 +723,10 @@ namespace Espresso
                 if (mi != null)
                 {
                     object result = mi.Invoke(obj, new object[0]);
-                    _convert2.AnyToJsValue(result, ref output);
+                    _convert.AnyToJsValue(result, ref output);
                     return;
                 }
-                _convert2.AnyToJsValue(obj, ref output);
+                _convert.AnyToJsValue(obj, ref output);
                 return;
             }
             //error
@@ -752,8 +752,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
-                    object[] constructorArgs = (object[])_convert2.FromJsValue(ref args);
-                    _convert2.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
+                    object[] constructorArgs = (object[])_convert.FromJsValue(ref args);
+                    _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
                     return;
                 }
 
@@ -769,7 +769,7 @@ namespace Espresso
 #endif
 
                 //review delegate invocation again  
-                object[] a = (object[])_convert2.FromJsValue(ref args);
+                object[] a = (object[])_convert.FromJsValue(ref args);
 
                 foreach (var a_elem in a)
                 {
@@ -965,11 +965,11 @@ namespace Espresso
                     if (dictionary.Contains(name))
                     {
                         dictionary.Remove(name);
-                        _convert2.ToJsValue(true, ref output);
+                        _convert.ToJsValue(true, ref output);
                         return;
                     }
                 }
-                _convert2.ToJsValue(false, ref output);
+                _convert.ToJsValue(false, ref output);
                 return;
             }
             throw new NotSupportedException();
@@ -1002,14 +1002,14 @@ namespace Espresso
                         keys01.Add(k.ToString());
                     }
 
-                    _convert2.AnyToJsValue(keys01.ToArray(), ref output);
+                    _convert.AnyToJsValue(keys01.ToArray(), ref output);
                     return;
                 }
 
                 var mbNameList = new System.Collections.Generic.List<string>();
                 obj_type.AddPublicMembers(mbNameList);
 
-                _convert2.AnyToJsValue(mbNameList.ToArray(), ref output);
+                _convert.AnyToJsValue(mbNameList.ToArray(), ref output);
                 return;
             }
 
@@ -1029,12 +1029,12 @@ namespace Espresso
             JsInterOpValue a = new JsInterOpValue();
             if (args != null)
             {
-                _convert2.AnyToJsValue(args, ref a);
+                _convert.AnyToJsValue(args, ref a);
             }
 
             JsInterOpValue v = new JsInterOpValue();
             jscontext_invoke(_context, funcPtr, thisPtr, ref a, ref v);
-            object res = _convert2.FromJsValue(ref v);
+            object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
             jsvalue_dispose(ref a);
             //
@@ -1062,7 +1062,7 @@ namespace Espresso
 
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1081,7 +1081,7 @@ namespace Espresso
 
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1098,7 +1098,7 @@ namespace Espresso
 
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1114,7 +1114,7 @@ namespace Espresso
             CheckDisposed();
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1131,7 +1131,7 @@ namespace Espresso
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
 
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1148,7 +1148,7 @@ namespace Espresso
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
 
-            _convert2.AnyToJsValue(value, ref a);
+            _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1164,7 +1164,7 @@ namespace Espresso
             CheckDisposed();
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
-            _convert2.AnyToJsValue(proxy, ref a);
+            _convert.AnyToJsValue(proxy, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1183,7 +1183,7 @@ namespace Espresso
             JsInterOpValue a = new JsInterOpValue();
             JsInterOpValue b = new JsInterOpValue();
 
-            _convert2.ToJsValueNull(ref a);
+            _convert.ToJsValueNull(ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");

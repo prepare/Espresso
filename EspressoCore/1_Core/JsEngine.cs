@@ -250,7 +250,7 @@ namespace Espresso
             JsScript script = new JsScript(id,
                 this,
                 _engine,
-                new JsConvert2(null),
+                new JsConvert(null),
                 code,
                 name,
                 ScriptDisposed);

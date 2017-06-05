@@ -49,7 +49,7 @@ namespace Espresso
         /// <summary>
         /// type and flags
         /// </summary>
-        public JsValueType Type; //
+        public JsValueType Type;
         /// <summary>
         /// this for 32 bits values, also be used as string len, array len  and index to managed slot index
         /// </summary>
