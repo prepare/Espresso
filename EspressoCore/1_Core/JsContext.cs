@@ -188,8 +188,6 @@ namespace Espresso
                     }
                     break;
             }
-
-
         }
         public JsEngine Engine
         {
@@ -685,10 +683,9 @@ namespace Espresso
                             return;
                         }
                     }
-                    throw new NotSupportedException();
-                    // Else an error.
-                    //return JsValue.Error(KeepAliveAdd(
-                    //    new InvalidOperationException(String.Format("property not found on {0}: {1} ", type, name))));
+                    output.Type = JsValueType.Error; //error on set property
+                    output.I64 = (int)JsManagedError.GetPropertyNotFound;
+                    return;
                 }
                 catch (TargetInvocationException e)
                 {
@@ -697,16 +694,20 @@ namespace Espresso
                     //if (e.InnerException != null)
                     //    return JsValue.Error(KeepAliveAdd(e.InnerException));
                     //throw;
+                    output.Type = JsValueType.Error; //error on set property
+                    output.I64 = (int)JsManagedError.GetPropertyNotFound;
+                    throw;
                 }
                 catch (Exception e)
                 {
-                    throw new NotSupportedException();
-                    //return JsValue.Error(KeepAliveAdd(e));
+                    output.Type = JsValueType.Error; //error on set property
+                    output.I64 = (int)JsManagedError.SetKeepAliveError;
+                    return;
                 }
             }
-            //TODO: review exception again
-            throw new NotSupportedException();
-            //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
+            output.Type = JsValueType.Error; //error on set property
+            output.I64 = (int)JsManagedError.SetKeepAliveError;
+            return;
         }
 
         internal void KeepAliveValueOf(int slot, ref JsValue output)
@@ -733,8 +734,7 @@ namespace Espresso
             }
             output.Type = JsValueType.Error;
             output.I64 = (int)JsManagedError.SetKeepAliveError;
-            //error
-            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot))); 
+
         }
         internal void KeepAliveInvoke(int slot, ref JsValue args, ref JsValue output)
         {
@@ -838,6 +838,11 @@ namespace Espresso
 #else
 
 #endif
+            MethodInfo foundMet = type.ExtGetMethod(obj, methodName);
+            if (foundMet != null)
+            {
+
+            }
             // need to convert methods from JsFunction's into delegates?
             throw new NotSupportedException();
             //MethodInfo mi = type.GetMethod(methodName, flags);
@@ -852,27 +857,6 @@ namespace Espresso
             //    }
             //}
         }
-
-        //private static void CheckAndResolveJsFunctions(Type type, string methodName, object[] args)
-        //{
-
-        //    //MethodInfo mi = type.GetMethod(methodName, flags);
-        //    MethodInfo mi = type.GetRuntimeMethod(methodName, null);
-        //    //TODO: type.GetRuntimeMethods();
-        //    ParameterInfo[] paramTypes = mi.GetParameters();
-
-        //    for (int i = Math.Min(paramTypes.Length, args.Length) - 1; i >= 0; --i)
-        //    {
-        //        if (args[i] != null && args[i].GetType() == typeof(JsFunction))
-        //        {
-        //            JsFunction function = (JsFunction)args[i];
-        //            args[i] = function.MakeDelegate(paramTypes[i].ParameterType);
-        //        }
-        //    }
-        //}
-
-
-
         internal void KeepAliveDeleteProperty(int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
@@ -899,10 +883,8 @@ namespace Espresso
                 _convert.ToJsValue(false, ref output);
                 return;
             }
-            throw new NotSupportedException();
-            //TODO review err again ***
-            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
-            return;
+            output.Type = JsValueType.Error;
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId; 
         }
 
         internal void KeepAliveEnumerateProperties(int slot, ref JsValue output)
@@ -939,11 +921,8 @@ namespace Espresso
                 _convert.AnyToJsValue(mbNameList.ToArray(), ref output);
                 return;
             }
-
-            //TODO: review here again
-            throw new NotSupportedException();
-            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
-
+            output.Type = JsValueType.Error;
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId; 
         }
 
         public object Invoke(IntPtr funcPtr, IntPtr thisPtr, object[] args)

@@ -197,10 +197,8 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-
             context.KeepAliveEnumerateProperties(slot, ref output);
         }
-
         private void KeepAliveRemove(int contextId, int slot)
         {
 #if DEBUG_TRACE_API

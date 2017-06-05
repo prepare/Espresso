@@ -113,6 +113,9 @@ namespace Espresso
     {
         Empty,
         SetPropertyError,
-        SetKeepAliveError
+        GetPropertyNotFound,
+        SetKeepAliveError,
+        NotFoundManagedObjectId,
+
     }
 }
