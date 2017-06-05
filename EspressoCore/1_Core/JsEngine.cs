@@ -29,15 +29,7 @@ namespace Espresso
         JsTypeDefinitionBuilder defaultTypeBuilder;
 
 
-        static JsEngine()
-        {
-            //
-            JsObjectMarshalType objectMarshalType = JsObjectMarshalType.Dictionary;
-#if NET40
-            objectMarshalType = JsObjectMarshalType.Dynamic;
-#endif
-            js_set_object_marshal_type(objectMarshalType);
-        }
+         
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
 
@@ -215,16 +207,17 @@ namespace Espresso
         public JsContext CreateContext()
         {
             CheckDisposed();
-            int id = Interlocked.Increment(ref _currentContextId);
+            //
+            int newContextId = Interlocked.Increment(ref _currentContextId);
+            JsContext ctx = new JsContext(newContextId, this, ContextDisposed, this.defaultTypeBuilder);
 
-            JsContext ctx = new JsContext(id, this, ContextDisposed, this.defaultTypeBuilder);
-
-            _aliveContexts.Add(id, ctx);
+            _aliveContexts.Add(newContextId, ctx);
             return ctx;
         }
         public JsContext CreateContext(IntPtr nativeJsContext)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentContextId);
             JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this.defaultTypeBuilder);
             _aliveContexts.Add(id, ctx);
@@ -233,14 +226,13 @@ namespace Espresso
         public JsContext CreateContext(JsTypeDefinitionBuilder customTypeDefBuilder)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentContextId);
-
             JsContext ctx = new JsContext(id, this, ContextDisposed, customTypeDefBuilder);
-
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
-        public JsScript CompileScript(string code, string name)
+        public JsScript CompileScript(string code, string scriptName)
         {
             CheckDisposed();
             //
@@ -250,7 +242,7 @@ namespace Espresso
                 _engine,
                 new JsConvert(null),
                 code,
-                name,
+                scriptName,
                 ScriptDisposed);
 
             _aliveScripts.Add(id, script);

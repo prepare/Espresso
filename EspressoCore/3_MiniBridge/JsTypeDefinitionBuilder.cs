@@ -1,14 +1,11 @@
 ﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Reflection;
-using System.IO;
- 
+
 namespace Espresso
 {
-     
+
     public abstract class JsTypeDefinitionBuilder
     {
         internal JsTypeDefinition BuildTypeDefinition(Type t)
@@ -16,8 +13,8 @@ namespace Espresso
             return this.OnBuildRequest(t);
         }
         protected abstract JsTypeDefinition OnBuildRequest(Type t);
-    } 
-    
+    }
+
     class DefaultJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {
 
@@ -47,6 +44,7 @@ namespace Espresso
             JsTypeDefinition typedefinition = new JsTypeDefinition(t.Name);
 
             //only instance /public method /prop***
+            
             //MethodInfo[] methods = t.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
             var methods = t.GetRuntimeMethods();
             foreach (var met in methods)

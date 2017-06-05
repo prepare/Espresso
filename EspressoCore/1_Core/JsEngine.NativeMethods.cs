@@ -24,10 +24,7 @@ namespace Espresso
         delegate void KeepAliveInvokeDelegate(int context, int slot, ref JsValue args, ref JsValue output);
         delegate void KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsValue output);
         delegate void KeepAliveEnumeratePropertiesDelegate(int context, int slot, ref JsValue output);
-
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern void js_set_object_marshal_type(JsObjectMarshalType objectMarshalType);
+ 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void js_dump_allocated_items();

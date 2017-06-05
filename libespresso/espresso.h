@@ -84,8 +84,7 @@ using namespace v8;
 #define INCREMENT(x) __sync_fetch_and_add(&x, 1)
 #define DECREMENT(x) __sync_fetch_and_add(&x, -1)
 #endif
-
-extern int32_t js_object_marshal_type;
+ 
 
 extern long js_mem_debug_engine_count;
 extern long js_mem_debug_context_count;

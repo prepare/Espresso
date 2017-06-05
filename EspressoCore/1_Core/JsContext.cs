@@ -380,7 +380,7 @@ namespace Espresso
             {
                 //del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
                 del = new BoundWeakDelegate(mInfo.DeclaringType, mInfo.Name);
-            } 
+            }
 #endif
             this.SetVariableFromAny(name, del);
         }
@@ -912,7 +912,7 @@ namespace Espresso
                     return;
                 }
 
-                var mbNameList = new System.Collections.Generic.List<string>();
+                var mbNameList = new List<string>();
                 obj_type.AddPublicMembers(mbNameList);
 
                 _convert.AnyToJsValue(mbNameList.ToArray(), ref output);

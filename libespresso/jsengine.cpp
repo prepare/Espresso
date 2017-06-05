@@ -399,45 +399,32 @@ void JsEngine::StringFromV8(Handle<Value> value, jsvalue* output)
 void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output)
 {
 
-	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
-		output->type = JSVALUE_TYPE_WRAPPED;
-		output->i32 = 0;
-		// A Persistent<Object> is exactly the size of an IntPtr, right?
-		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
-		// We should even cast it to void* because C++ doesn't allow to put
-		// it in a union: going scary and scarier here.    
-		Persistent<Object> *persistent = new Persistent<Object>();
-		//persistent->Reset(isolate_,obj);
-		output->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
-	}
-	else {
+	output->type = JSVALUE_TYPE_WRAPPED;
+	output->i32 = 0;
+	// A Persistent<Object> is exactly the size of an IntPtr, right?
+	// If not we're in deep deep trouble (on IA32 and AMD64 should be).
+	// We should even cast it to void* because C++ doesn't allow to put
+	// it in a union: going scary and scarier here.    
+	//v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
+	Persistent<Object> *persistent = new Persistent<Object>();
+	persistent->Reset(isolate_, Persistent<Object>(isolate_, obj));
+	output->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
 
-		output->type = JSVALUE_TYPE_WRAPPED;
-		output->i32 = 0;
-		// A Persistent<Object> is exactly the size of an IntPtr, right?
-		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
-		// We should even cast it to void* because C++ doesn't allow to put
-		// it in a union: going scary and scarier here.    
-		//v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
-		Persistent<Object> *persistent = new Persistent<Object>();
-		persistent->Reset(isolate_, Persistent<Object>(isolate_, obj));
-		output->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, obj));
+	//-------------------------------------------------------------------------
+	/*v.type = JSVALUE_TYPE_DICT;
+	Local<Array> names = obj->GetOwnPropertyNames();
+	v.length = names->Length();
+	jsvalue* values = new jsvalue[v.length * 2];
+	if (values != NULL) {
+		for(int i = 0; i < v.length; i++) {
+			int indx = (i * 2);
+			Local<Value> key = names->Get(i);
+			values[indx] = AnyFromV8(key);
+			values[indx+1] = AnyFromV8(obj->Get(key));
+		}
+		v.value.arr = values;
+	}*/
 
-		//-------------------------------------------------------------------------
-		/*v.type = JSVALUE_TYPE_DICT;
-		Local<Array> names = obj->GetOwnPropertyNames();
-		v.length = names->Length();
-		jsvalue* values = new jsvalue[v.length * 2];
-		if (values != NULL) {
-			for(int i = 0; i < v.length; i++) {
-				int indx = (i * 2);
-				Local<Value> key = names->Get(i);
-				values[indx] = AnyFromV8(key);
-				values[indx+1] = AnyFromV8(obj->Get(key));
-			}
-			v.value.arr = values;
-		}*/
-	}
 }
 
 void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output)
@@ -664,7 +651,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 		Local<Object> handle = Local<Object>::New(isolate_, persistent);
 		return handle;
 	}
-	}
+}
 	return Null(isolate_);
 }
 int32_t JsEngine::ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value> preallocatedArgs[])
