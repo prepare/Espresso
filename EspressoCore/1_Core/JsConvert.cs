@@ -374,10 +374,9 @@ namespace Espresso
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
-                int keepAliveId = _context.KeepAliveAdd(obj);
+                output.I32 = _context.KeepAliveAdd(obj);
                 output.Type = JsValueType.JsTypeWrap;
-                output.Ptr = prox.UnmanagedPtr;
-                output.I32 = keepAliveId;
+                output.Ptr = prox.UnmanagedPtr; 
                 return;
             }
             //-----
@@ -534,10 +533,9 @@ namespace Espresso
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
-                int keepAliveId = _context.KeepAliveAdd(obj);
+                output->I32 = _context.KeepAliveAdd(obj);
                 output->Type = JsValueType.JsTypeWrap;
                 output->Ptr = prox.UnmanagedPtr;
-                output->I32 = keepAliveId;
                 return;
             }
             //-----
