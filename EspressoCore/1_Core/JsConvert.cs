@@ -116,10 +116,9 @@ namespace Espresso
                     return JsDictionaryObject(ref v);
 
                 case JsValueType.Wrapped:
-                    return new JsObject(_context, v.Ptr);
-
-                case JsValueType.Error:
-                    return JsException.Create(this, new JsError(v.Ptr));
+                    return new JsObject(_context, v.Ptr); 
+                case JsValueType.Error: 
+                    return JsException.Create(this, v.Ptr); 
                 case JsValueType.Function:
                     //convert from js function delegate to managed
                     //this compose of function ptr and delegate's target
@@ -204,7 +203,7 @@ namespace Espresso
                 case JsValueType.Wrapped:
                     return new JsObject(_context, v->Ptr);
                 case JsValueType.Error:
-                    return JsException.Create(this, new JsError(v->Ptr));
+                    return JsException.Create(this, v->Ptr);
                 case JsValueType.Function:
                     //convert from js function delegate to managed
                     //this compose of function ptr and delegate's target
@@ -536,9 +535,9 @@ namespace Espresso
                 return;
             }
             //-----
-            Type type = obj.GetType(); 
+            Type type = obj.GetType();
             // Check for nullable types (we will cast the value out of the box later). 
-            type = type.ExtGetInnerTypeIfNullableValue(); 
+            type = type.ExtGetInnerTypeIfNullableValue();
             if (type == typeof(Boolean))
             {
                 output->Type = JsValueType.Boolean;

@@ -34,28 +34,29 @@ namespace Espresso
     public class JsException : Exception
     {
 
-        internal static JsException Create(JsConvert convert, JsError error)
+        internal static JsException Create(JsConvert convert, IntPtr nativeErrorObject)
         {
-            throw new NotSupportedException();
-            //string type = (string)convert.FromJsValue(ref error.Type);
-            //string resource = (string)convert.FromJsValue(ref error.Resource);
-            //string message = (string)convert.FromJsValue(ref error.Message);
-            //int line = error.Line;
-            //int column = error.Column + 1; // because zero based.
-            //JsObject nativeException = (JsObject)convert.FromJsValue(ref error.Exception);
+            unsafe
+            {
+                JsError* jsErr = (JsError*)nativeErrorObject;
+                string type = (string)convert.FromJsValuePtr((JsValue*)jsErr->type);
+                string res = (string)convert.FromJsValuePtr((JsValue*)jsErr->resource);
+                string msg = (string)convert.FromJsValuePtr((JsValue*)jsErr->message);
+                JsObject nativeException = (JsObject)convert.FromJsValuePtr((JsValue*)jsErr->exception);
 
-            //JsException exception;
-            //if (type == "SyntaxError")
-            //{
-            //    exception = new JsSyntaxError(type, resource, message, line, column);
-            //}
-            //else
-            //{
-            //    exception = new JsException(type, resource, message, line, column, nativeException);
-            //}
-            //return exception;
+                JsException exception;
+                if (type == "SyntaxError")
+                {
+                    //from syntax error?
+                    exception = new JsSyntaxError(type, res, msg, jsErr->line, jsErr->column);
+                }
+                else
+                {
+                    exception = new JsException(type, res, msg, jsErr->line, jsErr->column, nativeException);
+                }
+                return exception;
+            }
         }
-
         public JsException()
         {
         }
@@ -70,12 +71,6 @@ namespace Espresso
         {
 
         }
-
-        //protected JsException(SerializationInfo info, StreamingContext context)
-        //    : base(info, context)
-        //{
-        //}
-
         internal JsException(string type, string resource, string message, int line, int col, JsObject error)
             : base(string.Format("{0}: {1} at line: {2} column: {3}.", resource, message, line, col))
         {

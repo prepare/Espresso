@@ -6,11 +6,12 @@ namespace Espresso
 {
 
     struct JsError
-    {   
-        readonly IntPtr nativeError;
-        public JsError(IntPtr nativeError)
-        {
-            this.nativeError = nativeError;
-        }
+    {
+        public int line;
+        public int column;
+        public IntPtr type;
+        public IntPtr resource;
+        public IntPtr message;
+        public IntPtr exception;
     }
 }
