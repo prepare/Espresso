@@ -283,7 +283,7 @@ namespace Espresso
             {
                 foreach (var aliveContext in _aliveContexts)
                 {
-                    JsContext.jscontext_dispose(aliveContext.Value.Handle);
+                    JsContext.jscontext_dispose(aliveContext.Value.NativeContextHandle);
                 }
                 _aliveContexts.Clear();
                 foreach (var aliveScript in _aliveScripts)

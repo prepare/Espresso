@@ -60,34 +60,12 @@ namespace Espresso
         readonly JsConvert _convert;
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
-        //
-
-
+        // 
         internal JsContext(int id,
             JsEngine engine,
             Action<int> notifyDispose,
             JsTypeDefinitionBuilder jsTypeDefBuilder)
-        {
-
-            _id = id;
-            _notifyDispose = notifyDispose;
-            _engine = engine;
-            _keepalives = new KeepAliveDictionaryStore();
-
-            _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
-            _convert = new JsConvert(this);
-
-            this.jsTypeDefBuilder = jsTypeDefBuilder;
-
-            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
-            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
-            registerMethods.Add(null);//first is null
-            registerProperties.Add(null); //first is null
-
-
-            proxyStore = new NativeObjectProxyStore(this);
-
-        }
+            : this(id, engine, notifyDispose, jscontext_new(id, engine.UnmanagedEngineHandler), jsTypeDefBuilder) { }
         internal JsContext(int id,
             JsEngine engine,
             Action<int> notifyDispose,
@@ -95,6 +73,7 @@ namespace Espresso
             JsTypeDefinitionBuilder jsTypeDefBuilder)
         {
 
+            //constructor setup
             _id = id;
             _notifyDispose = notifyDispose;
             _engine = engine;
@@ -108,12 +87,10 @@ namespace Espresso
             engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
             NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
             registerMethods.Add(null);//first is null
-            registerProperties.Add(null); //first is null
-
-
+            registerProperties.Add(null); //first is null 
             proxyStore = new NativeObjectProxyStore(this);
-
         }
+
         internal INativeRef GetObjectProxy(int index)
         {
             return this.proxyStore.GetProxyObject(index);
@@ -193,7 +170,7 @@ namespace Espresso
         {
             get { return _engine; }
         }
-        public HandleRef Handle
+        public HandleRef NativeContextHandle
         {
             get { return _context; }
         }
@@ -370,7 +347,7 @@ namespace Espresso
                 del = new BoundWeakDelegate(func.Method.DeclaringType, func.Method.Name);
             }
 
-#else           
+#else
             MethodInfo mInfo = func.GetMethodInfo();
             if (func.Target != null)
             {
