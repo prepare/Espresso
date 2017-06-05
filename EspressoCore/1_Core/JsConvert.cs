@@ -116,9 +116,9 @@ namespace Espresso
                     return JsDictionaryObject(ref v);
 
                 case JsValueType.Wrapped:
-                    return new JsObject(_context, v.Ptr); 
-                case JsValueType.Error: 
-                    return JsException.Create(this, v.Ptr); 
+                    return new JsObject(_context, v.Ptr);
+                case JsValueType.Error:
+                    return JsException.Create(this, v.Ptr);
                 case JsValueType.Function:
                     //convert from js function delegate to managed
                     //this compose of function ptr and delegate's target
@@ -281,6 +281,7 @@ namespace Espresso
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
             JsContext.jsvalue_alloc_string(value, ref output);
             output.Type = JsValueType.String;
+            output.I32 = value.Length;
         }
         public void ToJsValue(char c, ref JsValue output)
         {
@@ -288,6 +289,7 @@ namespace Espresso
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
             JsContext.jsvalue_alloc_string(c.ToString(), ref output);
             output.Type = JsValueType.String;
+            output.I32 = 1;
         }
         public void ToJsValue(double value, ref JsValue output)
         {
@@ -339,7 +341,6 @@ namespace Espresso
             {
                 throw new JsInteropException("can't allocate memory on the unmanaged side");
             }
-
             unsafe
             {
                 JsValue** nativeArr = (JsValue**)output.Ptr;
@@ -348,9 +349,7 @@ namespace Espresso
                     AnyToJsValuePtr(arr[i], nativeArr[i]);
                 }
             }
-
         }
-
         public void ToJsValueNull(ref JsValue output)
         {
             output.Type = JsValueType.Null;
@@ -395,6 +394,7 @@ namespace Espresso
             {
                 // We need to allocate some memory on the other side;
                 // will be free'd by unmanaged code.
+                output.Type = JsValueType.String;
                 JsContext.jsvalue_alloc_string(obj.ToString(), ref output);
                 return;
             }
@@ -423,7 +423,6 @@ namespace Espresso
                 output.I32 = (int)obj;
                 return;
             }
-
             if (type == typeof(UInt32))
             {
                 //TODO: review Type here when send to native side
@@ -485,6 +484,7 @@ namespace Espresso
             {
                 //alloc space for array
                 int arrLen = array.Length;
+                output.Type = JsValueType.Array;
                 JsContext.jsvalue_alloc_array(arrLen, ref output);
                 if (output.I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
@@ -550,6 +550,7 @@ namespace Espresso
                 // We need to allocate some memory on the other side;
                 // will be free'd by unmanaged code.
                 JsContext.jsvalue_alloc_string(obj.ToString(), output);
+                output->Type = JsValueType.String;
                 return;
             }
             //-----------------------------------------------------------
@@ -640,8 +641,11 @@ namespace Espresso
                 //alloc space for array
                 int arrLen = array.Length;
                 JsContext.jsvalue_alloc_array(arrLen, output);
+
                 if (output->I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
+                //
+                output->Type = JsValueType.Array;
                 unsafe
                 {
                     JsValue** arr = (JsValue**)output->Ptr;
