@@ -283,8 +283,7 @@ namespace Espresso
             object res = null;
             try
             {
-                //watch2.Start();
-
+                //watch2.Start(); 
                 JsValue output = new JsValue();
                 jscontext_execute(_context, code, name ?? "<Unnamed Script>", ref output);
 
@@ -314,8 +313,7 @@ namespace Espresso
             Exception e = res as JsException;
             if (e != null)
                 throw e;
-            //watch1.Stop();
-
+            //watch1.Stop(); 
             // Console.WriteLine("Execution time " + watch2.ElapsedTicks + " total time " + watch1.ElapsedTicks);
             return res;
         }
@@ -884,7 +882,7 @@ namespace Espresso
                 return;
             }
             output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId; 
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
         }
 
         internal void KeepAliveEnumerateProperties(int slot, ref JsValue output)
@@ -910,7 +908,6 @@ namespace Espresso
                     {
                         keys01.Add(k.ToString());
                     }
-
                     _convert.AnyToJsValue(keys01.ToArray(), ref output);
                     return;
                 }
@@ -922,7 +919,7 @@ namespace Espresso
                 return;
             }
             output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId; 
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
         }
 
         public object Invoke(IntPtr funcPtr, IntPtr thisPtr, object[] args)

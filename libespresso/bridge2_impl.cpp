@@ -60,7 +60,7 @@ void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
 {
 	//TODO: review here
 	callingArgs->result.type = JSVALUE_TYPE_STRING;
-	callingArgs->result.str = (uint16_t*)value;
+	callingArgs->result.ptr = (uint16_t*)value;
 }
 void ResultSetJsNull(MetCallingArgs* callingArgs)
 {
