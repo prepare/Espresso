@@ -924,7 +924,6 @@ namespace Espresso
                 throw e;
             return res;
         }
-
         public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
             return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
@@ -933,7 +932,38 @@ namespace Espresso
         {
             proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
+        //---------------------------------------------------------------------------------------- 
+        public JsTypeDefinition GetJsTypeDefinition(Type actualType)
+        {
 
+            JsTypeDefinition found;
+            if (this.mappingJsTypeDefinition.TryGetValue(actualType, out found))
+                return found;
+
+            //if not found
+            //just create it
+            found = this.jsTypeDefBuilder.BuildTypeDefinition(actualType);
+            this.mappingJsTypeDefinition.Add(actualType, found);
+            this.RegisterTypeDefinition(found);
+
+            return found;
+        }
+
+        internal bool GetCacheDelegateForType(Type anotherDelegateType, out DelegateTemplate delSample)
+        {
+            return this.cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
+        }
+        internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
+        {
+            this.cachedDelSamples[anotherDelegateType] = delegateType;
+        }
+        //---------------------------------------------------------------------------------------- 
+
+        /// <summary>
+        /// set variable with any value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void SetVariableFromAny(string name, object value)
         {
             if (name == null)
@@ -954,7 +984,7 @@ namespace Espresso
         }
 
         /// <summary>
-        /// set variable from string value
+        /// set variable with string value
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -967,8 +997,8 @@ namespace Espresso
 
             JsValue a = new JsValue();
             JsValue b = new JsValue();
-            _convert.AnyToJsValue(value, ref a);
-            
+            _convert.ToJsValue(value, ref a);
+
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -976,6 +1006,11 @@ namespace Espresso
             a.Dispose();
             b.Dispose();
         }
+        /// <summary>
+        /// set variable  with int32 value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void SetVariable(string name, int value)
         {
             if (name == null)
@@ -985,7 +1020,9 @@ namespace Espresso
 
             JsValue a = new JsValue();
             JsValue b = new JsValue();
-            _convert.AnyToJsValue(value, ref a);
+
+            _convert.ToJsValue(value, ref a);
+
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -993,15 +1030,23 @@ namespace Espresso
             a.Dispose();
             b.Dispose();
         }
+        /// <summary>
+        /// set variable with double value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void SetVariable(string name, double value)
         {
             if (name == null)
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
+
             JsValue a = new JsValue();
             JsValue b = new JsValue();
-            _convert.AnyToJsValue(value, ref a);
+
+            _convert.ToJsValue(value, ref a);
+
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1009,16 +1054,22 @@ namespace Espresso
             a.Dispose();
             b.Dispose();
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void SetVariable(string name, long value)
         {
             if (name == null)
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
+
             JsValue a = new JsValue();
             JsValue b = new JsValue();
 
-            _convert.AnyToJsValue(value, ref a);
+            _convert.ToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1077,7 +1128,6 @@ namespace Espresso
             a.Dispose();
             b.Dispose();
         }
-
         public void SetVariableAutoWrap<T>(string name, T result)
              where T : class
         {
@@ -1086,32 +1136,7 @@ namespace Espresso
             INativeScriptable proxy = this.CreateWrapper(result, jsTypeDef);
             this.SetVariable(name, proxy);
         }
-        public JsTypeDefinition GetJsTypeDefinition(Type actualType)
-        {
 
-            JsTypeDefinition found;
-            if (this.mappingJsTypeDefinition.TryGetValue(actualType, out found))
-                return found;
-
-            //if not found
-            //just create it
-            found = this.jsTypeDefBuilder.BuildTypeDefinition(actualType);
-            this.mappingJsTypeDefinition.Add(actualType, found);
-            this.RegisterTypeDefinition(found);
-
-            return found;
-        }
-        //----------------------------------------------------------------------------------------
-
-
-        internal bool GetCacheDelegateForType(Type anotherDelegateType, out DelegateTemplate delSample)
-        {
-            return this.cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
-        }
-        internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
-        {
-            this.cachedDelSamples[anotherDelegateType] = delegateType;
-        }
     }
 
     class Timer

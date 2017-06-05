@@ -645,6 +645,7 @@ namespace Espresso
                 if (output->I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
                 //
+
                 output->Type = JsValueType.Array;
                 unsafe
                 {
