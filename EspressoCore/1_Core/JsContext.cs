@@ -681,28 +681,28 @@ namespace Espresso
         internal void KeepAliveGetValueOf(int slot, ref JsValue output)
         {
             object obj = KeepAliveGet(slot);
-            if (obj != null)
+            if (obj == null)
             {
-
-                Type type = obj.GetType();
-                MethodInfo mi;
+                output.Type = JsValueType.Error;
+                output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+                return;
+            }
+            // 
+            Type type = obj.GetType();
+            MethodInfo mi;
 #if NET20
                 mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
 #else
-                mi = type.GetRuntimeMethod("ValueOf", s_emptyTypeArr);
+            mi = type.GetRuntimeMethod("ValueOf", s_emptyTypeArr);
 #endif
-                if (mi != null)
-                {
-                    //shoul be static value
-                    object result = mi.Invoke(obj, null);//no parameter of this value then set to null
-                    _convert.AnyToJsValue(result, ref output);
-                    return;
-                }
-                _convert.AnyToJsValue(obj, ref output);
+            if (mi != null)
+            {
+                //shoul be static value
+                object result = mi.Invoke(obj, null);//no parameter of this value then set to null
+                _convert.AnyToJsValue(result, ref output);
                 return;
             }
-            output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+            _convert.AnyToJsValue(obj, ref output);
         }
         internal void KeepAliveInvoke(int slot, ref JsValue args, ref JsValue output)
         {
@@ -710,72 +710,77 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("invoking");
 #endif
-            //   Console.WriteLine(args);
+            //Console.WriteLine(args);
 
             object obj = KeepAliveGet(slot);
-            if (obj != null)
+            if (obj == null)
             {
-                Type constructorType = obj as Type;
-                if (constructorType != null)
-                {
+                output.Type = JsValueType.Error;
+                output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+                return;
+            }
+
+
+            Type constructorType = obj as Type;
+            if (constructorType != null)
+            {
 #if DEBUG_TRACE_API
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
-                    object[] constructorArgs = (object[])_convert.FromJsValue(ref args);
-                    //review here
-                    _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
-                    return;
-                }
-                //expect slot is del
-                WeakDelegate func = obj as WeakDelegate;
-                if (func == null)
-                {
-                    throw new Exception("not a function.");
-                }
+                object[] constructorArgs = (object[])_convert.FromJsValue(ref args);
+                //review here
+                _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
+                return;
+            }
+            //expect slot is del
+            WeakDelegate func = obj as WeakDelegate;
+            if (func == null)
+            {
+                throw new Exception("not a function.");
+            }
 
-                //owner type of the delegate
-                Type type = func.Target != null ? func.Target.GetType() : func.Type;
+            //owner type of the delegate
+            Type type = func.Target != null ? func.Target.GetType() : func.Type;
 #if DEBUG_TRACE_API
 				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
 #endif
 
-                //review delegate invocation again  
-                object[] argObjects = (object[])_convert.FromJsValue(ref args);
+            //review delegate invocation again  
+            object[] argObjects = (object[])_convert.FromJsValue(ref args);
 
-                int j = argObjects.Length;
-                for (int i = 0; i < j; ++i)
+            int j = argObjects.Length;
+            for (int i = 0; i < j; ++i)
+            {
+                object a_elem = argObjects[i];
+                if (a_elem.GetType() == typeof(JsFunction))
                 {
-                    object a_elem = argObjects[i];
-                    if (a_elem.GetType() == typeof(JsFunction))
-                    {
-                        CheckAndResolveJsFunctions(func, (JsFunction)a_elem, obj, type, func.MethodName, argObjects);
-                        break;
-                    }
+                    CheckAndResolveJsFunctions(func, (JsFunction)a_elem, obj, type, func.MethodName, argObjects);
+                    break;
                 }
-
-                throw new NotSupportedException();
-                //try
-                //{
-                //    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                //    _convert.AnyToJsValue(result, ref output);
-                //    return;
-                //}
-                //catch (TargetInvocationException e)
-                //{
-                //    output.Type = JsValueType.Error;
-                //    output.I64 = (int)JsManagedError.TargetInvocationError;
-                //    return;
-                //}
-                //catch (Exception e)
-                //{
-                //    //review set error
-                //    output.Type = JsValueType.Error;
-                //    output.I64 = (int)JsManagedError.SetKeepAliveError;
-                //    return;
-                //}
             }
-            output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+
+            throw new NotSupportedException();
+            //try
+            //{
+            //    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
+            //    _convert.AnyToJsValue(result, ref output);
+            //    return;
+            //}
+            //catch (TargetInvocationException e)
+            //{
+            //    output.Type = JsValueType.Error;
+            //    output.I64 = (int)JsManagedError.TargetInvocationError;
+            //    return;
+            //}
+            //catch (Exception e)
+            //{
+            //    //review set error
+            //    output.Type = JsValueType.Error;
+            //    output.I64 = (int)JsManagedError.SetKeepAliveError;
+            //    return;
+            //}
+
+
         }
         static void CheckAndResolveJsFunctions(WeakDelegate weakDel,
           JsFunction func,
@@ -831,27 +836,28 @@ namespace Espresso
 #endif
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
             var obj = KeepAliveGet(slot);
-            if (obj != null)
+            if (obj == null)
             {
+                output.Type = JsValueType.Error;
+                output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+                return;
+            }
+
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
 
-                if (typeof(IDictionary).ExtIsAssignableFrom(obj.GetType()))
+            if (typeof(IDictionary).ExtIsAssignableFrom(obj.GetType()))
+            {
+                IDictionary dictionary = (IDictionary)obj;
+                if (dictionary.Contains(name))
                 {
-                    IDictionary dictionary = (IDictionary)obj;
-                    if (dictionary.Contains(name))
-                    {
-                        dictionary.Remove(name);
-                        _convert.ToJsValue(true, ref output);
-                        return;
-                    }
+                    dictionary.Remove(name);
+                    _convert.ToJsValue(true, ref output);
+                    return;
                 }
-                _convert.ToJsValue(false, ref output);
-                return;
             }
-            output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+            _convert.ToJsValue(false, ref output);
         }
 
         internal void KeepAliveEnumerateProperties(int slot, ref JsValue output)
@@ -861,34 +867,35 @@ namespace Espresso
 #endif
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
             var obj = KeepAliveGet(slot);
-            if (obj != null)
+            if (obj == null)
             {
+                output.Type = JsValueType.Error;
+                output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+                return;
+            }
+
 #if DEBUG_TRACE_API
 				Console.WriteLine("deleting prop " + name + " type " + type);
 #endif
 
 
-                Type obj_type = obj.GetType();
-                if (typeof(IDictionary).ExtIsAssignableFrom(obj_type))
+            Type obj_type = obj.GetType();
+            if (typeof(IDictionary).ExtIsAssignableFrom(obj_type))
+            {
+                IDictionary dictionary = (IDictionary)obj;
+                var keys01 = new System.Collections.Generic.List<string>();
+                foreach (var k in dictionary.Keys)
                 {
-                    IDictionary dictionary = (IDictionary)obj;
-                    var keys01 = new System.Collections.Generic.List<string>();
-                    foreach (var k in dictionary.Keys)
-                    {
-                        keys01.Add(k.ToString());
-                    }
-                    _convert.AnyToJsValue(keys01.ToArray(), ref output);
-                    return;
+                    keys01.Add(k.ToString());
                 }
-
-                var mbNameList = new List<string>();
-                obj_type.AddPublicMembers(mbNameList);
-
-                _convert.AnyToJsValue(mbNameList.ToArray(), ref output);
+                _convert.AnyToJsValue(keys01.ToArray(), ref output);
                 return;
             }
-            output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
+
+            var mbNameList = new List<string>();
+            obj_type.AddPublicMembers(mbNameList);
+            _convert.AnyToJsValue(mbNameList.ToArray(), ref output);
+
         }
 
         public object Invoke(IntPtr funcPtr, IntPtr thisPtr, object[] args)
@@ -917,7 +924,7 @@ namespace Espresso
                 throw e;
             return res;
         }
-      
+
         public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
             return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
@@ -946,6 +953,11 @@ namespace Espresso
             // TODO: Check the result of the operation for errors.
         }
 
+        /// <summary>
+        /// set variable from string value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public void SetVariable(string name, string value)
         {
             if (name == null)
@@ -956,6 +968,7 @@ namespace Espresso
             JsValue a = new JsValue();
             JsValue b = new JsValue();
             _convert.AnyToJsValue(value, ref a);
+            
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
