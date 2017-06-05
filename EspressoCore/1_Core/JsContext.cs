@@ -367,7 +367,7 @@ namespace Espresso
             jscontext_force_gc();
         }
 
-        #region Keep-alive management and callbacks.
+
 
         internal int KeepAliveAdd(object obj)
         {
@@ -384,9 +384,6 @@ namespace Espresso
             _keepalives.Remove(slot);
         }
 
-        #endregion
-
-        #region IDisposable implementation
 
         private readonly Action<int> _notifyDispose;
         bool _disposed;
@@ -434,8 +431,6 @@ namespace Espresso
                 Dispose(false);
         }
 
-        #endregion
-
 
         internal bool TrySetMemberValue(Type type, object obj, string name, ref JsValue value)
         {
@@ -456,7 +451,7 @@ namespace Espresso
                 prop_withSetter.SetValue(obj, _convert.FromJsValue(ref value), null);
                 return true; //success
             }
-            //TODO:check public field for this?
+            //TODO:check public field for this? 
             return false; //not found this proper field or 
         }
 
@@ -484,15 +479,10 @@ namespace Espresso
 #endif
                 try
                 {
+
                     if (!string.IsNullOrEmpty(name))
                     {
-                        string upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1);
-                        if (TrySetMemberValue(type, obj, upperCamelCase, ref v))
-                        {
-                            //no error 
-                            output.Type = JsValueType.Empty;
-                            return;
-                        }
+                        //this version we don't  implicit auto convert to upper camel case...  
                         if (TrySetMemberValue(type, obj, name, ref v))
                         {
                             //no error 
@@ -502,7 +492,7 @@ namespace Espresso
                     }
                     //TODO: review how to handle error again
                     output.Type = JsValueType.Error; //error on set property
-                    output.I64 = (int)JsManagedError.SetPropertyError;
+                    output.I64 = (int)JsManagedError.SetPropertyNotFound;
                     //TODO: review if we need to store the exception information on keepalive-store or not
                     return;
                     //return JsValue.Error(KeepAliveAdd(
@@ -518,7 +508,7 @@ namespace Espresso
                 }
             }
             output.Type = JsValueType.Error; //error on set property
-            output.I64 = (int)JsManagedError.SetKeepAliveError;
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
             return;
             //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
@@ -647,12 +637,13 @@ namespace Espresso
                 {
                     if (!string.IsNullOrEmpty(name))
                     {
-                        var upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1);
 
-                        if (TryGetMemberValue(type, obj, upperCamelCase, ref output))
-                        {
-                            return;
-                        }
+                        //this version we don't implicit convert to CamelCase 
+                        //var upperCamelCase = Char.ToUpper(name[0]) + name.Substring(1); 
+                        //if (TryGetMemberValue(type, obj, upperCamelCase, ref output))
+                        //{
+                        //    return;
+                        //}
                         if (TryGetMemberValue(type, obj, name, ref output))
                         {
                             return;
@@ -685,7 +676,9 @@ namespace Espresso
             return;
         }
 
-        internal void KeepAliveValueOf(int slot, ref JsValue output)
+
+        static readonly Type[] s_emptyTypeArr = new Type[0];
+        internal void KeepAliveGetValueOf(int slot, ref JsValue output)
         {
             object obj = KeepAliveGet(slot);
             if (obj != null)
@@ -696,11 +689,12 @@ namespace Espresso
 #if NET20
                 mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
 #else
-                mi = type.GetRuntimeMethod("ValueOf", new Type[0]);
+                mi = type.GetRuntimeMethod("ValueOf", s_emptyTypeArr);
 #endif
                 if (mi != null)
                 {
-                    object result = mi.Invoke(obj, new object[0]);
+                    //shoul be static value
+                    object result = mi.Invoke(obj, null);//no parameter of this value then set to null
                     _convert.AnyToJsValue(result, ref output);
                     return;
                 }
@@ -708,8 +702,7 @@ namespace Espresso
                 return;
             }
             output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.SetKeepAliveError;
-
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
         }
         internal void KeepAliveInvoke(int slot, ref JsValue args, ref JsValue output)
         {
@@ -719,7 +712,7 @@ namespace Espresso
 #endif
             //   Console.WriteLine(args);
 
-            var obj = KeepAliveGet(slot);
+            object obj = KeepAliveGet(slot);
             if (obj != null)
             {
                 Type constructorType = obj as Type;
@@ -729,61 +722,60 @@ namespace Espresso
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
                     object[] constructorArgs = (object[])_convert.FromJsValue(ref args);
+                    //review here
                     _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
                     return;
                 }
-
+                //expect slot is del
                 WeakDelegate func = obj as WeakDelegate;
                 if (func == null)
                 {
                     throw new Exception("not a function.");
                 }
 
+                //owner type of the delegate
                 Type type = func.Target != null ? func.Target.GetType() : func.Type;
 #if DEBUG_TRACE_API
 				Console.WriteLine("invoking " + obj.Target + " method " + obj.MethodName);
 #endif
 
                 //review delegate invocation again  
-                object[] a = (object[])_convert.FromJsValue(ref args);
+                object[] argObjects = (object[])_convert.FromJsValue(ref args);
 
-                foreach (var a_elem in a)
+                int j = argObjects.Length;
+                for (int i = 0; i < j; ++i)
                 {
+                    object a_elem = argObjects[i];
                     if (a_elem.GetType() == typeof(JsFunction))
                     {
-                        CheckAndResolveJsFunctions(func, (JsFunction)a_elem, obj, type, func.MethodName, a);
+                        CheckAndResolveJsFunctions(func, (JsFunction)a_elem, obj, type, func.MethodName, argObjects);
                         break;
                     }
                 }
 
                 throw new NotSupportedException();
-                //if (a.Any(z => z != null && z.GetType() == typeof(JsFunction)))
-                //{
-                //    CheckAndResolveJsFunctions(type, func.MethodName, flags, a);
-                //}
-
                 //try
                 //{
                 //    object result = type.InvokeMember(func.MethodName, flags, null, func.Target, a);
-                //    _convert2.AnyToJsValue(result, ref output);
+                //    _convert.AnyToJsValue(result, ref output);
                 //    return;
                 //}
                 //catch (TargetInvocationException e)
                 //{
-                //    throw new NotSupportedException();
-                //    //return JsValue.Error(KeepAliveAdd(e.InnerException));
+                //    output.Type = JsValueType.Error;
+                //    output.I64 = (int)JsManagedError.TargetInvocationError;
                 //    return;
                 //}
                 //catch (Exception e)
                 //{
                 //    //review set error
-                //    throw new NotSupportedException();
-                //    //return JsValue.Error(KeepAliveAdd(e));
+                //    output.Type = JsValueType.Error;
+                //    output.I64 = (int)JsManagedError.SetKeepAliveError;
                 //    return;
                 //}
             }
             output.Type = JsValueType.Error;
-            output.I64 = (int)JsManagedError.SetKeepAliveError;
+            output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
         }
         static void CheckAndResolveJsFunctions(WeakDelegate weakDel,
           JsFunction func,
@@ -1077,8 +1069,8 @@ namespace Espresso
              where T : class
         {
             Type actualType = result.GetType();
-            var jsTypeDef = this.GetJsTypeDefinition(actualType);
-            var proxy = this.CreateWrapper(result, jsTypeDef);
+            JsTypeDefinition jsTypeDef = this.GetJsTypeDefinition(actualType);
+            INativeScriptable proxy = this.CreateWrapper(result, jsTypeDef);
             this.SetVariable(name, proxy);
         }
         public JsTypeDefinition GetJsTypeDefinition(Type actualType)
@@ -1132,5 +1124,13 @@ namespace Espresso
         {
 
         }
+    }
+    class ContextNotFoundException : Exception
+    {
+        public ContextNotFoundException(int contextId)
+        {
+            this.ContextId = contextId;
+        }
+        public int ContextId { get; private set; }
     }
 }
