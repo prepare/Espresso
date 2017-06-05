@@ -153,7 +153,7 @@ public:
 	BinaryStreamReader(const char* stream, int length);
 	int ReadInt16();
 	int ReadInt32();
-	std::wstring ReadUtf16String();
+	std::u16string ReadUtf16String();
 };
 
 class ExternalTypeDefinition

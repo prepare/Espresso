@@ -18,7 +18,7 @@ const char MET_SETTER = 2;
 
 
 
-typedef void (CALLINGCONVENTION *del02)(int oIndex, const wchar_t* methodName, MetCallingArgs* args);
+typedef void (CALLINGCONVENTION *del02)(int oIndex, const char16_t* methodName, MetCallingArgs* args);
 typedef void (CALLINGCONVENTION *del_engineSetupCb)(JsEngine* jsEngine, JsContext* enginContext);
 
 
@@ -58,7 +58,7 @@ extern "C" {
 	EXPORT void ResultSetInt32(MetCallingArgs* result, int value);
 	EXPORT void ResultSetFloat(MetCallingArgs* result, float value);
 	EXPORT void ResultSetDouble(MetCallingArgs* result, double value);
-	EXPORT void ResultSetString(MetCallingArgs* result, wchar_t* value);
+	EXPORT void ResultSetString(MetCallingArgs* result, uint16_t* value);
 	EXPORT void ResultSetValue(MetCallingArgs* result, jsvalue* value);
 
 	EXPORT void ResultSetManagedObjectIndex(MetCallingArgs* result, int32_t managedObjectIndex);
@@ -70,7 +70,7 @@ extern "C" {
 
 	//this is for espresso-node
 
-	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb);
+	EXPORT int RunJsEngine(int argc, uint16_t *wargv[], void* engine_setupcb);
 	void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
 
 }

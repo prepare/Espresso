@@ -30,7 +30,10 @@ int TestCallBack()
 {
 	MetCallingArgs a;
 	memset(&a, 0, sizeof(MetCallingArgs));
-	managedListner(0, L"OKOK001", &a);
+
+
+	std::u16string u16str = u"OKOK001";
+	managedListner(0, u16str.c_str(), &a);
 	return 1;
 }
 
@@ -56,11 +59,11 @@ void ResultSetDouble(MetCallingArgs* callingArgs, double value)
 	callingArgs->result.type = JSVALUE_TYPE_NUMBER;
 	callingArgs->result.num = value;
 }
-void ResultSetString(MetCallingArgs* callingArgs, wchar_t* value)
+void ResultSetString(MetCallingArgs* callingArgs, uint16_t* value)
 {
 	//TODO: review here
 	callingArgs->result.type = JSVALUE_TYPE_STRING;
-	callingArgs->result.ptr = (uint16_t*)value;
+	callingArgs->result.ptr = value;
 }
 void ResultSetJsNull(MetCallingArgs* callingArgs)
 {
@@ -231,7 +234,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	//--------------------------------------------------------------
 	//3. typename
 	//3. typedefinition name(length-prefix unicode)
-	wstring typeDefName = binReader.ReadUtf16String();
+	std::u16string typeDefName = binReader.ReadUtf16String();
 
 	//4. num of fields 
 	int nfields = binReader.ReadInt16();
@@ -241,7 +244,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 		//we not support in this version ?
 		int flags = binReader.ReadInt16();
 		int fieldId = binReader.ReadInt16();
-		std::wstring fieldname = binReader.ReadUtf16String();
+		std::u16string fieldname = binReader.ReadUtf16String();
 		//accessor ?
 
 	}
@@ -251,7 +254,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 	{
 		int flags = binReader.ReadInt16();
 		int methodId = binReader.ReadInt16();
-		std::wstring metName = binReader.ReadUtf16String();
+		std::u16string metName = binReader.ReadUtf16String();
 
 
 		CallingContext* callingContext = new CallingContext();
@@ -272,7 +275,7 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex, const char
 		int flags_getter = binReader.ReadInt16();
 		int property_id = binReader.ReadInt16();
 		//name
-		std::wstring propName = binReader.ReadUtf16String();
+		std::u16string propName = binReader.ReadUtf16String();
 
 		CallingContext* callingContext = new CallingContext();
 		callingContext->ctx = this;
