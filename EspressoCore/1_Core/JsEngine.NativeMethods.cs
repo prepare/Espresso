@@ -14,16 +14,16 @@ namespace Espresso
         delegate void KeepaliveRemoveDelegate(int context, int slot);
         delegate void KeepAliveGetPropertyValueDelegate(int context, int slot,
             [MarshalAs(UnmanagedType.LPWStr)] string name, 
-            ref JsInterOpValue output);
+            ref JsValue output);
         delegate void KeepAliveSetPropertyValueDelegate(int context, 
             int slot,
             [MarshalAs(UnmanagedType.LPWStr)] string name,
-            ref JsInterOpValue value, 
-            ref JsInterOpValue output);
-        delegate void KeepAliveValueOfDelegate(int context, int slot, ref JsInterOpValue output);
-        delegate void KeepAliveInvokeDelegate(int context, int slot, ref JsInterOpValue args, ref JsInterOpValue output);
-        delegate void KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsInterOpValue output);
-        delegate void KeepAliveEnumeratePropertiesDelegate(int context, int slot, ref JsInterOpValue output);
+            ref JsValue value, 
+            ref JsValue output);
+        delegate void KeepAliveValueOfDelegate(int context, int slot, ref JsValue output);
+        delegate void KeepAliveInvokeDelegate(int context, int slot, ref JsValue args, ref JsValue output);
+        delegate void KeepAliveDeletePropertyDelegate(int context, int slot, [MarshalAs(UnmanagedType.LPWStr)] string name, ref JsValue output);
+        delegate void KeepAliveEnumeratePropertiesDelegate(int context, int slot, ref JsValue output);
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

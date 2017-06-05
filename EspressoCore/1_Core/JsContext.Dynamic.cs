@@ -20,7 +20,7 @@ namespace Espresso
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
 
-            JsInterOpValue v = new JsInterOpValue();
+            JsValue v = new JsValue();
             jscontext_get_property_names(_context, obj.Handle, ref v);
             object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
@@ -51,7 +51,7 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             jscontext_get_property_value(_context, obj.Handle, name, ref output);
             //
             object res = _convert.FromJsValue(ref output);
@@ -77,8 +77,8 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue output = new JsValue();
 
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_property_value(_context, obj.Handle, name, ref a, ref output);
@@ -107,14 +107,14 @@ namespace Espresso
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
 
-            JsInterOpValue a = new JsInterOpValue(); // Null value unless we're given args.
+            JsValue a = new JsValue(); // Null value unless we're given args.
             a.Type = JsValueType.Null;
             if (args != null)
             {
                 _convert.AnyToJsValue(args, ref a);
             }
 
-            JsInterOpValue v = new JsInterOpValue();
+            JsValue v = new JsValue();
             jscontext_invoke_property(_context, obj.Handle, name, ref a, ref v);
             object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);

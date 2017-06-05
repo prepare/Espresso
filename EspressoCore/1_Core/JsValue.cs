@@ -44,7 +44,7 @@ namespace Espresso
     /// for internal inter-op only -> always be private,used on stack,pass by reference
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    struct JsInterOpValue
+    struct JsValue
     {
         /// <summary>
         /// type and flags

@@ -202,12 +202,12 @@ namespace Espresso
         public static extern int ArgCount(IntPtr callingArgsPtr);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void ArgGetThis(IntPtr callingArgsPtr, ref JsInterOpValue output);
+        internal static extern void ArgGetThis(IntPtr callingArgsPtr, ref JsValue output);
 
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void ArgGetObject(IntPtr callingArgsPtr, int index, ref JsInterOpValue output);
+        internal static extern void ArgGetObject(IntPtr callingArgsPtr, int index, ref JsValue output);
         //---------------------------------------------------------------------------------
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -227,7 +227,7 @@ namespace Espresso
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ResultSetValue(IntPtr callingArgsPtr, ref JsInterOpValue jsvalue);
+        public static extern void ResultSetValue(IntPtr callingArgsPtr, ref JsValue jsvalue);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void ResultSetJsNull(IntPtr callingArgsPtr);

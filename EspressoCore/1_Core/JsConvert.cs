@@ -50,7 +50,7 @@ namespace Espresso
         readonly JsContext _context;
 
 
-        public object FromJsValue(ref JsInterOpValue v)
+        public object FromJsValue(ref JsValue v)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("Converting Js value to .net");
@@ -160,7 +160,7 @@ namespace Espresso
             }
         }
 #if !NET40
-        private JsObject JsDictionaryObject(ref JsInterOpValue v)
+        private JsObject JsDictionaryObject(ref JsValue v)
         {
             throw new NotSupportedException();
             //JsObject obj = new JsObject(this._context, v.Ptr);
@@ -176,53 +176,53 @@ namespace Espresso
 #endif
 
 
-        public void ToJsValue(int value, ref JsInterOpValue output)
+        public void ToJsValue(int value, ref JsValue output)
         {
             output.Type = JsValueType.Integer;
             output.I32 = value;
         }
-        public void ToJsValue(long value, ref JsInterOpValue output)
+        public void ToJsValue(long value, ref JsValue output)
         {
             //TODO review here
             output.Type = JsValueType.Number;
             output.I64 = value;
         }
-        public void ToJsValue(string value, ref JsInterOpValue output)
+        public void ToJsValue(string value, ref JsValue output)
         {
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
             JsContext.jsvalue_alloc_string(value, ref output);
             output.Type = JsValueType.String;
         }
-        public void ToJsValue(char c, ref JsInterOpValue output)
+        public void ToJsValue(char c, ref JsValue output)
         {
             //TODO: review here
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
             JsContext.jsvalue_alloc_string(c.ToString(), ref output);
             output.Type = JsValueType.String;
         }
-        public void ToJsValue(double value, ref JsInterOpValue output)
+        public void ToJsValue(double value, ref JsValue output)
         {
             output.Type = JsValueType.Number;
             output.Num = value;
         }
-        public void ToJsValue(float value, ref JsInterOpValue output)
+        public void ToJsValue(float value, ref JsValue output)
         {
             output.Type = JsValueType.Number;
             output.Num = value;
         }
-        public void ToJsValue(decimal value, ref JsInterOpValue output)
+        public void ToJsValue(decimal value, ref JsValue output)
         {
             //data loss***
             //TODO: review here, convert to string?
             output.Type = JsValueType.Number;
             output.Num = (double)value;
         }
-        public void ToJsValue(bool value, ref JsInterOpValue output)
+        public void ToJsValue(bool value, ref JsValue output)
         {
             output.Type = JsValueType.Boolean;
             output.I32 = value ? 1 : 0;
         }
-        public void ToJsValue(DateTime dtm, ref JsInterOpValue output)
+        public void ToJsValue(DateTime dtm, ref JsValue output)
         {
             output.Type = JsValueType.Date;
             output.Num = Convert.ToInt64(dtm.Subtract(EPOCH).TotalMilliseconds);
@@ -235,7 +235,7 @@ namespace Espresso
             //};
         }
 
-        public void ToJsValue(INativeScriptable jsInstance, ref JsInterOpValue output)
+        public void ToJsValue(INativeScriptable jsInstance, ref JsValue output)
         {
             //extension 
             //int keepAliveId = _context.KeepAliveAdd(jsInstance);
@@ -253,7 +253,7 @@ namespace Espresso
             //};
 
         }
-        public void ToJsValue(object[] arr, ref JsInterOpValue output)
+        public void ToJsValue(object[] arr, ref JsValue output)
         {
             int len = arr.Length;
             JsContext.jsvalue_alloc_array(len, ref output);
@@ -270,12 +270,12 @@ namespace Espresso
             }
         }
 
-        public void ToJsValueNull(ref JsInterOpValue output)
+        public void ToJsValueNull(ref JsValue output)
         {
             output.Type = JsValueType.Null;
         }
 
-        public void AnyToJsValue(object obj, ref JsInterOpValue output)
+        public void AnyToJsValue(object obj, ref JsValue output)
         {
             if (obj == null)
             {
@@ -411,7 +411,7 @@ namespace Espresso
 
                 for (int i = 0; i < arrLen; i++)
                 {
-                    JsInterOpValue eachElem = new JsInterOpValue();
+                    JsValue eachElem = new JsValue();
                     AnyToJsValue(array[i], ref eachElem);
                     //store each elem to native array
                     //convert each element to array element-> recursive

@@ -128,7 +128,7 @@ namespace Espresso
                 jsengine_dispose_object(_engine, ptr);
         }
 
-        private void KeepAliveValueOf(int contextId, int slot, ref JsInterOpValue output)
+        private void KeepAliveValueOf(int contextId, int slot, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
@@ -139,7 +139,7 @@ namespace Espresso
             context.KeepAliveValueOf(slot, ref output);
         }
 
-        private void KeepAliveInvoke(int contextId, int slot, ref JsInterOpValue args, ref JsInterOpValue output)
+        private void KeepAliveInvoke(int contextId, int slot, ref JsValue args, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
@@ -148,7 +148,7 @@ namespace Espresso
             }
             context.KeepAliveInvoke(slot, ref args, ref output);
         }
-        private void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsInterOpValue value, ref JsInterOpValue output)
+        private void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsValue value, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("set prop " + contextId + " " + slot);
@@ -160,7 +160,7 @@ namespace Espresso
             }
             context.KeepAliveSetPropertyValue(slot, name, ref value);
         }
-        private void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsInterOpValue output)
+        private void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("get prop " + contextId + " " + slot);
@@ -174,7 +174,7 @@ namespace Espresso
             context.KeepAliveGetPropertyValue(slot, name, ref output);
         }
 
-        private void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsInterOpValue output)
+        private void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("delete prop " + contextId + " " + slot);
@@ -187,7 +187,7 @@ namespace Espresso
             context.KeepAliveDeleteProperty(slot, name, ref output);
         }
 
-        private void KeepAliveEnumerateProperties(int contextId, int slot, ref JsInterOpValue output)
+        private void KeepAliveEnumerateProperties(int contextId, int slot, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("enumerate props " + contextId + " " + slot);

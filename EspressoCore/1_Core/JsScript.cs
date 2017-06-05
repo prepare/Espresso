@@ -14,7 +14,7 @@ namespace Espresso
         static extern void jsscript_compile(HandleRef script,
             [MarshalAs(UnmanagedType.LPWStr)] string str,
             [MarshalAs(UnmanagedType.LPWStr)] string name,
-            ref JsInterOpValue output);
+            ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
         public static extern IntPtr jsscript_dispose(HandleRef script);
@@ -29,7 +29,7 @@ namespace Espresso
             _notifyDispose = notifyDispose;
 
             _script = new HandleRef(this, jsscript_new(engineHandle));
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             jsscript_compile(_script, code, name, ref output);
             //check compile result
             //JsValue v = jsscript_compile(_script, code, name); 

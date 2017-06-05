@@ -377,13 +377,13 @@ namespace Espresso
         }
         public object GetThisArg()
         {
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             NativeV8JsInterOp.ArgGetThis(this.metArgsPtr, ref output);
             return this.context.Converter2.FromJsValue(ref output);
         }
         public object GetArgAsObject(int index)
         {
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index, ref output);
             return this.context.Converter2.FromJsValue(ref output);
         }
@@ -419,7 +419,7 @@ namespace Espresso
         }
         public void SetResultObj(object result)
         {
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             this.context.Converter2.AnyToJsValue(result, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
         }
@@ -432,7 +432,7 @@ namespace Espresso
             }
 
             var proxy = this.context.CreateWrapper(result, jsTypeDef);
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             this.context.Converter2.AnyToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
         }
@@ -443,7 +443,7 @@ namespace Espresso
             Type actualType = result.GetType();
             JsTypeDefinition jsTypeDef = this.context.GetJsTypeDefinition(actualType);
             INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
-            JsInterOpValue output = new JsInterOpValue();
+            JsValue output = new JsValue();
             this.context.Converter2.AnyToJsValue(proxy, ref output);
             NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
              

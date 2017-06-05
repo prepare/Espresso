@@ -228,7 +228,7 @@ namespace Espresso
             object res;
             try
             {
-                JsInterOpValue v = new JsInterOpValue();
+                JsValue v = new JsValue();
                 jscontext_execute_script(_context, script.Handle, ref v);
                 res = _convert.FromJsValue(ref v);
 #if DEBUG_TRACE_API
@@ -285,7 +285,7 @@ namespace Espresso
 #if DEBUG
                 int ver = getVersion();//just check version
 #endif
-                JsInterOpValue output = new JsInterOpValue();
+                JsValue output = new JsValue();
                 jscontext_execute(_context, code, name ?? "<Unnamed Script>", ref output);
 
                 //watch2.Stop();                 
@@ -323,7 +323,7 @@ namespace Espresso
         public object GetGlobal()
         {
             CheckDisposed();
-            JsInterOpValue v = new JsInterOpValue();
+            JsValue v = new JsValue();
             jscontext_get_global(_context, ref v);
             object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
@@ -341,7 +341,7 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsInterOpValue v = new JsInterOpValue();
+            JsValue v = new JsValue();
             jscontext_get_variable(_context, name, ref v);
             object res = _convert.FromJsValue(ref v);
 #if DEBUG_TRACE_API
@@ -462,7 +462,7 @@ namespace Espresso
         #endregion
 
 
-        internal bool TrySetMemberValue(Type type, object obj, string name, ref JsInterOpValue value)
+        internal bool TrySetMemberValue(Type type, object obj, string name, ref JsValue value)
         {
             // dictionaries.
             if (typeof(IDictionary).ExtIsAssignableFrom(type))
@@ -496,7 +496,7 @@ namespace Espresso
             return false;
         }
 
-        internal void KeepAliveSetPropertyValue(int slot, string name, ref JsInterOpValue v)
+        internal void KeepAliveSetPropertyValue(int slot, string name, ref JsValue v)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("setting prop " + name);
@@ -551,7 +551,7 @@ namespace Espresso
             //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
-        internal bool TryGetMemberValue(Type type, object obj, string name, ref JsInterOpValue value)
+        internal bool TryGetMemberValue(Type type, object obj, string name, ref JsValue value)
         {
             object result;
             // dictionaries.
@@ -636,7 +636,7 @@ namespace Espresso
             return false;
         }
 
-        internal void KeepAliveGetPropertyValue(int slot, string name, ref JsInterOpValue output)
+        internal void KeepAliveGetPropertyValue(int slot, string name, ref JsValue output)
         {
 
             //TODO: review exception again
@@ -707,7 +707,7 @@ namespace Espresso
             //return JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
         }
 
-        internal void KeepAliveValueOf(int slot, ref JsInterOpValue output)
+        internal void KeepAliveValueOf(int slot, ref JsValue output)
         {
             object obj = KeepAliveGet(slot);
             if (obj != null)
@@ -735,7 +735,7 @@ namespace Espresso
         }
 
 
-        internal void KeepAliveInvoke(int slot, ref JsInterOpValue args, ref JsInterOpValue output)
+        internal void KeepAliveInvoke(int slot, ref JsValue args, ref JsValue output)
         {
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
 #if DEBUG_TRACE_API
@@ -946,7 +946,7 @@ namespace Espresso
 
 
 
-        internal void KeepAliveDeleteProperty(int slot, string name, ref JsInterOpValue output)
+        internal void KeepAliveDeleteProperty(int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("deleting prop " + name);
@@ -978,7 +978,7 @@ namespace Espresso
             return;
         }
 
-        internal void KeepAliveEnumerateProperties(int slot, ref JsInterOpValue output)
+        internal void KeepAliveEnumerateProperties(int slot, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("deleting prop " + name);
@@ -1026,13 +1026,13 @@ namespace Espresso
             if (funcPtr == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 function is empty (IntPtr is Zero)");
 
-            JsInterOpValue a = new JsInterOpValue();
+            JsValue a = new JsValue();
             if (args != null)
             {
                 _convert.AnyToJsValue(args, ref a);
             }
 
-            JsInterOpValue v = new JsInterOpValue();
+            JsValue v = new JsValue();
             jscontext_invoke(_context, funcPtr, thisPtr, ref a, ref v);
             object res = _convert.FromJsValue(ref v);
             jsvalue_dispose(ref v);
@@ -1060,8 +1060,8 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
@@ -1079,8 +1079,8 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
@@ -1096,8 +1096,8 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
@@ -1112,8 +1112,8 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
@@ -1128,8 +1128,8 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
 
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
@@ -1145,8 +1145,8 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
 
             _convert.AnyToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
@@ -1162,8 +1162,8 @@ namespace Espresso
                 throw new ArgumentNullException("name");
 
             CheckDisposed();
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
             _convert.AnyToJsValue(proxy, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
@@ -1180,8 +1180,8 @@ namespace Espresso
 
             CheckDisposed();
 
-            JsInterOpValue a = new JsInterOpValue();
-            JsInterOpValue b = new JsInterOpValue();
+            JsValue a = new JsValue();
+            JsValue b = new JsValue();
 
             _convert.ToJsValueNull(ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
