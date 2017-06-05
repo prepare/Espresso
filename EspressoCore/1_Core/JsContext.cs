@@ -1055,7 +1055,7 @@ namespace Espresso
             b.Dispose();
         }
         /// <summary>
-        ///  set variable with double value
+        ///  set variable with long value
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -1086,7 +1086,7 @@ namespace Espresso
             JsValue a = new JsValue();
             JsValue b = new JsValue();
 
-            _convert.AnyToJsValue(value, ref a);
+            _convert.ToJsValue(value, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
@@ -1102,7 +1102,7 @@ namespace Espresso
             CheckDisposed();
             JsValue a = new JsValue();
             JsValue b = new JsValue();
-            _convert.AnyToJsValue(proxy, ref a);
+            _convert.ToJsValue(proxy, ref a);
             jscontext_set_variable(_context, name, ref a, ref b);
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");

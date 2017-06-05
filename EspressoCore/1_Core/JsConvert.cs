@@ -672,7 +672,6 @@ namespace Espresso
             output->Type = JsValueType.JsTypeWrap;
             output->Ptr = prox2.UnmanagedPtr;
             output->I32 = prox2.ManagedIndex;
-
         }
     }
 }
