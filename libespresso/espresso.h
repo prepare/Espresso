@@ -104,9 +104,6 @@ struct jsvalue
 	double      num;
 	//store 64 bits value
 	int64_t     i64;
-	//uint16_t*   str;
-	//jsvalue**   arr;//array of jsvalue*	
-	//int32_t     length; // Also used as slot index on the CLR side.
 };
 
 struct jserror

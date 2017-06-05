@@ -374,7 +374,7 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 	AnyFromV8(exception, thisHandle, error->exception);
 
 	output->type = JSVALUE_TYPE_ERROR;
-	output->ptr = error;
+	output->ptr = error;//point to native js error
 
 }
 
