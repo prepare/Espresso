@@ -61,7 +61,7 @@ namespace Espresso
             _notifyDispose = notifyDispose;
             _engine = engine;
             _keepalives = new KeepAliveDictionaryStore();
-             
+
             _context = new HandleRef(this, jscontext_new(id, engine.UnmanagedEngineHandler));
             _convert = new JsConvert(this);
 
@@ -282,9 +282,7 @@ namespace Espresso
             try
             {
                 //watch2.Start();
-#if DEBUG
-                int ver = getVersion();//just check version
-#endif
+
                 JsValue output = new JsValue();
                 jscontext_execute(_context, code, name ?? "<Unnamed Script>", ref output);
 

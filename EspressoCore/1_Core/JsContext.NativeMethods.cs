@@ -7,8 +7,7 @@ namespace Espresso
 {
     partial class JsContext
     {
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int getVersion();
+      
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr jscontext_new(int id, HandleRef engine);
