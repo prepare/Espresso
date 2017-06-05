@@ -179,12 +179,13 @@ namespace Test3
                 System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
                 stwatch.Start();
 
+                //
                 TestMe1 t1 = new TestMe1();
-                var proxy = ctx.CreateWrapper(t1, jstypedef);
+                INativeScriptable proxy = ctx.CreateWrapper(t1, jstypedef);
+                ctx.SetVariableFromAny("x", proxy);
 
                 for (int i = 2000; i >= 0; --i)
                 {
-                    ctx.SetVariableFromAny("x", proxy);
                     object result = ctx.Execute("(function(){if(x.C()){return x.B();}else{return 0;}})()");
                 }
                 //for (int i = 1; i >= 0; --i)
@@ -926,6 +927,6 @@ namespace Test3
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
             }
         }
-         
+
     }
 }
