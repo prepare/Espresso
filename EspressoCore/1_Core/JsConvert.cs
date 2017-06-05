@@ -513,7 +513,7 @@ namespace Espresso
             // reference counting.  
             //check 
 
-            var jsTypeDefinition = _context.GetJsTypeDefinition(type);
+            JsTypeDefinition jsTypeDefinition = _context.GetJsTypeDefinition(type);
             INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
             //
             output.Type = JsValueType.JsTypeWrap;
@@ -672,7 +672,7 @@ namespace Espresso
             // reference counting.  
             //check 
 
-            var jsTypeDefinition = _context.GetJsTypeDefinition(type);
+            JsTypeDefinition jsTypeDefinition = _context.GetJsTypeDefinition(type);
             INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
             //
             output->Type = JsValueType.JsTypeWrap;
