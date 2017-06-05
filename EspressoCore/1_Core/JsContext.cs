@@ -1055,7 +1055,7 @@ namespace Espresso
             b.Dispose();
         }
         /// <summary>
-        /// 
+        ///  set variable with double value
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
