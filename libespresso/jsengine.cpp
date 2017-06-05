@@ -327,8 +327,8 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 	Local<Value> exception = trycatch.Exception();
 
 	output->type = JSVALUE_TYPE_UNKNOWN_ERROR;
-	output->str = NULL; //?
-	output->length = 0;
+	output->ptr = NULL; //?
+	output->i32 = 0;
 
 	// If this is a managed exception we need to place its ID inside the jsvalue
 	// and set the type JSVALUE_TYPE_MANAGED_ERROR to make sure the CLR side will
@@ -339,8 +339,10 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 		if (obj->InternalFieldCount() == 1) {
 			Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
 			ManagedRef* ref = (ManagedRef*)wrap->Value();
+
 			output->type = JSVALUE_TYPE_MANAGED_ERROR;
-			output->length = ref->Id();
+			output->i32 = ref->Id();
+
 			return;
 		}
 	}
@@ -378,14 +380,19 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output)
 
 void JsEngine::StringFromV8(Handle<Value> value, jsvalue* output)
 {
+	//create string output from v8 value
+	//and send back to jsvalue
 
-	//TODO: review here again
+	//TODO: review how to alloc string again
+
 	Local<String> s = value->ToString();
-	output->length = s->Length();
-	output->str = new uint16_t[output->length + 1];
-	if (output->str != NULL) {
-		s->Write(output->str);
+	int string_len = s->Length();
+	output->i32 = string_len; //i32 as strign len
+	uint16_t* str_buffer = new uint16_t[string_len + 1]; //null terminated string on HEAP 
+	if (str_buffer != NULL) {
+		s->Write(str_buffer);
 		output->type = JSVALUE_TYPE_STRING;
+		output->ptr = str_buffer;
 	}
 }
 
@@ -394,7 +401,7 @@ void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output)
 
 	if (js_object_marshal_type == JSOBJECT_MARSHAL_TYPE_DYNAMIC) {
 		output->type = JSVALUE_TYPE_WRAPPED;
-		output->length = 0;
+		output->i32 = 0;
 		// A Persistent<Object> is exactly the size of an IntPtr, right?
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
@@ -406,7 +413,7 @@ void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output)
 	else {
 
 		output->type = JSVALUE_TYPE_WRAPPED;
-		output->length = 0;
+		output->i32 = 0;
 		// A Persistent<Object> is exactly the size of an IntPtr, right?
 		// If not we're in deep deep trouble (on IA32 and AMD64 should be).
 		// We should even cast it to void* because C++ doesn't allow to put
@@ -438,8 +445,8 @@ void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output)
 	Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
 	ManagedRef* ref = (ManagedRef*)wrap->Value();
 	output->type = ref->IsJsTypeDef() ? JSVALUE_TYPE_JSTYPEDEF : JSVALUE_TYPE_MANAGED;
-	output->length = ref->Id();
-	output->str = NULL;//? 
+	output->i32 = ref->Id();
+	output->ptr = nullptr;
 }
 
 void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output)
@@ -447,8 +454,8 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 
 	// Initialize to a generic error.
 	output->type = JSVALUE_TYPE_UNKNOWN_ERROR;
-	output->length = 0;
-	output->str = 0;
+	output->i32 = 0;
+	output->ptr = nullptr;
 
 	if (value->IsNull() || value->IsUndefined()) {
 		output->type = JSVALUE_TYPE_NULL;
@@ -479,18 +486,18 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 	}
 	else if (value->IsArray()) {
 		Handle<Array> object = Handle<Array>::Cast(value->ToObject());
-		output->length = object->Length();
-
+		int arrLen = object->Length();
 		//ON HEAP
-		jsvalue** arr = new jsvalue*[output->length];
+		jsvalue** arr = new jsvalue*[arrLen];
 		if (arr != NULL) {
 
+			output->i32 = arrLen; //i32 as array len
 			auto handle_object = Handle<Object>();
-			for (int i = 0; i < output->length; i++) {
+			for (int i = 0; i < arrLen; i++) {
 				AnyFromV8(object->Get(i), handle_object, arr[i]);
 			}
 			output->type = JSVALUE_TYPE_ARRAY;
-			output->arr = arr;
+			output->ptr = arr;
 		}
 	}
 	else if (value->IsFunction()) {
@@ -500,23 +507,23 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 		jsvalue** arr = new jsvalue*[2];
 		if (arr != NULL) {
 			arr[0]->ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
-			arr[0]->length = 0;
+			arr[0]->i32 = 0;
 			arr[0]->type = JSVALUE_TYPE_WRAPPED;
 			if (!thisArg.IsEmpty()) {
 				Persistent<Object> *persistent = new Persistent<Object>();
 				persistent->Reset(isolate_, Persistent<Object>(isolate_, thisArg));
 				arr[1]->type = JSVALUE_TYPE_WRAPPED;
 				arr[1]->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
-				arr[1]->length = 0;
+				arr[1]->i32 = 0;
 
 			}
 			else {
 				arr[1]->type = JSVALUE_TYPE_NULL;
 				arr[1]->ptr = NULL;
-				arr[1]->length = 0;
+				arr[1]->i32 = 0;
 			}
 			output->type = JSVALUE_TYPE_FUNCTION;
-			output->arr = arr;
+			output->ptr = arr;
 		}
 	}
 	else if (value->IsObject()) {
@@ -530,12 +537,15 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 
 void JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsvalue* output)
 {
+
 	int arg_len = args.Length();
+
 	jsvalue_alloc_array(arg_len, output);
 	Local<Object> thisArg = args.Holder();
+	jsvalue** arr = (jsvalue**)output->ptr;
 	for (int i = 0; i < arg_len; i++)
 	{
-		AnyFromV8(args[i], thisArg, output->arr[i]);
+		AnyFromV8(args[i], thisArg, arr[i]);
 	}
 }
 
@@ -591,9 +601,10 @@ static void managed_destroy(const v8::WeakCallbackData<v8::Object, v8::Local<v8:
 	//object.Reset();
 }
 #endif
- 
+
 Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 {
+	//convert to v8 value from a given jsvalue
 	switch (v->type)
 	{
 	case JSVALUE_TYPE_EMPTY:
@@ -607,7 +618,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 	case JSVALUE_TYPE_NUMBER:
 		return Number::New(isolate_, v->num);
 	case JSVALUE_TYPE_STRING:
-		return String::NewFromTwoByte(isolate_, v->str);//::New(v.value.str);
+		return String::NewFromTwoByte(isolate_, (uint16_t*)v->ptr);//::New(v.value.str); 
 	case JSVALUE_TYPE_DATE:
 		return Date::New(isolate_, v->num);
 	case JSVALUE_TYPE_JSTYPEDEF:
@@ -618,10 +629,13 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 		return obj;
 	}
 	case JSVALUE_TYPE_ARRAY:
-	{ // Arrays are converted to JS native arrays.
-		Local<Array> a = Array::New(isolate_, v->length);
-		for (int i = 0; i < v->length; i++) {
-			a->Set(i, AnyToV8(v->arr[i], contextId));
+	{
+		// Arrays are converted to JS native arrays.
+		int arrLen = v->i32;
+		jsvalue** arr = (jsvalue**)v->ptr;
+		Local<Array> a = Array::New(isolate_, arrLen); //i32 as length
+		for (int i = 0; i < arrLen; i++) {
+			a->Set(i, AnyToV8(arr[i], contextId));
 		}
 		return a;
 	}
@@ -634,7 +648,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 		// managed object.
 
 		//ON_NATIVE_HEAP
-		ManagedRef* ref = new ManagedRef(this, contextId, v->length, false);
+		ManagedRef* ref = new ManagedRef(this, contextId, v->i32, false); //i32 as managed refence slot id
 		Local<Object> object = ((FunctionTemplate*)managed_template_)->InstanceTemplate()->NewInstance();
 		if (object.IsEmpty()) {
 			return Null(isolate_);
@@ -658,9 +672,10 @@ int32_t JsEngine::ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value>
 	if (value->type != JSVALUE_TYPE_ARRAY)
 		return -1;
 
-	int arrLen = value->length;//arr len
+	int arrLen = value->i32;//arr len
+	jsvalue** arr = (jsvalue**)value->ptr;
 	for (int i = 0; i < arrLen; i++) {
-		preallocatedArgs[i] = AnyToV8(value->arr[i], contextId);
+		preallocatedArgs[i] = AnyToV8(arr[i], contextId);
 	}
 	return arrLen;
 }

@@ -301,11 +301,11 @@ void JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* t
 
 	else {
 
-		std::vector<Local<Value> > argv(args->length);
+		std::vector<Local<Value> > argv(args->i32);//i32 as length
 		engine_->ArrayToV8Args(args, id_, &argv[0]);
 		// TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
 		Local<Function> func = Local<Function>::Cast(prop);
-		Local<Value> value = func->Call(reciever, args->length, &argv[0]);
+		Local<Value> value = func->Call(reciever, args->i32, &argv[0]);//i32 as length
 		if (!value.IsEmpty()) {
 			engine_->AnyFromV8(value, Handle<Object>(), output);
 		}
@@ -338,13 +338,13 @@ void JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, js
 		output->type = JSVALUE_TYPE_STRING_ERROR;
 	}
 	else {
-		std::vector<Local<Value> > argv(args->length);
+		std::vector<Local<Value> > argv(args->i32); //i32 as length
 		engine_->ArrayToV8Args(args, id_, &argv[0]);
 		// TODO: Check ArrayToV8Args return value (but right now can't fail, right?)                   
 		Local<Function> func = Local<Function>::Cast(prop);
 
 
-		Local<Value> value = func->Call(objLocal, args->length, &argv[0]);
+		Local<Value> value = func->Call(objLocal, args->i32, &argv[0]); //i32 as length
 		if (!value.IsEmpty()) {
 			engine_->AnyFromV8(value, Handle<Object>(), output);
 		}

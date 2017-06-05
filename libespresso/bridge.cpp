@@ -287,7 +287,7 @@ extern "C"
 		}
 
 		//create on native heap
-		uint16_t* newstr = new uint16_t[length + 1];
+		uint16_t* newstr = new uint16_t[length + 1]; //+1 for null-terminated string 
 		if (newstr != NULL) {
 			//alloc succeed
 			for (int i = length - 1; i >= 0; --i)
@@ -295,13 +295,16 @@ extern "C"
 				newstr[i] = newstr[i];
 			}
 			//last one, close with null character
-			newstr[length] = '\0';
+			newstr[length] = '\0'; //null-terminated string 
 			//----------------------------------
-			output->str = newstr; //assign
 			output->type = JSVALUE_TYPE_STRING;
+			output->ptr = newstr; //assign
+			output->i32 = length;
 		}
 		else {
-			output->length = 0;
+			//alloc error
+			output->type = JSVALUE_TYPE_MEM_ERROR;
+			output->i32 = 0;
 		}
 	}
 	EXPORT void CALLCONV jsvalue_alloc_array(const int32_t length, jsvalue* output)
@@ -309,16 +312,17 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_array" << std::endl;
 #endif
-
 		jsvalue** newarr = new jsvalue*[length];
 		if (newarr != NULL) {
 			//alloc succeed
-			output->arr = newarr;
+			output->ptr = newarr;
 			output->type = JSVALUE_TYPE_ARRAY;
-			output->length = length;
+			output->i32 = length;
 		}
 		else {
-			output->length = 0;
+			//alloc error
+			output->type = JSVALUE_TYPE_MEM_ERROR;
+			output->i32 = 0;
 		}
 	}
 	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value)
@@ -332,28 +336,29 @@ extern "C"
 		case JSVALUE_TYPE_STRING:
 		case JSVALUE_TYPE_STRING_ERROR:
 		{
-			if (value->str != NULL) {
-				delete[] value->str;
+			if (value->ptr != NULL) {
+				delete[] value->ptr;
 			}
 		}break;
 		case JSVALUE_TYPE_ARRAY:
 		case JSVALUE_TYPE_FUNCTION:
 		{
-			for (int i = value->length - 1; i >= 0; --i) {
-				jsvalue_dispose(value->arr[i]);
+			jsvalue** arr = (jsvalue**)value->ptr;
+			for (int i = value->i32 - 1; i >= 0; --i) {
+				jsvalue_dispose(arr[i]);
 			}
-			if (value->arr != NULL) {
-				delete[] value->arr;
-
+			if (arr != NULL) {
+				delete[] value->ptr;
 			}
 		}break;
 		case JSVALUE_TYPE_DICT:
 		{
-			for (int i = (value->length * 2) - 1; i >= 0; --i) {
-				jsvalue_dispose(value->arr[i]);
+			jsvalue** arr = (jsvalue**)value->ptr;
+			for (int i = (value->i32 * 2) - 1; i >= 0; --i) { //key-value
+				jsvalue_dispose(arr[i]);
 			}
-			if (value->arr != NULL) {
-				delete[] value->arr;
+			if (arr != NULL) {
+				delete[] value->ptr;
 			}
 		}break;
 		case JSVALUE_TYPE_ERROR:

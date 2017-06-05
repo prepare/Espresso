@@ -64,6 +64,7 @@ using namespace v8;
 
 #define JSVALUE_TYPE_JSTYPEDEF      18 //my extension
 #define JSVALUE_TYPE_INTEGER64      19 //my extension
+#define JSVALUE_TYPE_MEM_ERROR      20 //my extension
 
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
@@ -94,15 +95,18 @@ extern long js_mem_debug_script_count;
 
 struct jsvalue
 {
-
+	int32_t     type; //type and flags
+	//this for 32 bits values, also be used as string len, array len  and index to managed slot index
 	int32_t     i32;
-	int64_t     i64;
+	// native ptr (may point to native object, native array, native string)
+	void*		ptr; //uint16_t* or jsvalue**   arr or 
+	//store float or double
 	double      num;
-	void*		ptr;
-	uint16_t*   str;
-	jsvalue**   arr;//array of jsvalue*
-	int32_t     type;
-	int32_t     length; // Also used as slot index on the CLR side.
+	//store 64 bits value
+	int64_t     i64;
+	//uint16_t*   str;
+	//jsvalue**   arr;//array of jsvalue*	
+	//int32_t     length; // Also used as slot index on the CLR side.
 };
 
 struct jserror
@@ -149,7 +153,7 @@ class BinaryStreamReader
 public:
 	const char* stream;
 	int length;
-	int pos; 
+	int pos;
 	BinaryStreamReader(const char* stream, int length);
 	int ReadInt16();
 	int ReadInt32();
@@ -356,7 +360,7 @@ private:
 	bool isJsTypeDef_;
 };
 
- 
+
 class JsContext {
 public:
 

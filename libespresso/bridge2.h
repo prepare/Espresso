@@ -59,7 +59,8 @@ extern "C" {
 	EXPORT void ResultSetFloat(MetCallingArgs* result, float value);
 	EXPORT void ResultSetDouble(MetCallingArgs* result, double value);
 	EXPORT void ResultSetString(MetCallingArgs* result, wchar_t* value);
-	EXPORT void ResultSetString(MetCallingArgs* result, wchar_t* value);
+	EXPORT void ResultSetValue(MetCallingArgs* result, jsvalue* value);
+
 	EXPORT void ResultSetManagedObjectIndex(MetCallingArgs* result, int32_t managedObjectIndex);
 
 	EXPORT void ResultSetJsNull(MetCallingArgs* result);
