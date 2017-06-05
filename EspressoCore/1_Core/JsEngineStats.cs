@@ -23,10 +23,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System; 
+
 namespace Espresso
 {
-    public class JsEngineStats
+    public struct JsEngineStats
     {
         public int KeepAliveMaxSlots { get; set; }
         public int KeepAliveAllocatedSlots { get; set; }

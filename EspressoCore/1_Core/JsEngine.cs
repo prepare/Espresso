@@ -1,4 +1,6 @@
-﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -26,15 +28,7 @@ namespace Espresso
         JsTypeDefinitionBuilder defaultTypeBuilder;
 
 
-        static JsEngine()
-        {
-            //
-            JsObjectMarshalType objectMarshalType = JsObjectMarshalType.Dictionary;
-#if NET40
-            objectMarshalType = JsObjectMarshalType.Dynamic;
-#endif
-            js_set_object_marshal_type(objectMarshalType);
-        }
+
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
 
@@ -125,27 +119,27 @@ namespace Espresso
                 jsengine_dispose_object(_engine, ptr);
         }
 
-        private JsValue KeepAliveValueOf(int contextId, int slot)
+        void KeepAliveValueOf(int contextId, int slot, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+
+                throw new ContextNotFoundException(contextId);
             }
-            return context.KeepAliveValueOf(slot);
+            context.KeepAliveGetValueOf(slot, ref output);
         }
 
-        private JsValue KeepAliveInvoke(int contextId, int slot, JsValue args)
+        void KeepAliveInvoke(int contextId, int slot, ref JsValue args, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+                throw new ContextNotFoundException(contextId);
             }
-            return context.KeepAliveInvoke(slot, args);
+            context.KeepAliveInvoke(slot, ref args, ref output);
         }
-
-        private JsValue KeepAliveSetPropertyValue(int contextId, int slot, string name, JsValue value)
+        void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsValue value, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("set prop " + contextId + " " + slot);
@@ -153,13 +147,11 @@ namespace Espresso
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+                throw new ContextNotFoundException(contextId);
             }
-            return context.KeepAliveSetPropertyValue(slot, name, value);
+            context.KeepAliveSetPropertyValue(slot, name, ref value, ref output);
         }
-
-
-        private JsValue KeepAliveGetPropertyValue(int contextId, int slot, string name)
+        void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("get prop " + contextId + " " + slot);
@@ -167,14 +159,11 @@ namespace Espresso
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+                throw new ContextNotFoundException(contextId);
             }
-
-            JsValue value = context.KeepAliveGetPropertyValue(slot, name);
-            return value;
+            context.KeepAliveGetPropertyValue(slot, name, ref output);
         }
-
-        private JsValue KeepAliveDeleteProperty(int contextId, int slot, string name)
+        void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("delete prop " + contextId + " " + slot);
@@ -182,14 +171,12 @@ namespace Espresso
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+                throw new ContextNotFoundException(contextId);
             }
-
-            JsValue value = context.KeepAliveDeleteProperty(slot, name);
-            return value;
+            context.KeepAliveDeleteProperty(slot, name, ref output);
         }
 
-        private JsValue KeepAliveEnumerateProperties(int contextId, int slot)
+        void KeepAliveEnumerateProperties(int contextId, int slot, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("enumerate props " + contextId + " " + slot);
@@ -197,14 +184,11 @@ namespace Espresso
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
-                throw new Exception("fail");
+                throw new ContextNotFoundException(contextId);
             }
-
-            JsValue value = context.KeepAliveEnumerateProperties(slot);
-            return value;
+            context.KeepAliveEnumerateProperties(slot, ref output);
         }
-
-        private void KeepAliveRemove(int contextId, int slot)
+        void KeepAliveRemove(int contextId, int slot)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("Keep alive remove for " + contextId + " " + slot);
@@ -220,16 +204,17 @@ namespace Espresso
         public JsContext CreateContext()
         {
             CheckDisposed();
-            int id = Interlocked.Increment(ref _currentContextId);
+            //
+            int newContextId = Interlocked.Increment(ref _currentContextId);
+            JsContext ctx = new JsContext(newContextId, this, ContextDisposed, this.defaultTypeBuilder);
 
-            JsContext ctx = new JsContext(id, this, ContextDisposed, this.defaultTypeBuilder);
-
-            _aliveContexts.Add(id, ctx);
+            _aliveContexts.Add(newContextId, ctx);
             return ctx;
         }
         public JsContext CreateContext(IntPtr nativeJsContext)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentContextId);
             JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this.defaultTypeBuilder);
             _aliveContexts.Add(id, ctx);
@@ -238,18 +223,25 @@ namespace Espresso
         public JsContext CreateContext(JsTypeDefinitionBuilder customTypeDefBuilder)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentContextId);
-
             JsContext ctx = new JsContext(id, this, ContextDisposed, customTypeDefBuilder);
-
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
-        public JsScript CompileScript(string code, string name = "<Unamed Script>")
+        public JsScript CompileScript(string code, string scriptName)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentScriptId);
-            JsScript script = new JsScript(id, this, _engine, new JsConvert(null), code, name, ScriptDisposed);
+            JsScript script = new JsScript(id,
+                this,
+                _engine,
+                new JsConvert(null),
+                code,
+                scriptName,
+                ScriptDisposed);
+
             _aliveScripts.Add(id, script);
             return script;
         }
@@ -264,8 +256,7 @@ namespace Espresso
             _aliveScripts.Remove(id);
         }
 
-        #region IDisposable implementation
-
+        //-------------------------------------------------
         bool _disposed;
 
         public bool IsDisposed
@@ -286,23 +277,22 @@ namespace Espresso
 
             if (disposing)
             {
-                foreach (var aliveContext in _aliveContexts)
+
+                foreach (JsContext context in _aliveContexts.Values)
                 {
-                    JsContext.jscontext_dispose(aliveContext.Value.Handle);
+                    context.Dispose();
                 }
                 _aliveContexts.Clear();
-                foreach (var aliveScript in _aliveScripts)
+                //
+                foreach (JsScript script in _aliveScripts.Values)
                 {
-                    JsScript.jsscript_dispose(aliveScript.Value.Handle);
+                    script.Dispose();
                 }
-
+                _aliveScripts.Clear();
             }
 #if DEBUG_TRACE_API
 				Console.WriteLine("Calling jsEngine dispose: " + _engine.Handle.ToInt64());
-#endif
-
-
-
+#endif      
             jsengine_dispose(_engine);
         }
 
@@ -322,6 +312,6 @@ namespace Espresso
             if (!_disposed)
                 Dispose(false);
         }
-        #endregion
+
     }
 }

@@ -23,29 +23,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System; 
+using System;
 namespace Espresso
 {
-     
-    public class JsInteropException : JsException
+
+    class JsInteropException : JsException
     {
         public JsInteropException()
         {
         }
-
         public JsInteropException(string message)
             : base(message)
         {
         }
-
         public JsInteropException(string message, Exception inner)
             : base(message, inner)
         {
         }
-
-        //protected JsInteropException(SerializationInfo info, StreamingContext context)
-        //    : base(info, context)
-        //{
-        //}
     }
 }
