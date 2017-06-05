@@ -1,4 +1,7 @@
 ﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -125,27 +128,27 @@ namespace Espresso
                 jsengine_dispose_object(_engine, ptr);
         }
 
-        private JsValue KeepAliveValueOf(int contextId, int slot)
+        private void KeepAliveValueOf(int contextId, int slot, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
                 throw new Exception("fail");
             }
-            return context.KeepAliveValueOf(slot);
+
+            context.KeepAliveValueOf(slot, ref output);
         }
 
-        private JsValue KeepAliveInvoke(int contextId, int slot, JsValue args)
+        private void KeepAliveInvoke(int contextId, int slot, ref JsValue args, ref JsValue output)
         {
             JsContext context;
             if (!_aliveContexts.TryGetValue(contextId, out context))
             {
                 throw new Exception("fail");
             }
-            return context.KeepAliveInvoke(slot, args);
+            context.KeepAliveInvoke(slot, ref args, ref output);
         }
-
-        private JsValue KeepAliveSetPropertyValue(int contextId, int slot, string name, JsValue value)
+        private void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsValue value, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("set prop " + contextId + " " + slot);
@@ -155,11 +158,9 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-            return context.KeepAliveSetPropertyValue(slot, name, value);
+            context.KeepAliveSetPropertyValue(slot, name, ref value, ref output);
         }
-
-
-        private JsValue KeepAliveGetPropertyValue(int contextId, int slot, string name)
+        private void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("get prop " + contextId + " " + slot);
@@ -170,11 +171,10 @@ namespace Espresso
                 throw new Exception("fail");
             }
 
-            JsValue value = context.KeepAliveGetPropertyValue(slot, name);
-            return value;
+            context.KeepAliveGetPropertyValue(slot, name, ref output);
         }
 
-        private JsValue KeepAliveDeleteProperty(int contextId, int slot, string name)
+        private void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("delete prop " + contextId + " " + slot);
@@ -184,12 +184,10 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-
-            JsValue value = context.KeepAliveDeleteProperty(slot, name);
-            return value;
+            context.KeepAliveDeleteProperty(slot, name, ref output);
         }
 
-        private JsValue KeepAliveEnumerateProperties(int contextId, int slot)
+        private void KeepAliveEnumerateProperties(int contextId, int slot, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("enumerate props " + contextId + " " + slot);
@@ -199,11 +197,8 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-
-            JsValue value = context.KeepAliveEnumerateProperties(slot);
-            return value;
+            context.KeepAliveEnumerateProperties(slot, ref output);
         }
-
         private void KeepAliveRemove(int contextId, int slot)
         {
 #if DEBUG_TRACE_API
@@ -245,11 +240,19 @@ namespace Espresso
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
-        public JsScript CompileScript(string code, string name = "<Unamed Script>")
+        public JsScript CompileScript(string code, string name)
         {
             CheckDisposed();
+            //
             int id = Interlocked.Increment(ref _currentScriptId);
-            JsScript script = new JsScript(id, this, _engine, new JsConvert(null), code, name, ScriptDisposed);
+            JsScript script = new JsScript(id,
+                this,
+                _engine,
+                new JsConvert(null),
+                code,
+                name,
+                ScriptDisposed);
+
             _aliveScripts.Add(id, script);
             return script;
         }

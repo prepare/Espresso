@@ -23,11 +23,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
+
 
 namespace Espresso
 {
-    public interface IKeepAliveStore
+    interface IKeepAliveStore
     {
         // Expose some internal values for stats.
         int MaxSlots { get; }

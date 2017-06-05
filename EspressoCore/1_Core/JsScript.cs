@@ -11,16 +11,17 @@ namespace Espresso
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        static extern IntPtr jsscript_compile(HandleRef script,
+        static extern void jsscript_compile(HandleRef script,
             [MarshalAs(UnmanagedType.LPWStr)] string str,
-            [MarshalAs(UnmanagedType.LPWStr)] string name);
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
         public static extern IntPtr jsscript_dispose(HandleRef script);
 
         readonly int _id;
         readonly JsEngine _engine;
-        readonly HandleRef _script; 
+        readonly HandleRef _script;
         internal JsScript(int id, JsEngine engine, HandleRef engineHandle, JsConvert convert, string code, string name, Action<int> notifyDispose)
         {
             _id = id;
@@ -28,8 +29,9 @@ namespace Espresso
             _notifyDispose = notifyDispose;
 
             _script = new HandleRef(this, jsscript_new(engineHandle));
-
-            IntPtr v2 = jsscript_compile(_script, code, name);
+            JsValue output = new JsValue();
+            jsscript_compile(_script, code, name, ref output);
+            //check compile result
             //JsValue v = jsscript_compile(_script, code, name); 
 
             //object res = convert.FromJsValue(v);
@@ -47,7 +49,7 @@ namespace Espresso
         internal HandleRef Handle
         {
             get { return _script; }
-        } 
+        }
 
 
         #region IDisposable implementation

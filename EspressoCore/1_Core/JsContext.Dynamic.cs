@@ -1,7 +1,7 @@
 ﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+
 
 namespace Espresso
 {
@@ -19,10 +19,12 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsValue v = jscontext_get_property_names(_context, obj.Handle);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
 
+            JsValue v = new JsValue();
+            jscontext_get_property_names(_context, obj.Handle, ref v);
+            object res = _convert.FromJsValue(ref v);
+
+            v.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -49,10 +51,14 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsValue v = jscontext_get_property_value(_context, obj.Handle, name);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
-
+            JsValue output = new JsValue();
+            jscontext_get_property_value(_context, obj.Handle, name, ref output);
+            //
+            object res = _convert.FromJsValue(ref output);
+            //TODO: review here
+            //we should dispose only type that contains native data***
+             
+            output.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -71,12 +77,18 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsValue a = _convert.AnyToJsValue(value);
-            JsValue v = jscontext_set_property_value(_context, obj.Handle, name, a);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
-            jsvalue_dispose(a);
+            JsValue a = new JsValue();
+            JsValue output = new JsValue();
 
+            _convert.AnyToJsValue(value, ref a);
+            jscontext_set_property_value(_context, obj.Handle, name, ref a, ref output);
+
+            //TODO: review exceptio here
+            //not need to convert all the time if we not have error
+            object res = _convert.FromJsValue(ref output);
+
+            output.Dispose();
+            a.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -94,14 +106,19 @@ namespace Espresso
             if (obj.Handle == IntPtr.Zero)
                 throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
 
-            JsValue a = JsValue.Null; // Null value unless we're given args.
-            if (args != null)
-                a = _convert.AnyToJsValue(args);
 
-            JsValue v = jscontext_invoke_property(_context, obj.Handle, name, a);
-            object res = _convert.FromJsValue(v);
-            jsvalue_dispose(v);
-            jsvalue_dispose(a);
+            JsValue a = new JsValue(); // Null value unless we're given args.
+            a.Type = JsValueType.Null;
+            if (args != null)
+            {
+                _convert.AnyToJsValue(args, ref a);
+            }
+
+            JsValue v = new JsValue();
+            jscontext_invoke_property(_context, obj.Handle, name, ref a, ref v);
+            object res = _convert.FromJsValue(ref v);
+            v.Dispose();
+            a.Dispose();
 
             Exception e = res as JsException;
             if (e != null)

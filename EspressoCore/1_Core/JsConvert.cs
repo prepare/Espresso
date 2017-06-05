@@ -1,3 +1,5 @@
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -23,27 +25,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+
+
 using System;
 using System.Runtime.InteropServices;
+using Espresso.Extension;
+
 namespace Espresso
 {
     class JsConvert
     {
-        public static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        public static readonly DateTime EPOCH_LocalTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        static readonly DateTime EPOCH_LocalTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        static JsConvert()
-        {
-
-        }
+        readonly JsContext _context;
         public JsConvert(JsContext context)
         {
             _context = context;
         }
-
-        readonly JsContext _context;
-
-        public object FromJsValue(JsValue v)
+        public object FromJsValue(ref JsValue v)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("Converting Js value to .net");
@@ -53,22 +53,16 @@ namespace Espresso
                 case JsValueType.Empty:
                 case JsValueType.Null:
                     return null;
-
                 case JsValueType.Boolean:
                     return v.I32 != 0;
-
                 case JsValueType.Integer:
                     return v.I32;
-
                 case JsValueType.Index:
                     return (UInt32)v.I64;
-
                 case JsValueType.Number:
                     return v.Num;
-
                 case JsValueType.String:
                     return Marshal.PtrToStringUni(v.Ptr);
-
                 case JsValueType.Date:
                     /*
                     // The formula (v.num * 10000) + 621355968000000000L was taken from a StackOverflow
@@ -76,24 +70,21 @@ namespace Espresso
                     // (a value determined from the failing tests)?!
                     return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
                      */
-
                     //var msFromJsTime = v.I64 % 1000;
-                    return EPOCH_LocalTime.AddMilliseconds(v.I64);// + new TimeSpan(7, 0, 0);
-                //return EPOCH_LocalTime.AddMilliseconds(v.I64);// + new TimeSpan(7, 0, 0);
-                //return EPOCH.AddMilliseconds(v.I64);
-
-                //return EPOCH.AddMilliseconds(v.Num);
-                //return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
+                    return EPOCH_LocalTime.AddMilliseconds(v.I64);
                 case JsValueType.Array:
                     {
-                        int len = v.Length;
-                        var r = new object[len];
-                        for (int i = 0; i < len; i++)
+                        int len = v.I32;
+                        object[] newarr = new object[len];
+                        unsafe
                         {
-                            var vi = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
-                            r[i] = FromJsValue(vi);
+                            JsValue** arr = (JsValue**)v.Ptr;
+                            for (int i = 0; i < len; ++i)
+                            {
+                                newarr[i] = FromJsValuePtr(arr[i]);
+                            }
                         }
-                        return r;
+                        return newarr;
                     }
 
                 case JsValueType.UnknownError:
@@ -105,214 +96,408 @@ namespace Espresso
                     return new JsException(Marshal.PtrToStringUni(v.Ptr));
 
                 case JsValueType.Managed:
-                    return _context.KeepAliveGet(v.Index);
+                    return _context.KeepAliveGet(v.I32);
                 case JsValueType.JsTypeWrap:
                     //auto unwrap
-                    return this._context.GetObjectProxy(v.Index).WrapObject;
+                    return this._context.GetObjectProxy(v.I32).WrapObject;
                 case JsValueType.ManagedError:
-                    Exception inner = _context.KeepAliveGet(v.Index) as Exception;
+                    Exception inner = _context.KeepAliveGet(v.I32) as Exception;
                     string msg = null;
                     if (v.Ptr != IntPtr.Zero)
                     {
                         msg = Marshal.PtrToStringUni(v.Ptr);
                     }
-                    else
+                    else if (inner != null)
                     {
-                        if (inner != null)
-                        {
-                            msg = inner.Message;
-                        }
+                        msg = inner.Message;
                     }
                     return new JsException(msg, inner);
-#if NET40
-                case JsValueType.Wrapped:
-                    return new JsObject(_context, v.Ptr);
-#else
                 case JsValueType.Dictionary:
-                    return JsDictionaryObject(v);
-#endif
+                    return JsDictionaryObject(ref v);
+
                 case JsValueType.Wrapped:
-                    return new JsObject(_context, v.Ptr);
-
-                case JsValueType.Error:
-                    return JsException.Create(this, (JsError)Marshal.PtrToStructure(v.Ptr, typeof(JsError)));
-
+                    return new JsObject(_context, v.Ptr); 
+                case JsValueType.Error: 
+                    return JsException.Create(this, v.Ptr); 
                 case JsValueType.Function:
-                    var fa = new JsValue[2];
-                    for (int i = 0; i < 2; i++)
+                    //convert from js function delegate to managed
+                    //this compose of function ptr and delegate's target
+                    unsafe
                     {
-                        fa[i] = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
+                        JsValue** arr = (JsValue**)v.Ptr;
+                        return new JsFunction(_context, arr[0]->Ptr, arr[1]->Ptr);
                     }
-                    return new JsFunction(_context, fa[0].Ptr, fa[1].Ptr);
                 default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);
             }
         }
-
-#if !NET40
-        private JsObject JsDictionaryObject(JsValue v)
+        public unsafe object FromJsValuePtr(JsValue* v)
         {
-            JsObject obj = new JsObject(this._context, v.Ptr);
-            int len = v.Length * 2;
-            for (int i = 0; i < len; i += 2)
+#if DEBUG_TRACE_API
+			Console.WriteLine("Converting Js value to .net");
+#endif
+            switch (v->Type)
             {
-                var key = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * i)), typeof(JsValue));
-                var value = (JsValue)Marshal.PtrToStructure(new IntPtr(v.Ptr.ToInt64() + (16 * (i + 1))), typeof(JsValue));
-                obj[(string)FromJsValue(key)] = FromJsValue(value);
+                case JsValueType.Empty:
+                case JsValueType.Null:
+                    return null;
+                case JsValueType.Boolean:
+                    return v->I32 != 0;
+                case JsValueType.Integer:
+                    return v->I32;
+                case JsValueType.Index:
+                    return (UInt32)v->I64;
+                case JsValueType.Number:
+                    return v->Num;
+                case JsValueType.String:
+                    return Marshal.PtrToStringUni(v->Ptr);
+                case JsValueType.Date:
+                    /*
+                    // The formula (v.num * 10000) + 621355968000000000L was taken from a StackOverflow
+                    // question and should be OK. Then why do we need to compensate by -26748000000000L
+                    // (a value determined from the failing tests)?!
+                    return new DateTime((long)(v.Num * 10000) + 621355968000000000L - 26748000000000L);
+                     */
+                    return EPOCH_LocalTime.AddMilliseconds(v->I64);
+                case JsValueType.Array:
+                    {
+                        int len = v->I32;
+                        object[] newarr = new object[len];
+                        JsValue** arr = (JsValue**)v->Ptr;
+                        for (int i = 0; i < len; ++i)
+                        {
+                            newarr[i] = FromJsValuePtr(arr[i]);
+                        }
+                        return newarr;
+                    }
+                case JsValueType.UnknownError:
+                    if (v->Ptr != IntPtr.Zero)
+                    {
+                        //TODO: x64 macOS ,review string marshal again 
+                        return new JsException(Marshal.PtrToStringUni(v->Ptr));
+                    }
+                    return new JsInteropException("unknown error without reason");
+                case JsValueType.StringError:
+                    //TODO: x64 macOS ,review string marshal again
+                    return new JsException(Marshal.PtrToStringUni(v->Ptr));
+                case JsValueType.Managed:
+                    //get managed object from slot***
+                    return _context.KeepAliveGet(v->I32);
+                case JsValueType.JsTypeWrap:
+                    //auto unwrap
+                    return this._context.GetObjectProxy(v->I32).WrapObject;
+                case JsValueType.ManagedError:
+                    Exception inner = _context.KeepAliveGet(v->I32) as Exception;
+                    string msg = null;
+                    if (v->Ptr != IntPtr.Zero)
+                    {
+                        msg = Marshal.PtrToStringUni(v->Ptr);
+                    }
+                    else if (inner != null)
+                    {
+                        msg = inner.Message;
+                    }
+                    return new JsException(msg, inner);
+                case JsValueType.Dictionary:
+                    return JsDictionaryObjectFromPtr(v);
+                case JsValueType.Wrapped:
+                    return new JsObject(_context, v->Ptr);
+                case JsValueType.Error:
+                    return JsException.Create(this, v->Ptr);
+                case JsValueType.Function:
+                    //convert from js function delegate to managed
+                    //this compose of function ptr and delegate's target
+                    unsafe
+                    {
+                        JsValue** arr = (JsValue**)v->Ptr;
+                        return new JsFunction(_context, arr[0]->Ptr, arr[1]->Ptr);
+                    }
+                default:
+                    throw new InvalidOperationException("unknown type code: " + v->Type);
+            }
+        }
+
+        private JsObject JsDictionaryObject(ref JsValue v)
+        {
+            //js dic is key-pair object
+            JsObject obj = new JsObject(this._context, v.Ptr);
+            int count = v.I32 * 2;//key and value
+            unsafe
+            {
+                JsValue** arr = (JsValue**)v.Ptr;
+                for (int i = 0; i < count;)
+                {
+                    JsValue* key = arr[i];
+                    JsValue* value = arr[i + 1];
+
+                    //TODO: review when key is not string 
+                    obj[(string)FromJsValuePtr(key)] = FromJsValuePtr(value);
+                    i += 2;
+                }
             }
             return obj;
         }
-#endif
 
+        private unsafe JsObject JsDictionaryObjectFromPtr(JsValue* v)
+        {
+            //js dic is key-pair
 
-        public JsValue ToJsValue(int value)
-        {
-            return new JsValue { Type = JsValueType.Integer, I32 = value };
-        }
-        public JsValue ToJsValue(long value)
-        {
-            return new JsValue { Type = JsValueType.Integer, I64 = value };
-        }
-        public JsValue ToJsValue(string value)
-        {  // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-            return JsContext.jsvalue_alloc_string(value);
-        }
-        public JsValue ToJsValue(char c)
-        {
-            // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-            return JsContext.jsvalue_alloc_string(c.ToString());
-        }
-        public JsValue ToJsValue(double value)
-        {
-            return new JsValue { Type = JsValueType.Number, Num = value };
-        }
-        public JsValue ToJsValue(float value)
-        {
-            return new JsValue { Type = JsValueType.Number, Num = value };
-        }
-        public JsValue ToJsValue(decimal value)
-        {
-            //data loss
-            return new JsValue { Type = JsValueType.Number, Num = (double)value };
-        }
-        public JsValue ToJsValue(bool value)
-        {
-            return new JsValue { Type = JsValueType.Boolean, I32 = value ? 1 : 0 };
-        }
-        public JsValue ToJsValue(DateTime dtm)
-        {
-            return new JsValue
+            JsObject obj = new JsObject(this._context, v->Ptr);
+            int count = v->I32 * 2;//key and value
+            unsafe
             {
-                Type = JsValueType.Date,
-                Num = Convert.ToInt64(dtm.Subtract(EPOCH).TotalMilliseconds)
-                /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
-            };
+                JsValue** arr = (JsValue**)v->Ptr;
+                for (int i = 0; i < count;)
+                {
+                    JsValue* key = arr[i];
+                    JsValue* value = arr[i + 1];
+
+                    //TODO: review when key is not string 
+                    obj[(string)FromJsValuePtr(key)] = FromJsValuePtr(value);
+                    i += 2;
+                }
+            }
+            return obj;
+        }
+        /// <summary>
+        /// fill int to native jsvalue
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="output"></param>
+        public void ToJsValue(int value, ref JsValue output)
+        {
+            output.Type = JsValueType.Integer;
+            output.I32 = value;
+        }
+        public void ToJsValue(long value, ref JsValue output)
+        {
+            //TODO review here
+            output.Type = JsValueType.Number;
+            output.I64 = value;
         }
 
-        public JsValue ToJsValue(INativeScriptable jsInstance)
+        public void ToJsValue(string value, ref JsValue output)
+        {
+            // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
+            JsContext.jsvalue_alloc_string(value, ref output);
+            output.Type = JsValueType.String;
+        }
+        public void ToJsValue(char c, ref JsValue output)
+        {
+            //TODO: review here
+            // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
+            JsContext.jsvalue_alloc_string(c.ToString(), ref output);
+            output.Type = JsValueType.String;
+        }
+        public void ToJsValue(double value, ref JsValue output)
+        {
+            output.Type = JsValueType.Number;
+            output.Num = value;
+        }
+        public void ToJsValue(float value, ref JsValue output)
+        {
+            output.Type = JsValueType.Number;
+            output.Num = value;
+        }
+        public void ToJsValue(decimal value, ref JsValue output)
+        {
+            //data loss***
+            //TODO: review here, convert to string?
+            output.Type = JsValueType.Number;
+            output.Num = (double)value;
+        }
+        public void ToJsValue(bool value, ref JsValue output)
+        {
+            output.Type = JsValueType.Boolean;
+            output.I32 = value ? 1 : 0;
+        }
+        public void ToJsValue(DateTime dtm, ref JsValue output)
+        {
+            output.Type = JsValueType.Date;
+            output.Num = Convert.ToInt64(dtm.Subtract(EPOCH).TotalMilliseconds);
+        }
+        public void ToJsValue(INativeScriptable jsInstance, ref JsValue output)
         {
             //extension 
             //int keepAliveId = _context.KeepAliveAdd(jsInstance);
-            return new JsValue
-            {
-                Type = JsValueType.JsTypeWrap,
-                Ptr = jsInstance.UnmanagedPtr,
-                Index = jsInstance.ManagedIndex
-                //Index = keepAliveId jsInstance.ManagedIndex
-            };
 
+            output.Type = JsValueType.JsTypeWrap;
+            output.Ptr = jsInstance.UnmanagedPtr;
+            output.I32 = jsInstance.ManagedIndex;
         }
-        public JsValue ToJsValue(object[] arr)
+        /// <summary>
+        /// fill array to native js value
+        /// </summary>
+        /// <param name="arr"></param>
+        /// <param name="output"></param>
+        public void ToJsValue(object[] arr, ref JsValue output)
         {
             int len = arr.Length;
-            JsValue v = JsContext.jsvalue_alloc_array(len);
-
-            if (v.Length != len)
+            //alloc array
+            JsContext.jsvalue_alloc_array(len, ref output);
+            if (output.I32 != len)
             {
                 throw new JsInteropException("can't allocate memory on the unmanaged side");
             }
 
-            for (int i = 0; i < len; i++)
+            unsafe
             {
-                Marshal.StructureToPtr(AnyToJsValue(arr[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
+                JsValue** nativeArr = (JsValue**)output.Ptr;
+                for (int i = 0; i < len; i++)
+                {
+                    AnyToJsValuePtr(arr[i], nativeArr[i]);
+                }
             }
-            return v;
+
         }
-        public JsValue ToJsValueNull()
+
+        public void ToJsValueNull(ref JsValue output)
         {
-            return new JsValue { Type = JsValueType.Null };
+            output.Type = JsValueType.Null;
         }
-#if NET20
-        public JsValue AnyToJsValue(object obj)
+
+        public void AnyToJsValue(object obj, ref JsValue output)
         {
             if (obj == null)
-                return new JsValue { Type = JsValueType.Null };
+            {
+                output.Type = JsValueType.Null;
+                return;
+            }
+            //-----
 
             if (obj is INativeRef)
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
                 int keepAliveId = _context.KeepAliveAdd(obj);
-                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
+                output.Type = JsValueType.JsTypeWrap;
+                output.Ptr = prox.UnmanagedPtr;
+                output.I32 = keepAliveId;
+                return;
             }
-
+            //-----
             Type type = obj.GetType();
 
             // Check for nullable types (we will cast the value out of the box later).
 
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                type = type.GetGenericArguments()[0];
+
+            type = type.ExtGetInnerTypeIfNullableValue();
+
 
             if (type == typeof(Boolean))
-                return new JsValue { Type = JsValueType.Boolean, I32 = (bool)obj ? 1 : 0 };
+            {
+                output.Type = JsValueType.Boolean;
+                output.I32 = (bool)obj ? 1 : 0;
+                return;
+            }
 
             if (type == typeof(String) || type == typeof(Char))
             {
-                // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-                return JsContext.jsvalue_alloc_string(obj.ToString());
+                // We need to allocate some memory on the other side;
+                // will be free'd by unmanaged code.
+                JsContext.jsvalue_alloc_string(obj.ToString(), ref output);
+                return;
+            }
+            //-----------------------------------------------------------
+            if (type == typeof(Byte))
+            {
+                output.Type = JsValueType.Integer;
+                output.I32 = (int)(byte)obj;
+                return;
+            }
+            if (type == typeof(Int16))
+            {
+                output.Type = JsValueType.Integer;
+                output.I32 = (int)(Int16)obj;
+                return;
+            }
+            if (type == typeof(UInt16))
+            {
+                output.Type = JsValueType.Integer;
+                output.I32 = (int)(UInt16)obj;
+                return;
+            }
+            if (type == typeof(Int32))
+            {
+                output.Type = JsValueType.Integer;
+                output.I32 = (int)obj;
+                return;
             }
 
-            if (type == typeof(Byte))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Byte)obj };
-            if (type == typeof(Int16))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Int16)obj };
-            if (type == typeof(UInt16))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt16)obj };
-            if (type == typeof(Int32))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)obj };
             if (type == typeof(UInt32))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt32)obj };
+            {
+                //TODO: review Type here when send to native side
+                output.Type = JsValueType.Integer;
+                output.I32 = (int)(uint)obj;
+                return;
+            }
 
             if (type == typeof(Int64))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Int64)obj };
+            {
+                output.Type = JsValueType.Number;
+                output.Num = (double)(Int64)obj;
+                return;
+            }
+
             if (type == typeof(UInt64))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(UInt64)obj };
+            {
+                output.Type = JsValueType.Number;
+                output.Num = (double)(UInt64)obj;
+                return;
+            }
+
+
             if (type == typeof(Single))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Single)obj };
+            {
+                output.Type = JsValueType.Number;
+                output.Num = (double)(Single)obj;
+                return;
+            }
+
+
             if (type == typeof(Double))
-                return new JsValue { Type = JsValueType.Number, Num = (double)obj };
+            {
+                output.Type = JsValueType.Number;
+                output.Num = (double)obj;
+                return;
+            }
+
             if (type == typeof(Decimal))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Decimal)obj };
+            {
+                //TODO: review here
+                //.net decimal is larger than double?
+                output.Type = JsValueType.Number;
+                output.Num = (double)(Decimal)obj;
+                return;
+            }
 
             if (type == typeof(DateTime))
-                return new JsValue
-                {
-                    Type = JsValueType.Date,
-                    Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds) /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
-                };
-
+            {
+                output.Type = JsValueType.Date;
+                output.Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds); /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
+                return;
+            }
             // Arrays of anything that can be cast to object[] are recursively convertef after
             // allocating an appropriate jsvalue on the unmanaged side.
 
             var array = obj as object[];
             if (array != null)
             {
-                JsValue v = JsContext.jsvalue_alloc_array(array.Length);
-                if (v.Length != array.Length)
+                //alloc space for array
+                int arrLen = array.Length;
+                JsContext.jsvalue_alloc_array(arrLen, ref output);
+                if (output.I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
-                for (int i = 0; i < array.Length; i++)
-                    Marshal.StructureToPtr(AnyToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
-                return v;
+
+                unsafe
+                {
+                    JsValue** jsarr = (JsValue**)output.Ptr;
+                    for (int i = 0; i < arrLen; i++)
+                    {
+                        AnyToJsValuePtr(array[i], jsarr[i]);
+                    }
+                }
+                return;
             }
 
             // Every object explicitly converted to a value becomes an entry of the
@@ -324,83 +509,149 @@ namespace Espresso
 
             var jsTypeDefinition = _context.GetJsTypeDefinition(type);
             INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
-            //int keepAliveId2 = _context.KeepAliveAdd(prox2);
-            return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = prox2.ManagedIndex };
-            //return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = keepAliveId2 };
+            //
+            output.Type = JsValueType.JsTypeWrap;
+            output.Ptr = prox2.UnmanagedPtr;
+            output.I32 = prox2.ManagedIndex;
 
-            //return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
-#else
-        public JsValue AnyToJsValue(object obj)
+        public unsafe void AnyToJsValuePtr(object obj, JsValue* output)
         {
             if (obj == null)
-                return new JsValue { Type = JsValueType.Null };
+            {
+                output->Type = JsValueType.Null;
+                return;
+            }
+            //-----
 
             if (obj is INativeRef)
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
                 int keepAliveId = _context.KeepAliveAdd(obj);
-                return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox.UnmanagedPtr, Index = keepAliveId };
+                output->Type = JsValueType.JsTypeWrap;
+                output->Ptr = prox.UnmanagedPtr;
+                output->I32 = keepAliveId;
+                return;
             }
-
+            //-----
             Type type = obj.GetType();
-
-            // Check for nullable types (we will cast the value out of the box later).
-            //if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                type = type.GenericTypeArguments[0]; //type = type.GetGenericArguments()[0];
-
+            // Check for nullable types (we will cast the value out of the box later). 
+            type = type.ExtGetInnerTypeIfNullableValue();
             if (type == typeof(Boolean))
-                return new JsValue { Type = JsValueType.Boolean, I32 = (bool)obj ? 1 : 0 };
+            {
+                output->Type = JsValueType.Boolean;
+                output->I32 = (bool)obj ? 1 : 0;
+                return;
+            }
 
             if (type == typeof(String) || type == typeof(Char))
             {
-                // We need to allocate some memory on the other side; will be free'd by unmanaged code.
-                return JsContext.jsvalue_alloc_string(obj.ToString());
+                // We need to allocate some memory on the other side;
+                // will be free'd by unmanaged code.
+                JsContext.jsvalue_alloc_string(obj.ToString(), output);
+                return;
+            }
+            //-----------------------------------------------------------
+            if (type == typeof(Byte))
+            {
+                output->Type = JsValueType.Integer;
+                output->I32 = (int)(byte)obj;
+                return;
+            }
+            if (type == typeof(Int16))
+            {
+                output->Type = JsValueType.Integer;
+                output->I32 = (int)(Int16)obj;
+                return;
+            }
+            if (type == typeof(UInt16))
+            {
+                output->Type = JsValueType.Integer;
+                output->I32 = (int)(UInt16)obj;
+                return;
+            }
+            if (type == typeof(Int32))
+            {
+                output->Type = JsValueType.Integer;
+                output->I32 = (int)obj;
+                return;
             }
 
-            if (type == typeof(Byte))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Byte)obj };
-            if (type == typeof(Int16))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(Int16)obj };
-            if (type == typeof(UInt16))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt16)obj };
-            if (type == typeof(Int32))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)obj };
             if (type == typeof(UInt32))
-                return new JsValue { Type = JsValueType.Integer, I32 = (int)(UInt32)obj };
+            {
+                //TODO: review Type here when send to native side
+                output->Type = JsValueType.Integer;
+                output->I32 = (int)(uint)obj;
+                return;
+            }
 
             if (type == typeof(Int64))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Int64)obj };
+            {
+                output->Type = JsValueType.Number;
+                output->Num = (double)(Int64)obj;
+                return;
+            }
+
             if (type == typeof(UInt64))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(UInt64)obj };
+            {
+                output->Type = JsValueType.Number;
+                output->Num = (double)(UInt64)obj;
+                return;
+            }
+
+
             if (type == typeof(Single))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Single)obj };
+            {
+                output->Type = JsValueType.Number;
+                output->Num = (double)(Single)obj;
+                return;
+            }
+
+
             if (type == typeof(Double))
-                return new JsValue { Type = JsValueType.Number, Num = (double)obj };
+            {
+                output->Type = JsValueType.Number;
+                output->Num = (double)obj;
+                return;
+            }
+
             if (type == typeof(Decimal))
-                return new JsValue { Type = JsValueType.Number, Num = (double)(Decimal)obj };
+            {
+                //TODO: review here
+                //.net decimal is larger than double?
+                output->Type = JsValueType.Number;
+                output->Num = (double)(Decimal)obj;
+                return;
+            }
 
             if (type == typeof(DateTime))
-                return new JsValue
-                {
-                    Type = JsValueType.Date,
-                    Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds) /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
-                };
-
+            {
+                output->Type = JsValueType.Date;
+                output->Num = Convert.ToInt64(((DateTime)obj).Subtract(EPOCH).TotalMilliseconds); /*(((DateTime)obj).Ticks - 621355968000000000.0 + 26748000000000.0)/10000.0*/
+                return;
+            }
             // Arrays of anything that can be cast to object[] are recursively convertef after
             // allocating an appropriate jsvalue on the unmanaged side.
 
             var array = obj as object[];
             if (array != null)
             {
-                JsValue v = JsContext.jsvalue_alloc_array(array.Length);
-                if (v.Length != array.Length)
+                //alloc space for array
+                int arrLen = array.Length;
+                JsContext.jsvalue_alloc_array(arrLen, output);
+                if (output->I32 != arrLen)
                     throw new JsInteropException("can't allocate memory on the unmanaged side");
-                for (int i = 0; i < array.Length; i++)
-                    Marshal.StructureToPtr(AnyToJsValue(array[i]), new IntPtr(v.Ptr.ToInt64() + (16 * i)), false);
-                return v;
+                unsafe
+                {
+                    JsValue** arr = (JsValue**)output->Ptr;
+                    for (int i = 0; i < arrLen; i++)
+                    {
+                        AnyToJsValuePtr(array[i], arr[i]);
+                    }
+                }
+
+                return;
             }
 
             // Every object explicitly converted to a value becomes an entry of the
@@ -412,12 +663,11 @@ namespace Espresso
 
             var jsTypeDefinition = _context.GetJsTypeDefinition(type);
             INativeRef prox2 = _context.CreateWrapper(obj, jsTypeDefinition);
-            //int keepAliveId2 = _context.KeepAliveAdd(prox2);
-            return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = prox2.ManagedIndex };
-            //return new JsValue { Type = JsValueType.JsTypeWrap, Ptr = prox2.UnmanagedPtr, Index = keepAliveId2 };
+            //
+            output->Type = JsValueType.JsTypeWrap;
+            output->Ptr = prox2.UnmanagedPtr;
+            output->I32 = prox2.ManagedIndex;
 
-            //return new JsValue { Type = JsValueType.Managed, Index = _context.KeepAliveAdd(obj) };
         }
-#endif
     }
 }

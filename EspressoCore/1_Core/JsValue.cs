@@ -1,3 +1,6 @@
+//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+
 // This file is part of the VroomJs library.
 //
 // Author:
@@ -28,59 +31,91 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
-    [StructLayout(LayoutKind.Explicit)]
+
+    //---------------------------------------
+    //2017-06-04
+    //1. for internal inter-op only -> always be private
+    //for inter-op with native lib, .net core on macOS x64 dose not support explicit layout
+    //so we need sequential layout
+    //2. this is a quite large object, and is designed to be used on stack,
+    //pass by reference to native side
+    //---------------------------------------
+    /// <summary>
+    /// for internal inter-op only -> always be private,used on stack,pass by reference
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
     struct JsValue
     {
-        [FieldOffset(0)]
-        public int I32;
-        [FieldOffset(0)]
-        public long I64;
-        [FieldOffset(0)]
-        public double Num;
         /// <summary>
-        /// ptr from native side
+        /// type and flags
         /// </summary>
-        [FieldOffset(0)]
-        public IntPtr Ptr;
-
-        /// <summary>
-        /// offset(8)See JsValueType, marshaled as integer. 
-        /// </summary>
-        [FieldOffset(8)]
         public JsValueType Type;
-
         /// <summary>
-        /// offset(12) Length of array or string 
+        /// this for 32 bits values, also be used as string len, array len  and index to managed slot index
         /// </summary>
-        [FieldOffset(12)]
-        public int Length;
+        public int I32;//
         /// <summary>
-        /// offset(12) managed object keepalive index. 
+        /// native ptr (may point to native object, native array, native string)
         /// </summary>
-        [FieldOffset(12)]
-        public int Index;
+        public IntPtr Ptr;
+        /// <summary>
+        /// store float or double
+        /// </summary>
+        public double Num;// 
+        /// <summary>
+        /// store 64 bits value
+        /// </summary>
+        public long I64;//
 
 
 
 
-        public static JsValue Null
+        //--------------------------------
+        public void Dispose()
         {
-            get { return new JsValue() { Type = JsValueType.Null }; }
+            //TODO:
+            //if v dose not contain unmanaged data 
+            //then we don't send it back to delete on unmanaged side
+            jsvalue_dispose(ref this);
         }
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern void jsvalue_dispose(ref JsValue value);
+    }
+     
 
-        public static JsValue Empty
-        {
-            get { return new JsValue() { Type = JsValueType.Empty }; }
-        }
 
-        public static JsValue Error(int slot)
-        {
-            return new JsValue { Type = JsValueType.ManagedError, Index = slot };
-        }
+    enum JsValueType : int
+    {
+        UnknownError = -1,
+        Empty = 0,
+        Null = 1,
+        Boolean = 2,
+        Integer = 3,
+        Number = 4,
+        String = 5,
+        Date = 6,
+        Index = 7,
+        Array = 10,
+        StringError = 11,
+        Managed = 12,
+        ManagedError = 13,
+        Wrapped = 14,
+        Dictionary = 15,
+        Error = 16,
+        Function = 17,
 
-        public override string ToString()
-        {
-            return string.Format("[JsValue({0})]", Type);
-        }
+        //---------------
+        //my extension
+        JsTypeWrap = 18
+    }
+
+    enum JsManagedError
+    {
+        Empty,
+        SetPropertyError,
+        GetPropertyNotFound,
+        SetKeepAliveError,
+        NotFoundManagedObjectId,
+
     }
 }

@@ -17,7 +17,7 @@ namespace Espresso
 
             //-------------------
             if (doV8Init)
-            {    
+            {
                 //sometime we set to false , and  let underlying lib init the v8 engine.
                 NativeV8JsInterOp.V8Init();
             }
@@ -32,6 +32,7 @@ namespace Espresso
             }
         }
 
+        //TODO: review here again
         //----------------------------------
         //if this is windows
         [DllImport("Kernel32.dll")]
