@@ -44,6 +44,7 @@ namespace Espresso
         readonly JsEngine _engine;
         readonly ManagedMethodCallDel engineMethodCallbackDel;
         readonly HandleRef _context; //native js context
+        readonly Action<int> _notifyDispose;
 
         List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
         List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
@@ -117,7 +118,7 @@ namespace Espresso
             j = properties.Count;
             for (int i = 0; i < j; ++i)
             {
-                var p = properties[i];
+                JsPropertyDefinition p = properties[i];
                 p.SetMemberId(registerProperties.Count);
                 registerProperties.Add(p);
             }
@@ -367,11 +368,9 @@ namespace Espresso
             jscontext_force_gc();
         }
 
-
-
         internal int KeepAliveAdd(object obj)
         {
-            return _keepalives.Add(obj);
+            return _keepalives.Register(obj);
         }
 
         internal object KeepAliveGet(int slot)
@@ -385,9 +384,8 @@ namespace Espresso
         }
 
 
-        private readonly Action<int> _notifyDispose;
-        bool _disposed;
-
+        
+        bool _disposed; 
         public bool IsDisposed
         {
             get { return _disposed; }
@@ -717,8 +715,7 @@ namespace Espresso
                 output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
                 return;
             }
-
-
+             
             Type constructorType = obj as Type;
             if (constructorType != null)
             {
@@ -726,8 +723,9 @@ namespace Espresso
 					Console.WriteLine("constructing " + constructorType.Name);
 #endif
                 object[] constructorArgs = (object[])_convert.FromJsValue(ref args);
-                //review here
-                _convert.AnyToJsValue(Activator.CreateInstance(constructorType, constructorArgs), ref output);
+                //TODO: review here
+                _convert.AnyToJsValue(
+                    Activator.CreateInstance(constructorType, constructorArgs), ref output);
                 return;
             }
             //expect slot is del
@@ -776,9 +774,7 @@ namespace Espresso
             //    output.Type = JsValueType.Error;
             //    output.I64 = (int)JsManagedError.SetKeepAliveError;
             //    return;
-            //}
-
-
+            //} 
         }
         static void CheckAndResolveJsFunctions(WeakDelegate weakDel,
           JsFunction func,

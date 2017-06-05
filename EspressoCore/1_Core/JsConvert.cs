@@ -374,10 +374,9 @@ namespace Espresso
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
-                int keepAliveId = _context.KeepAliveAdd(obj);
+                output.I32 = _context.KeepAliveAdd(obj);
                 output.Type = JsValueType.JsTypeWrap;
                 output.Ptr = prox.UnmanagedPtr;
-                output.I32 = keepAliveId;
                 return;
             }
             //-----
@@ -386,9 +385,12 @@ namespace Espresso
             // Check for nullable types (we will cast the value out of the box later).
 
 
-            type = type.ExtGetInnerTypeIfNullableValue();
-
-
+            Type innerTypeOfNullable = type.ExtGetInnerTypeIfNullableValue();
+            if (innerTypeOfNullable != null)
+            {
+                type = innerTypeOfNullable;
+            }
+            //
             if (type == typeof(Boolean))
             {
                 output.Type = JsValueType.Boolean;
@@ -534,10 +536,9 @@ namespace Espresso
             {
                 //extension
                 INativeRef prox = (INativeRef)obj;
-                int keepAliveId = _context.KeepAliveAdd(obj);
+                output->I32 = _context.KeepAliveAdd(obj);
                 output->Type = JsValueType.JsTypeWrap;
                 output->Ptr = prox.UnmanagedPtr;
-                output->I32 = keepAliveId;
                 return;
             }
             //-----

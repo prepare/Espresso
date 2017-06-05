@@ -76,6 +76,12 @@ void ResultSetManagedObjectIndex(MetCallingArgs* callingArgs, int32_t managedObj
 	callingArgs->result.type = JSVALUE_TYPE_MANAGED;
 	callingArgs->result.i32 = managedObjectIndex;
 }
+void ResultSetValue(MetCallingArgs* callingArgs, jsvalue* value)
+{
+	//copy all value to
+	callingArgs->result = *value;
+}
+
 ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef)
 {
 
