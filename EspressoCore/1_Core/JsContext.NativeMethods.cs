@@ -23,8 +23,8 @@ namespace Espresso
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_execute(HandleRef context,
-            [MarshalAs(UnmanagedType.LPWStr)] string str,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string str,
+            string name,
             ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
@@ -33,25 +33,25 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jscontext_get_global(HandleRef engine, ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_get_variable(HandleRef engine,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string name,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_set_variable(HandleRef engine,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string name,
             ref JsValue value,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static internal extern void jsvalue_alloc_string(
-            [MarshalAs(UnmanagedType.LPWStr)] string str,
+            string str,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static internal unsafe extern void jsvalue_alloc_string(
-         [MarshalAs(UnmanagedType.LPWStr)] string str,
+         string str,
          JsValue* output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -76,20 +76,21 @@ namespace Espresso
             IntPtr ptr,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_get_property_value(HandleRef engine, IntPtr ptr,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string name,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_set_property_value(HandleRef engine,
-            IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string name,
+            IntPtr ptr,
+            string name,
             ref JsValue value,
             ref JsValue output);
 
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern void jscontext_invoke_property(HandleRef engine, IntPtr ptr,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            string name,
             ref JsValue args,
             ref JsValue output);
 

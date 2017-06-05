@@ -74,6 +74,9 @@ namespace Espresso
 
     public class JsObject : DynamicObject, IDisposable
     {
+        readonly JsContext _context;
+        readonly IntPtr _handle;
+
         public JsObject(JsContext context, IntPtr ptr)
         {
             if (ptr == IntPtr.Zero)
@@ -83,8 +86,6 @@ namespace Espresso
             _handle = ptr;
         }
 
-        readonly JsContext _context;
-        readonly IntPtr _handle;
 
         public IntPtr Handle
         {
