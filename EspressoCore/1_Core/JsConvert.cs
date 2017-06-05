@@ -43,6 +43,11 @@ namespace Espresso
         {
             _context = context;
         }
+        /// <summary>
+        /// convert from jsvalue to managed value
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public object FromJsValue(ref JsValue v)
         {
 #if DEBUG_TRACE_API
@@ -113,7 +118,7 @@ namespace Espresso
                     }
                     return new JsException(msg, inner);
                 case JsValueType.Dictionary:
-                    return JsDictionaryObject(ref v);
+                    return CreateJsDictionaryObject(ref v);
 
                 case JsValueType.Wrapped:
                     return new JsObject(_context, v.Ptr);
@@ -199,7 +204,7 @@ namespace Espresso
                     }
                     return new JsException(msg, inner);
                 case JsValueType.Dictionary:
-                    return JsDictionaryObjectFromPtr(v);
+                    return CreateJsDictionaryObjectFromPtr(v);
                 case JsValueType.Wrapped:
                     return new JsObject(_context, v->Ptr);
                 case JsValueType.Error:
@@ -217,7 +222,7 @@ namespace Espresso
             }
         }
 
-        private JsObject JsDictionaryObject(ref JsValue v)
+        JsObject CreateJsDictionaryObject(ref JsValue v)
         {
             //js dic is key-pair object
             JsObject obj = new JsObject(this._context, v.Ptr);
@@ -238,7 +243,7 @@ namespace Espresso
             return obj;
         }
 
-        private unsafe JsObject JsDictionaryObjectFromPtr(JsValue* v)
+        unsafe JsObject CreateJsDictionaryObjectFromPtr(JsValue* v)
         {
             //js dic is key-pair
 
@@ -320,9 +325,6 @@ namespace Espresso
         }
         public void ToJsValue(INativeScriptable jsInstance, ref JsValue output)
         {
-            //extension 
-            //int keepAliveId = _context.KeepAliveAdd(jsInstance);
-
             output.Type = JsValueType.JsTypeWrap;
             output.Ptr = jsInstance.UnmanagedPtr;
             output.I32 = jsInstance.ManagedIndex;
@@ -354,7 +356,11 @@ namespace Espresso
         {
             output.Type = JsValueType.Null;
         }
-
+        /// <summary>
+        /// convert any object to jsvalue
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="output"></param>
         public void AnyToJsValue(object obj, ref JsValue output)
         {
             if (obj == null)

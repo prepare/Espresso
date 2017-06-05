@@ -556,9 +556,7 @@ namespace Espresso
             // and then keep alive a "weak delegate", i.e., just a name and the target.
             // The real method will be resolved during the invokation itself.
 
-            //TODO: check if we should use 'method-group' instead of first found method
-
-
+            //TODO: check if we should use 'method-group' instead of first found method 
             throw new NotSupportedException();
 
             //BindingFlags mFlags = flags | BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy;
@@ -691,7 +689,7 @@ namespace Espresso
             Type type = obj.GetType();
             MethodInfo mi;
 #if NET20
-                mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
+            mi = type.GetMethod("valueOf") ?? type.GetMethod("ValueOf");
 #else
             mi = type.GetRuntimeMethod("ValueOf", s_emptyTypeArr);
 #endif
