@@ -120,6 +120,10 @@ namespace Test3
                     return true;
                 }
             }
+            public bool GetOK()
+            {
+                return true;
+            }
             [JsMethod]
             public AboutMe NewAboutMe()
             {
@@ -352,12 +356,9 @@ namespace Test3
                 //string testsrc = "(function(){if(x.C()){return  x.B();}else{return 0;}})()";
                 //string testsrc = "(function(){if(x.D != null){ x.E=300; return  x.B();}else{return 0;}})()";
                 string testsrc = "x.B(x.D,15);";
-
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
-
                 Console.WriteLine("met1 template:" + stwatch.ElapsedMilliseconds.ToString());
-
             }
         }
 
@@ -369,7 +370,7 @@ namespace Test3
             JsTypeDefinition jstypedef = new JsTypeDefinition("AA");
             jstypedef.AddMember(new JsMethodDefinition("B", args =>
             {
-                var argCount = args.ArgCount;
+                int argCount = args.ArgCount;
                 var thisArg = args.GetThisArg();
                 var arg0 = args.GetArgAsObject(0);
                 args.SetResult((bool)arg0);
@@ -420,7 +421,8 @@ namespace Test3
                 ctx.SetVariable("x", proxy);
 
 
-                string testsrc = "x.B(x.D.IsOK);";
+                //string testsrc = "x.B(x.D.IsOK);";
+                string testsrc = "x.B(x.D.GetOK());";
                 object result = ctx.Execute(testsrc);
                 stwatch.Stop();
 
