@@ -1,6 +1,5 @@
-﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
-//MIT, 2015-2017, WinterDev, EngineKit, brezza92
-
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
 
 using System;
 using System.Collections.Generic;
@@ -162,7 +161,6 @@ namespace Espresso
             {
                 throw new ContextNotFoundException(contextId);
             }
-
             context.KeepAliveGetPropertyValue(slot, name, ref output);
         }
         void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
@@ -279,23 +277,22 @@ namespace Espresso
 
             if (disposing)
             {
-                foreach (var aliveContext in _aliveContexts)
+
+                foreach (JsContext context in _aliveContexts.Values)
                 {
-                    JsContext.jscontext_dispose(aliveContext.Value.NativeContextHandle);
+                    context.Dispose();
                 }
                 _aliveContexts.Clear();
-                foreach (var aliveScript in _aliveScripts)
+                //
+                foreach (JsScript script in _aliveScripts.Values)
                 {
-                    JsScript.jsscript_dispose(aliveScript.Value.Handle);
+                    script.Dispose();
                 }
-
+                _aliveScripts.Clear();
             }
 #if DEBUG_TRACE_API
 				Console.WriteLine("Calling jsEngine dispose: " + _engine.Handle.ToInt64());
-#endif
-
-
-
+#endif      
             jsengine_dispose(_engine);
         }
 

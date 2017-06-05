@@ -1,4 +1,5 @@
-﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio <fog@initd.org>
 using System;
 using System.Runtime.InteropServices;
 
@@ -6,22 +7,12 @@ namespace Espresso
 {
     public class JsScript : IDisposable
     {
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
-        static extern IntPtr jsscript_new(HandleRef engine);
-
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        static extern void jsscript_compile(HandleRef script,
-            [MarshalAs(UnmanagedType.LPWStr)] string str,
-            [MarshalAs(UnmanagedType.LPWStr)] string name,
-            ref JsValue output);
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
-        public static extern IntPtr jsscript_dispose(HandleRef script);
-
+     
         readonly int _id;
         readonly JsEngine _engine;
         readonly HandleRef _script;
+        readonly Action<int> _notifyDispose;
+
         internal JsScript(int id, JsEngine engine, HandleRef engineHandle, JsConvert convert, string code, string name, Action<int> notifyDispose)
         {
             _id = id;
@@ -31,15 +22,13 @@ namespace Espresso
             _script = new HandleRef(this, jsscript_new(engineHandle));
             JsValue output = new JsValue();
             jsscript_compile(_script, code, name, ref output);
-            //check compile result
-            //JsValue v = jsscript_compile(_script, code, name); 
 
-            //object res = convert.FromJsValue(v);
-            //Exception e = res as JsException;
-            //if (e != null)
-            //{
-            //    throw e;
-            //}
+            object res = convert.FromJsValue(ref output);
+            Exception e = res as JsException;
+            if (e != null)
+            {
+                throw e;
+            }
         }
 
         internal JsEngine Engine
@@ -52,11 +41,7 @@ namespace Espresso
         }
 
 
-        #region IDisposable implementation
-
-        private readonly Action<int> _notifyDispose;
         bool _disposed;
-
         public bool IsDisposed
         {
             get { return _disposed; }
@@ -95,7 +80,20 @@ namespace Espresso
                 Dispose(false);
         }
 
-        #endregion
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
+        static extern IntPtr jsscript_new(HandleRef engine);
+
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        static extern void jsscript_compile(HandleRef script,
+            [MarshalAs(UnmanagedType.LPWStr)] string str,
+            [MarshalAs(UnmanagedType.LPWStr)] string name,
+            ref JsValue output);
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.StdCall)]
+        static extern IntPtr jsscript_dispose(HandleRef script);
+
 
     }
 }

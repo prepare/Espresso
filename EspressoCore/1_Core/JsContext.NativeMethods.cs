@@ -1,4 +1,5 @@
-﻿//2013 MIT, Federico Di Gregorio<fog@initd.org>
+﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2013, Federico Di Gregorio<fog@initd.org>
 
 using System;
 using System.Runtime.InteropServices;
@@ -13,7 +14,7 @@ namespace Espresso
         static extern IntPtr jscontext_new(int id, HandleRef engine);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void jscontext_dispose(HandleRef engine);
+        static extern void jscontext_dispose(HandleRef engine);
 
         //TODO: review remove this?
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -60,7 +61,7 @@ namespace Espresso
         static internal unsafe extern void jsvalue_alloc_array(int length,
             JsValue* output);
 
-       
+
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static internal extern void jscontext_invoke(HandleRef engine,
             IntPtr funcPtr,
