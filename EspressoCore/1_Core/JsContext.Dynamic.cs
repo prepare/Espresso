@@ -1,7 +1,7 @@
 ﻿//MIT, 2013, Federico Di Gregorio <fog@initd.org>
 using System;
 using System.Collections.Generic;
- 
+
 
 namespace Espresso
 {
@@ -23,8 +23,8 @@ namespace Espresso
             JsValue v = new JsValue();
             jscontext_get_property_names(_context, obj.Handle, ref v);
             object res = _convert.FromJsValue(ref v);
-            jsvalue_dispose(ref v);
 
+            v.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -57,8 +57,8 @@ namespace Espresso
             object res = _convert.FromJsValue(ref output);
             //TODO: review here
             //we should dispose only type that contains native data***
-            jsvalue_dispose(ref output);
-
+             
+            output.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -86,9 +86,9 @@ namespace Espresso
             //TODO: review exceptio here
             //not need to convert all the time if we not have error
             object res = _convert.FromJsValue(ref output);
-            jsvalue_dispose(ref output);
-            jsvalue_dispose(ref a);
 
+            output.Dispose();
+            a.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -117,8 +117,8 @@ namespace Espresso
             JsValue v = new JsValue();
             jscontext_invoke_property(_context, obj.Handle, name, ref a, ref v);
             object res = _convert.FromJsValue(ref v);
-            jsvalue_dispose(ref v);
-            jsvalue_dispose(ref a);
+            v.Dispose();
+            a.Dispose();
 
             Exception e = res as JsException;
             if (e != null)

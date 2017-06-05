@@ -66,7 +66,22 @@ namespace Espresso
         /// store 64 bits value
         /// </summary>
         public long I64;//
+
+
+
+
+        //--------------------------------
+        public void Dispose()
+        {
+            //TODO:
+            //if v dose not contain unmanaged data 
+            //then we don't send it back to delete on unmanaged side
+            jsvalue_dispose(ref this);
+        }
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern void jsvalue_dispose(ref JsValue value);
     }
+     
 
 
     enum JsValueType : int

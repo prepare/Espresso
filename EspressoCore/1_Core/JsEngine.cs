@@ -158,7 +158,7 @@ namespace Espresso
             {
                 throw new Exception("fail");
             }
-            context.KeepAliveSetPropertyValue(slot, name, ref value);
+            context.KeepAliveSetPropertyValue(slot, name, ref value, ref output);
         }
         private void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
         {

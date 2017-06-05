@@ -59,9 +59,8 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static internal unsafe extern void jsvalue_alloc_array(int length,
             JsValue* output);
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static internal extern void jsvalue_dispose(ref JsValue value);
 
+       
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static internal extern void jscontext_invoke(HandleRef engine,
             IntPtr funcPtr,

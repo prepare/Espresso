@@ -238,7 +238,7 @@ namespace Espresso
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
-                jsvalue_dispose(ref v);
+                v.Dispose();
             }
             finally
             {
@@ -295,7 +295,7 @@ namespace Espresso
 #if DEBUG_TRACE_API
         	Console.WriteLine("Cleaning up return value from execution");
 #endif
-                jsvalue_dispose(ref output);
+                output.Dispose();
             }
             catch (Exception ex)
             {
@@ -328,8 +328,8 @@ namespace Espresso
             JsValue v = new JsValue();
             jscontext_get_global(_context, ref v);
             object res = _convert.FromJsValue(ref v);
-            jsvalue_dispose(ref v);
 
+            v.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -349,8 +349,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value get variable.");
 #endif
-            jsvalue_dispose(ref v);
 
+            v.Dispose();
             Exception e = res as JsException;
             if (e != null)
                 throw e;
@@ -556,6 +556,7 @@ namespace Espresso
             // dictionaries.
             if (typeof(IDictionary).ExtIsAssignableFrom(type))
             {
+                //this implement IDic
                 IDictionary dictionary = (IDictionary)obj;
                 if (dictionary.Contains(name))
                 {
@@ -570,15 +571,14 @@ namespace Espresso
             }
 
 
-            // First of all try with a public property (the most common case).
-            PropertyInfo pi = type.ExtGetProperty(obj, name);// type.GetProperty(name, flags | BindingFlags.GetProperty);
+            //try public property
+            PropertyInfo pi = type.ExtGetProperty(obj, name);
             if (pi != null)
             {
                 result = pi.GetValue(obj, null);
                 _convert.AnyToJsValue(result, ref value);
                 return true;
             }
-
             // try field.
             FieldInfo fi = type.ExtGetField(obj, name);
             if (fi != null)
@@ -592,6 +592,9 @@ namespace Espresso
             // parameter types so we just check if any method with the given name exists
             // and then keep alive a "weak delegate", i.e., just a name and the target.
             // The real method will be resolved during the invokation itself.
+
+            //TODO: check if we should use 'method-group' instead of first found method
+
 
             throw new NotSupportedException();
 
@@ -731,11 +734,8 @@ namespace Espresso
             output.Type = JsValueType.Error;
             output.I64 = (int)JsManagedError.SetKeepAliveError;
             //error
-            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot)));
-
+            //JsValue.Error(KeepAliveAdd(new IndexOutOfRangeException("invalid keepalive slot: " + slot))); 
         }
-
-
         internal void KeepAliveInvoke(int slot, ref JsValue args, ref JsValue output)
         {
             // TODO: This is pretty slow: use a cache of generated code to make it faster.
@@ -809,7 +809,7 @@ namespace Espresso
             }
             output.Type = JsValueType.Error;
             output.I64 = (int)JsManagedError.SetKeepAliveError;
-        } 
+        }
         static void CheckAndResolveJsFunctions(WeakDelegate weakDel,
           JsFunction func,
           object obj,
@@ -962,8 +962,10 @@ namespace Espresso
             JsValue v = new JsValue();
             jscontext_invoke(_context, funcPtr, thisPtr, ref a, ref v);
             object res = _convert.FromJsValue(ref v);
-            jsvalue_dispose(ref v);
-            jsvalue_dispose(ref a);
+            //
+            a.Dispose();
+            v.Dispose();
+
             //
             Exception e = res as JsException;
             if (e != null)
@@ -994,8 +996,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
             // TODO: Check the result of the operation for errors.
         }
 
@@ -1013,8 +1015,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariable(string name, int value)
         {
@@ -1030,8 +1032,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariable(string name, double value)
         {
@@ -1046,8 +1048,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariable(string name, long value)
         {
@@ -1063,8 +1065,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariable(string name, DateTime value)
         {
@@ -1080,8 +1082,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariable(string name, INativeScriptable proxy)
         {
@@ -1096,9 +1098,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
-            // TODO: Check the result of the operation for errors.
+            a.Dispose();
+            b.Dispose();
         }
         public void SetVariableNull(string name)
         {
@@ -1115,8 +1116,8 @@ namespace Espresso
 #if DEBUG_TRACE_API
 			Console.WriteLine("Cleaning up return value from set variable");
 #endif
-            jsvalue_dispose(ref a);
-            jsvalue_dispose(ref b);
+            a.Dispose();
+            b.Dispose();
         }
 
         public void SetVariableAutoWrap<T>(string name, T result)
