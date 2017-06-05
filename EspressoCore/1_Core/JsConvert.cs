@@ -536,14 +536,9 @@ namespace Espresso
                 return;
             }
             //-----
-            Type type = obj.GetType();
-
-            // Check for nullable types (we will cast the value out of the box later).
-
-
-            type = type.ExtGetInnerTypeIfNullableValue();
-
-
+            Type type = obj.GetType(); 
+            // Check for nullable types (we will cast the value out of the box later). 
+            type = type.ExtGetInnerTypeIfNullableValue(); 
             if (type == typeof(Boolean))
             {
                 output->Type = JsValueType.Boolean;
