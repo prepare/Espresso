@@ -488,7 +488,9 @@ namespace Test3
         private void button8_Click(object sender, EventArgs e)
         {
             int version = JsBridge.LibVersion;
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {
@@ -524,7 +526,9 @@ namespace Test3
 
 
             int version = JsBridge.LibVersion;
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {
@@ -564,7 +568,9 @@ namespace Test3
             //-----------------
 
             int version = JsBridge.LibVersion;
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {
@@ -889,7 +895,9 @@ namespace Test3
             //-----------------
 
             int version = JsBridge.LibVersion;
+#if DEBUG
             JsBridge.dbugTestCallbacks();
+#endif
             using (JsEngine engine = new JsEngine())
             using (JsContext ctx = engine.CreateContext(new MyJsTypeDefinitionBuilder()))
             {

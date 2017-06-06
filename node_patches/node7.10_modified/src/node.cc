@@ -100,6 +100,7 @@ extern char **environ;
 //////////////////////////////////
 //#espresso ,#1 
 #include "../src/libespresso/bridge2.h"
+void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);  
 //////////////////////////////////
 namespace node {
 

@@ -66,12 +66,6 @@ extern "C" {
 	EXPORT void ResultSetJsNull(MetCallingArgs* result);
 	EXPORT void ResultSetJsVoid(MetCallingArgs* result);
 	//--------------------------------------------------------------------- 
-
-
-	//this is for espresso-node
-
-	EXPORT int RunJsEngine(int argc, uint16_t *wargv[], void* engine_setupcb);
-	void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
-
+	 
 }
 /////////////////////////////////////////////////////////////////////////////

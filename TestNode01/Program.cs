@@ -28,8 +28,10 @@ namespace TestNode01
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
+            
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
+            int libesprVer = JsBridge.LibVersion;
 #if DEBUG
             JsBridge.dbugTestCallbacks();
 #endif
