@@ -41,7 +41,7 @@ namespace EasePatcher
                         patcher.PatchSubFolder = "node_patches/node7.10_modified";
                         patcher.Setup(@"../../../node-v7.10.0", //specific target 
                           @"../../../Espresso",
-                          "x64 --shared --xcode");
+                          "--dest-cpu=x64 --shared --xcode");
                         Console.WriteLine("Building ...");
 
                         //patch before configure
