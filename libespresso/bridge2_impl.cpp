@@ -4,8 +4,6 @@
 #include <v8.h>
 #include "libplatform/libplatform.h"
 #include <cstring>
-//#include "src/libplatform/default-platform.h"
-//#include "de src/base/platform/platform.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;

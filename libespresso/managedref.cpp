@@ -26,7 +26,7 @@
 //MIT, 2015-2017, EngineKit, brezza92
 
 #include <iostream>
-
+#include <cstring>
 #include "espresso.h"
 
 using namespace v8;
