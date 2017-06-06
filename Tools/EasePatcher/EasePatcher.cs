@@ -324,10 +324,11 @@ namespace EasePatcher
 
     class LinuxAndMacPatcher : PatcherBase
     {
-
+        string _init_build_pars = "";
         public void Setup(string original_node_src, string espresso_src, string initBuildParameters = "")
         {
             _buildState = BuildState.Zero;
+            this._init_build_pars = initBuildParameters;
             this._original_node_src_dir = original_node_src;
             this._espresso_src = espresso_src;
         }
@@ -336,10 +337,10 @@ namespace EasePatcher
 
             _buildState = BuildState.InitBuild;
             ThreadPool.QueueUserWorkItem(delegate
-            {   
-                InternalPatchGyp(); 
+            {
+                InternalPatchGyp();
                 //we patch the gyp *** 
-                //UnixConfigure();
+                UnixConfigure();
                 //UnixMake();
                 if (nextAction != null)
                 {
@@ -411,7 +412,7 @@ namespace EasePatcher
 
         void UnixConfigure()
         {
-            ProcessStartInfo stInfo = new ProcessStartInfo(_original_node_src_dir + "/configure");
+            ProcessStartInfo stInfo = new ProcessStartInfo(_original_node_src_dir + "/configure", _init_build_pars);
             stInfo.WorkingDirectory = _original_node_src_dir;
             //
             Process proc = Process.Start(stInfo);
