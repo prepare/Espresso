@@ -37,7 +37,7 @@ namespace EasePatcher
             //1. os
             currentOS = PatcherBase.GetPatcherOS();
             Console.WriteLine("current OS: " + currentOS);
-
+            Console.WriteLine("current_dir: " + Directory.GetCurrentDirectory());
 
             switch (currentOS)
             {
@@ -86,7 +86,7 @@ namespace EasePatcher
 
         static bool DisplayMainMenu()
         {
-            Console.WriteLine("Choose What to do... (and press ENTER)");
+            Console.WriteLine("Choose ... (and press ENTER)");
             Console.WriteLine();
             Console.WriteLine(" 0 : Exit");
             Console.WriteLine(" 1 : Apply Patches");
@@ -120,20 +120,19 @@ namespace EasePatcher
                 case PatcherOS.Windows:
                     {
                         var patcher = new WindowsPatcher();
-                        patcher.PatchSubFolder = "node_patches/node7.10_modified";
-                        patcher.Setup(@"C:\projects\node-v7.10.0", //specific target 
-                          @"D:\projects\CompilerKit\Espresso",
-                          "release dll nosign nobuild");
-
-                        //we will build it manually with visual studio
-
-                        Console.WriteLine("Building ...");
+                        patcher.PatchSubFolder = patch_subdir;
+                        patcher.Setup(original_node_srcdir,
+                                      espresso_srcdir,
+                                      config_pars);
+                        //
+                        Console.WriteLine("Patch and Configure ...");
                         patcher.Configure(() =>
                         {
                             if (!patcher.ConfigHasSomeErrs)
                             {
                                 patcher.DoPatch();
                                 Console.WriteLine("Finish!");
+                                Console.WriteLine("please build with Visual Studio");
                                 if (next != null)
                                 {
                                     next();
@@ -145,17 +144,18 @@ namespace EasePatcher
                 case PatcherOS.Mac:
                     {
                         var patcher = new LinuxAndMacPatcher();
-                        patcher.PatchSubFolder = "node_patches/node7.10_modified";
-                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
-                          @"../../../Espresso",
-                          "--dest-cpu=x64 --shared --xcode");
-                        Console.WriteLine("Building ...");
-
+                        patcher.PatchSubFolder = patch_subdir;
+                        patcher.Setup(original_node_srcdir,
+                                      espresso_srcdir,
+                                      config_pars);
+                        //
+                        Console.WriteLine("Patch and Configure ...");
                         //patch before configure
                         patcher.PatchGyp(() =>
                         {
                             patcher.DoPatch();
                             Console.WriteLine("Finish!");
+                            Console.WriteLine("please build with Xcode");
                             if (next != null)
                             {
                                 next();
@@ -167,16 +167,17 @@ namespace EasePatcher
                 case PatcherOS.Linux:
                     {
                         var patcher = new LinuxAndMacPatcher();
-                        patcher.PatchSubFolder = "node_patches/node7.10_modified";
-                        patcher.Setup(@"../../../node-v7.10.0", //specific target 
-                          @"../../../Espresso",
-                          "x64 --shared");
-                        Console.WriteLine("Building ...");
+                        patcher.Setup(original_node_srcdir,
+                                      espresso_srcdir,
+                                      config_pars);
+                        //
+                        Console.WriteLine("Patch and Configure ...");
                         //
                         patcher.PatchGyp(() =>
                         {
                             patcher.DoPatch();
                             Console.WriteLine("Finish!");
+                            Console.WriteLine("please build with make");
                             if (next != null)
                             {
                                 next();
