@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E96FE289-D349-4592-A601-A55C33AC0E18}</ProjectGuid>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{35C5C182-A385-4166-B056-DB7498FA85B5}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SandBox2</RootNamespace>
-    <AssemblyName>SandBox2</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <RootNamespace>TestJsConsole</RootNamespace>
+    <AssemblyName>TestJsConsole</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\build\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -36,16 +36,24 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExceptionUnwind.cs" />
+    <Compile Include="..\TestEspressoCore\Tests\Test1.cs">
+      <Link>Tests\Test1.cs</Link>
+    </Compile>
+    <Compile Include="..\TestEspressoCore\Tests\TestAttribute.cs">
+      <Link>Tests\TestAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\TestEspressoCore\Tests\TestInfo.cs">
+      <Link>Tests\TestInfo.cs</Link>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sandbox.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
+    <ProjectReference Include="..\..\build\Net20\Espresso.Interfaces\Espresso.Interfaces.csproj">
       <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
       <Name>Espresso.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EspressoCore\EspressoCore.csproj">
+    <ProjectReference Include="..\..\build\Net20\EspressoCore\EspressoCore.csproj">
       <Project>{f6a70c3f-a6b4-4830-91a6-eb7437065028}</Project>
       <Name>EspressoCore</Name>
     </ProjectReference>
