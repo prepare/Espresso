@@ -57,7 +57,7 @@ namespace EasePatcher
                 case PatcherOS.Linux:
                     original_node_srcdir = "../../../node-v7.10.0";
                     espresso_srcdir = "../../../Espresso";
-                    config_pars = "x64 --shared";
+                    config_pars = "--dest-cpu=x64 --shared";
                     break;
             }
             //
