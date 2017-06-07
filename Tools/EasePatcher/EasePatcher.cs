@@ -111,22 +111,24 @@ namespace EasePatcher
                 ReplaceFileInDirectory(subFolders[i], targetDir + "/" + Path.GetFileName(subFolders[i]));
             }
         }
-        static void ReplaceFile(string patchFileName, string targetToBeReplaceFileName)
+        static void ReplaceFile(string patchFileName, string targetToBeReplacedFileName)
         {
-            if (!File.Exists(targetToBeReplaceFileName))
+            if (!File.Exists(targetToBeReplacedFileName))
             {
                 //not found -> stop
+                Console.WriteLine("NOT FOUND targetToBeReplaceFileName: " + targetToBeReplacedFileName);
+
                 throw new NotSupportedException();
             }
             //----------------------------
-            if (Path.GetFileName(targetToBeReplaceFileName) != Path.GetFileName(patchFileName))
+            if (Path.GetFileName(targetToBeReplacedFileName) != Path.GetFileName(patchFileName))
             {
                 //filename must match
                 throw new NotSupportedException();
             }
             //----------------------------
             //replace src to dest
-            File.Copy(patchFileName, targetToBeReplaceFileName, true);
+            File.Copy(patchFileName, targetToBeReplacedFileName, true);
         }
 
         public static PatcherOS GetPatcherOS()
