@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EspressoCore", "EspressoCor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestEspressoCore", "TestEspressoCore\TestEspressoCore.csproj", "{4F90E7FD-73F1-4032-904F-67D6E90C037D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "espr_build_nuget", "espr_build_nuget\espr_build_nuget.csproj", "{E7E41178-26B1-4D29-A54A-DEE6014C7D29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "espr_build_nuget", "Tools\espr_build_nuget\espr_build_nuget.csproj", "{E7E41178-26B1-4D29-A54A-DEE6014C7D29}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestJsConsole", "TestJsConsole\TestJsConsole.csproj", "{35C5C182-A385-4166-B056-DB7498FA85B5}"
 EndProject
