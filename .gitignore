@@ -4,7 +4,8 @@
 *.config
 *.usertasks
 *.swp
-build/
+build/Debug
+build/Release
 test-results/
 # Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
 [Bb]in/
