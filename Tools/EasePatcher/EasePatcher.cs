@@ -180,7 +180,11 @@ namespace EasePatcher
             //-------------------------------------------------------
             //1. specific location of original node src
             //2. run first FRESH build of the node src 
-            string vc_build_script = _original_node_src_dir + @"\vcbuild.bat";
+
+
+            string vc_build_script = Path.Combine(
+               Directory.GetCurrentDirectory(), _original_node_src_dir + @"/vcbuild.bat").ToString();
+
             if (!File.Exists(vc_build_script))
             {
                 Console.WriteLine("Err! not found batch files");

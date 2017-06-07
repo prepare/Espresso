@@ -15,7 +15,7 @@ namespace EasePatcher
         static string config_pars = "";
         //
         static PatcherOS currentOS;
-
+        
         static void Main(string[] args)
         {
             Console.WriteLine("Espresso's EasePatcher");
@@ -43,8 +43,8 @@ namespace EasePatcher
             {
                 case PatcherOS.Windows:
 
-                    original_node_srcdir = @"C:\projects\node-v7.10.0";
-                    espresso_srcdir = @"D:\projects\CompilerKit\Espresso";
+                    original_node_srcdir = @"../../../node-v7.10.0";
+                    espresso_srcdir = "../../../Espresso";
                     config_pars = "release dll nosign nobuild";
 
                     break;
@@ -104,7 +104,7 @@ namespace EasePatcher
             switch (selected_menuNum)
             {
                 case 0:
-                    Console.WriteLine("bye!");
+                    Console.WriteLine("Bye!");
                     return false; //exit
                 case 1:
                     ApplyPatches();
