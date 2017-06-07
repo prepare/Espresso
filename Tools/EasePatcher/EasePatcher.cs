@@ -101,7 +101,17 @@ namespace EasePatcher
             for (int i = 0; i < j; ++i)
             {
                 string patchSrcFile = allFiles[i];
-                ReplaceFile(patchSrcFile, targetDir + "/" + Path.GetFileName(patchSrcFile));
+                string extension = Path.GetExtension(patchSrcFile);
+                switch (extension)
+                {
+                    default:
+                        break;
+                    case ".h":
+                    case ".cpp":
+                    case ".cc":
+                        ReplaceFile(patchSrcFile, targetDir + "/" + Path.GetFileName(patchSrcFile));
+                        break;
+                }
             }
             //sub-folders
             string[] subFolders = Directory.GetDirectories(patchSrcDir);
