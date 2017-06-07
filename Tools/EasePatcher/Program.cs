@@ -167,6 +167,7 @@ namespace EasePatcher
                 case PatcherOS.Linux:
                     {
                         var patcher = new LinuxAndMacPatcher();
+                        patcher.PatchSubFolder = patch_subdir;
                         patcher.Setup(original_node_srcdir,
                                       espresso_srcdir,
                                       config_pars);
