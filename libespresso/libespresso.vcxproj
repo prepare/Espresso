@@ -84,9 +84,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>       
       <AdditionalIncludeDirectories>
-	  c:\projects\node-v7.10.0\deps\v8\include;
-	  c:\projects\node-v7.10.0\deps\v8\src\base;
-	  c:\projects\node-v7.10.0\deps\v8;
+	  ..\..\node-v7.10.0\deps\v8\include;
+	  ..\..\node-v7.10.0\deps\v8\src\base;
+	  ..\..\node-v7.10.0\deps\v8;
 	  %(AdditionalIncludeDirectories)
 	  </AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
@@ -95,25 +95,25 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>       
       <AdditionalDependencies>
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_0.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_1.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_2.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_3.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_4.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_5.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_6.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_7.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_8.lib;
-	  C:\projects\node-v7.10.0\build\Debug\lib\v8_base_9.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libbase.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_snapshot.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libplatform.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libsampler.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icudata.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icuucx.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icui18n.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icustubdata.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icutools.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_0.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_1.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_2.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_3.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_4.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_5.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_6.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_7.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_8.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_9.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libbase.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_snapshot.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libplatform.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libsampler.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icudata.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icuucx.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icui18n.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icustubdata.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icutools.lib;
 	  winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib;</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -125,9 +125,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>       
       <AdditionalIncludeDirectories>
-	  c:\projects\node-v7.10.0\deps\v8\include;
-	  c:\projects\node-v7.10.0\deps\v8\src\base;
-	  c:\projects\node-v7.10.0\deps\v8</AdditionalIncludeDirectories>
+	  ..\..\node-v7.10.0\deps\v8\include;
+	  ..\..\node-v7.10.0\deps\v8\src\base;
+	  ..\..\node-v7.10.0\deps\v8</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -135,23 +135,23 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>       
       <AdditionalDependencies>
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_0.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_1.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_2.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_3.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_4.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_5.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_6.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_7.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_8.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_9.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_libbase.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_snapshot.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_libplatform.lib;
-	   c:\projects\node-v7.10.0\build\Release\lib\v8_libsampler.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icuucx.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icui18n.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icustubdata.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_0.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_1.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_2.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_3.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_4.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_5.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_6.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_7.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_8.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_9.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libbase.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_snapshot.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libplatform.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libsampler.lib;
+	   ..\..\node-v7.10.0\Release\lib\icuucx.lib;
+	   ..\..\node-v7.10.0\Release\lib\icui18n.lib;
+	   ..\..\node-v7.10.0\Release\lib\icustubdata.lib;
 	   winmm.lib;ws2_32.lib;dbghelp.lib;shlwapi.lib;
 	  %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -161,9 +161,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>      
       <AdditionalIncludeDirectories>
-	  c:\projects\node-v7.10.0\deps\v8\include;
-	  c:\projects\node-v7.10.0\deps\v8\src\base;
-	  c:\projects\node-v7.10.0\deps\v8;
+	  ..\..\node-v7.10.0\deps\v8\include;
+	  ..\..\node-v7.10.0\deps\v8\src\base;
+	  ..\..\node-v7.10.0\deps\v8;
 	  %(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -171,25 +171,26 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>       
       <AdditionalDependencies>
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_0.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_1.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_2.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_3.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_4.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_5.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_6.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_7.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_8.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_base_9.lib; 
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libbase.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_snapshot.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libplatform.lib;
-	  c:\projects\node-v7.10.0\build\Debug\lib\v8_libsampler.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icudata.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icuucx.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icui18n.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icustubdata.lib;
-	  c:\projects\node-v7.10.0\Debug\lib\icutools.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_0.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_1.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_2.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_3.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_4.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_5.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_6.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_7.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_8.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_base_9.lib; 
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libbase.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_snapshot.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libplatform.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libplatform.lib;
+	  ..\..\node-v7.10.0\build\Debug\lib\v8_libsampler.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icudata.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icuucx.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icui18n.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icustubdata.lib;
+	  ..\..\node-v7.10.0\Debug\lib\icutools.lib;
 	  winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib;</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -201,9 +202,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>       
       <AdditionalIncludeDirectories>
-	  C:\projects\node-v7.10.0\deps\v8\include;
-	  C:\projects\node-v7.10.0\deps\v8\src\base;
-	  C:\projects\node-v7.10.0\deps\v8</AdditionalIncludeDirectories>
+	  ..\..\node-v7.10.0\deps\v8\include;
+	  ..\..\node-v7.10.0\deps\v8\src\base;
+	  ..\..\node-v7.10.0\deps\v8</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -211,23 +212,23 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences> 
       <AdditionalDependencies>
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_0.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_1.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_2.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_3.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_4.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_5.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_6.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_7.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_8.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_base_9.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_libbase.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_snapshot.lib;
-	   C:\projects\node-v7.10.0\build\Release\lib\v8_libplatform.lib;
-	   c:\projects\node-v7.10.0\build\Release\lib\v8_libsampler.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icuucx.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icui18n.lib;
-	   C:\projects\node-v7.10.0\Release\lib\icustubdata.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_0.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_1.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_2.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_3.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_4.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_5.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_6.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_7.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_8.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_base_9.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libbase.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_snapshot.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libplatform.lib;
+	   ..\..\node-v7.10.0\build\Release\lib\v8_libsampler.lib;
+	   ..\..\node-v7.10.0\Release\lib\icuucx.lib;
+	   ..\..\node-v7.10.0\Release\lib\icui18n.lib;
+	   ..\..\node-v7.10.0\Release\lib\icustubdata.lib;
 	   winmm.lib;ws2_32.lib;dbghelp.lib;shlwapi.lib;
 	  %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
