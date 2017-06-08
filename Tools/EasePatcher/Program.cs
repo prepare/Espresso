@@ -45,7 +45,7 @@ namespace EasePatcher
 
                     original_node_srcdir = @"../../../node-v7.10.0";
                     espresso_srcdir = "../../../Espresso";
-                    config_pars = "release nosign nobuild";
+                    config_pars = "x64 release nosign nobuild";
 
                     break;
                 case PatcherOS.Mac:
