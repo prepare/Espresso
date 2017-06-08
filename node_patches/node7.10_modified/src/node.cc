@@ -99,7 +99,8 @@ extern char **environ;
 #endif
 //////////////////////////////////
 //#espresso ,#1 
-#include "d:\projects\CompilerKit\Espresso\libespresso\bridge2.h"
+#include "../src/libespresso/bridge2.h"
+void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);  
 //////////////////////////////////
 namespace node {
 
@@ -4380,6 +4381,7 @@ void FreeEnvironment(Environment* env) {
   delete env;
 }
 
+v8::Persistent<Context> pcontext;
 
 inline int Start(Isolate* isolate, IsolateData* isolate_data,
                  int argc, const char* const* argv,
@@ -4393,8 +4395,8 @@ inline int Start(Isolate* isolate, IsolateData* isolate_data,
   ////////////////////////////////
   //#espresso ,#2 
   JsEngine* jsEngine = JsEngine::NewFromExistingIsolate(isolate);
-  v8::Persistent<Context> pcontext = v8::Persistent<Context>(isolate, context);
-  JsContext* jscontext = JsContext::NewFromExistingContext(0, jsEngine, &pcontext);
+  v8::Persistent<Context>* pcontext = new v8::Persistent<Context>(isolate, context);
+  JsContext* jscontext = JsContext::NewFromExistingContext(0, jsEngine, pcontext);  
   DoEngineSetupCallback(jsEngine, jscontext);
   ////////////////////////////////
 
