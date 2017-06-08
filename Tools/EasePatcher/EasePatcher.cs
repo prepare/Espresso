@@ -126,7 +126,7 @@ namespace EasePatcher
             if (!File.Exists(targetToBeReplacedFileName))
             {
                 //not found -> stop
-                Console.WriteLine("NOT FOUND targetToBeReplaceFileName: " + targetToBeReplacedFileName);
+                Console.WriteLine("NOT FOUND targetToBeReplacedFileName: " + targetToBeReplacedFileName);
 
                 throw new NotSupportedException();
             }
