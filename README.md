@@ -8,9 +8,9 @@ NodeJS engine with C# (in-process), => **Espresso-ND**
 ---
 
 **Espresso** (from [vroomjs](https://github.com/Daniel15/vroomjs) ) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
-engine that uses P/Invoke and a thin C layer.
+engine that uses P/Invoke and a thin C layer (_libespr_).
 
-**Now Espresso can run on .net20+ and  .netcore/.netstandard/**
+Now, **Espresso can run on .net20+ and  .netcore/.netstandard**
 
 so We can run the engine on **Windows7+, macOS, and Linux(tested with Ubuntu 16)**
 
@@ -109,7 +109,9 @@ Access properties and call methods on CLR objects from Javascript:
 
 ---------------
 
-**Espresso-ND** is special edition of the Espresso, 
+**Espresso-ND** 
+
+Espresso-ND is special edition of the Espresso, 
 It is NodeJS in dll form + Espresso Bridge code,
 
 so you can run NodeJS app in-process with .NET Code
