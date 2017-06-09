@@ -5,12 +5,14 @@ V8 js engine with C# (in-process), => **Espresso-VE**
 
 NodeJS engine with C# (in-process), => **Espresso-ND**
 
+---
 
 **Espresso** (from [vroomjs](https://github.com/Daniel15/vroomjs) ) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
 engine that uses P/Invoke and a thin C layer.
 
-** Now Espresso can run on .net20+ and  .netcore/.netstandard/.**
-** so We can run the engine on Windows7+, macOS, and Linux( test with Ubuntu 16) **
+**Now Espresso can run on .net20+ and  .netcore/.netstandard/**
+
+so We can run the engine on **Windows7+, macOS, and Linux(tested with Ubuntu 16)**
 
 ---
 
@@ -28,6 +30,7 @@ engine that uses P/Invoke and a thin C layer.
 
 
 ![26](https://user-images.githubusercontent.com/9301044/26942872-da890496-4cad-11e7-915f-30a24caef5f3.png)
+
 ![27](https://user-images.githubusercontent.com/9301044/26942918-021a1ffe-4cae-11e7-8d5d-6ab38a2857be.png)
   
 
@@ -61,14 +64,17 @@ Examples
 --------
 
 Execute some Javascript:
-
+```C#
 	using (var js = new JsEngine()) {
 		var x = (int)js.Execute("3.14159+2.71828");
 		Console.WriteLine(x);  // prints 5.85987
 	}
+```
+ 
 
 Create and return a Javascript object, then call a method on it:
 
+```C#
 	using (var js = new JsEngine()) {
 		// Create a global variable on the JS side.
 		js.Execute("var x = {'answer':42, 'tellme':function (x) { return x+' '+this.answer; }}");
@@ -78,9 +84,10 @@ Create and return a Javascript object, then call a method on it:
 		// "What is the answer to ...? 42"
 		Console.WriteLine(x.tellme("What is the answer to ...?"));
 	}
-
+```
 Access properties and call methods on CLR objects from Javascript:
 
+```C#
 	class Test
 	{
 		public int Value { get; set; }
@@ -98,7 +105,7 @@ Access properties and call methods on CLR objects from Javascript:
 		// "And the answer is (again!): 42"
 		js.Execute("m.PrintValue('And the answer is (again!):')");
 	}
-
+```
 
 ---------------
 
