@@ -1,9 +1,9 @@
 Espresso / Espresso-VE / Espresso-ND
 ===============
 
-***V8 js engine with C# (in-process), => Espresso-VE.***
+V8 js engine with C# (in-process), => **Espresso-VE**
 
-***NodeJS engine with C# (in-process), => Espresso-ND.***
+NodeJS engine with C# (in-process), => **Espresso-ND**
 
 
 **Espresso** (from [vroomjs](https://github.com/Daniel15/vroomjs) ) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
