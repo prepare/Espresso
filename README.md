@@ -111,6 +111,7 @@ Access properties and call methods on CLR objects from Javascript:
 
 **Espresso-ND** is special edition of the Espresso, 
 It is NodeJS in dll form + Espresso Bridge code,
+
 so you can run NodeJS app in-process with .NET Code
 
 see example, run nodejs http server 
