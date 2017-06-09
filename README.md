@@ -1,16 +1,18 @@
-Espresso / Espresso-Cup
+Espresso / Espresso-VE / Espresso-ND
 ===============
 
-***V8 js engine with C# (in-process), => Espresso.***
+***V8 js engine with C# (in-process), => Espresso-VE.***
 
-***NodeJS engine with C# (in-process), => Espresso-Cup.***
+***NodeJS engine with C# (in-process), => Espresso-ND.***
 
 
-**Espresso** (former VroomJS) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
-engine that uses P/Invoke and a thin C layer to avoid the need to recompile V8
-C++ using the MS Managed C++ compiler. That means that Espresso is Mono-friendly
-because doesn't use any feature that will make it run only on MS.NET.
+**Espresso** (from [vroomjs](https://github.com/Daniel15/vroomjs) ) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
+engine that uses P/Invoke and a thin C layer.
 
+Now Espresso can run on ./net20+ and  .netcore/.netstandard/.
+so We can run the engine on Windows7+, macOS, and Linux( test with Ubuntu 16)
+
+---
 With Espresso it is possible to execute arbitrary javascript code and get the
 result as a managed primitive type (for integers, numbers, strings, dates and
 arrays of primitive types) or as a `JsObject` wrapper that allows to
@@ -24,7 +26,7 @@ as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
 
-**Current V8 Engine => We use V8 from node v7.6.0**
+**Current V8 Engine => We use V8 from node v7.10.0**
 
 Examples
 --------
@@ -71,8 +73,8 @@ Access properties and call methods on CLR objects from Javascript:
 
 ---------------
 
-**Espresso-Cup** is special edition of the Espresso, 
-It is NodeJS in dll form + Espresso Code,
+**Espresso-ND** is special edition of the Espresso, 
+It is NodeJS in dll form + Espresso Bridge code,
 so you can run NodeJS app in-process with .NET Code
 
 see example, run nodejs http server 
