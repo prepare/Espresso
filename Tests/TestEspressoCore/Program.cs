@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using System.Reflection;
 namespace TestEspressoCore
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-        
+
             //----------------------------
             Espresso.JsBridge.V8Init();
             //----------------------------
