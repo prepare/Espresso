@@ -33,6 +33,11 @@ namespace TestNode01
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
+
+            //change working dir to target app and run 
+            //test with socket.io's chat sample
+            System.IO.Directory.SetCurrentDirectory(@"../../../socket.io/examples/chat");
+
 #if DEBUG
             JsBridge.dbugTestCallbacks();
 #endif
@@ -49,15 +54,8 @@ namespace TestNode01
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {
-                    string filedata = @"var http = require('http');
-                                                (function t(){
-	                                                console.log('hello from Espresso-ND');
-	                                                var server = http.createServer(function(req, res) {
-                                                    res.writeHead(200);
-                                                    res.end('Hello! from Espresso-ND');
-                                                    });
-                                                    server.listen(8080,'localhost');
-                                                })();";
+                    //since this is sample socket io app
+                    string filedata = File.ReadAllText("index.js");
                     args.SetResult(filedata);
                 }));
                 jstypedef.AddMember(new JsMethodDefinition("C", args =>
