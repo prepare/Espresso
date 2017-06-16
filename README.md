@@ -58,7 +58,7 @@ as used in Javascript code (so it isn't required to track them in client code:
 they won't be garbage collected as long as references on the V8 side) and it is
 possible to access their properties and call methods from JS code.
 
-**Current V8 Engine => We use V8 from node v7.10.0**
+**Current V8 Engine => We use V8 from node v8.1.0**
 
 Examples
 --------
@@ -116,10 +116,10 @@ It is NodeJS in dll form + Espresso Bridge code,
 
 so you can run NodeJS app in-process with .NET Code
 
-see example, run nodejs http server 
-![slide18](https://cloud.githubusercontent.com/assets/9301044/21955739/95196ecc-daa3-11e6-8e91-c0f443ac0165.png)
-![slide19](https://cloud.githubusercontent.com/assets/9301044/21955741/951b7442-daa3-11e6-932f-a76dbeb9358d.PNG)
+see example, run nodejs http server  
 
+![esprnd0](https://user-images.githubusercontent.com/9301044/27217262-56b30152-52a3-11e7-929a-83a3e97b64d6.png)
+![esprnd](https://user-images.githubusercontent.com/9301044/27217264-59ac0d68-52a3-11e7-84cb-d0e99b342686.png)
 
 
 see how to build it at https://github.com/prepare/Espresso/issues/30

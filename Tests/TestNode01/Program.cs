@@ -52,10 +52,10 @@ namespace TestNode01
                 {
                     string filedata = @"var http = require('http');
                                                 (function t(){
-	                                                console.log('hello from EspressoCup');
+	                                                console.log('hello from Espresso-ND');
 	                                                var server = http.createServer(function(req, res) {
                                                     res.writeHead(200);
-                                                    res.end('Hello! from EspressoCup');
+                                                    res.end('Hello! from Espresso-ND');
                                                     });
                                                     server.listen(8080,'localhost');
                                                 })();";
