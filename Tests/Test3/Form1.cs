@@ -520,7 +520,7 @@ namespace Test3
             //test esprima package
             //------------------------
 
-            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\esprima\\esprima.js");
+            string esprima_code = File.ReadAllText("../../Samples/js_tools/esprima.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
 
@@ -562,7 +562,7 @@ namespace Test3
             //test tsc.js
             //this needs EspressoHostForTsc 
             //-----------------
-            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\tsc\\tsc_espr.js");
+            string esprima_code = File.ReadAllText("../../Samples/js_tools/tsc/tsc_espr.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
             //-----------------
@@ -889,7 +889,8 @@ namespace Test3
             //test loki.js
             //this needs EspressoHostForTsc 
             //-----------------
-            string esprima_code = File.ReadAllText("d:\\projects\\Espresso\\js_tools\\lokijs\\lokijs.js");
+            string currentDir = System.IO.Directory.GetCurrentDirectory();
+            string esprima_code = File.ReadAllText("../../Samples/js_tools/lokijs/lokijs.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
             //-----------------
