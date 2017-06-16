@@ -17,8 +17,7 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string currentdir = System.IO.Directory.GetCurrentDirectory();
-
+            string currentdir = System.IO.Directory.GetCurrentDirectory(); 
             string libEspr = @"../../../../../node-v8.1.0/Release/libespr.dll";
             if (File.Exists(libEspr))
             {
