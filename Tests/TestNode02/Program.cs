@@ -1,4 +1,5 @@
-﻿using System;
+﻿//MIT, 2015-2017, EngineKit, brezza92
+using System;
 using System.IO;
 using Espresso;
 
