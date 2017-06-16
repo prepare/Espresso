@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\Tests\nunit.framework.dll</HintPath>
+      <HintPath>..\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -70,11 +70,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
+    <ProjectReference Include="..\..\build\Net20\Espresso.Interfaces\Espresso.Interfaces.csproj">
       <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
       <Name>Espresso.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EspressoCore\EspressoCore.csproj">
+    <ProjectReference Include="..\..\build\Net20\EspressoCore\EspressoCore.csproj">
       <Project>{f6a70c3f-a6b4-4830-91a6-eb7437065028}</Project>
       <Name>EspressoCore</Name>
     </ProjectReference>

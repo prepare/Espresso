@@ -520,7 +520,7 @@ namespace Test3
             //test esprima package
             //------------------------
 
-            string esprima_code = File.ReadAllText("../../Samples/js_tools/esprima.js");
+            string esprima_code = File.ReadAllText("../../Samples/js_tools/esprima/esprima.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
 
