@@ -65,7 +65,8 @@ Examples
 
 Execute some Javascript:
 ```C#
-	using (var js = new JsEngine()) {
+	using (var js = new JsEngine()) 
+	{
 		var x = (int)js.Execute("3.14159+2.71828");
 		Console.WriteLine(x);  // prints 5.85987
 	}
@@ -75,36 +76,52 @@ Execute some Javascript:
 Create and return a Javascript object, then call a method on it:
 
 ```C#
-	using (var js = new JsEngine()) {
-		// Create a global variable on the JS side.
-		js.Execute("var x = {'answer':42, 'tellme':function (x) { return x+' '+this.answer; }}");
-		// Get it and use "dynamic" to tell the compiler to use runtime binding.
-		dynamic x = js.GetVariable("x");
-		// Call the method and print the result. This will print:
-		// "What is the answer to ...? 42"
-		Console.WriteLine(x.tellme("What is the answer to ...?"));
-	}
+	using (JsContext js = jsEngine.CreateContext())
+    {
+                var t = new TestClass();
+                js.SetVariableFromAny("o", t);
+                js.Execute("var x = { nested: o }; x.nested.Int32Property = 42");
+                var x = js.GetVariable("x") as JsObject;
+
+                Assert.That(x["nested"], Is.EqualTo(t));
+                Assert.That(t.Int32Property, Is.EqualTo(42));
+
+    }
 ```
+
+ 
 Access properties and call methods on CLR objects from Javascript:
 
 ```C#
-	class Test
-	{
-		public int Value { get; set; }
-		public void PrintValue(string msg)
-		{
-			Console.WriteLine(msg+" "+Value);
-		}
-	}
-	
-	using (var js = new JsEngine()) {
-		js.SetVariable("m", new Test());
-		// Sets the property from Javascript.
-		js.Execute("m.Value = 42");
-		// Call a method on the CLR object from Javascript. This prints:
-		// "And the answer is (again!): 42"
-		js.Execute("m.PrintValue('And the answer is (again!):')");
-	}
+	class TestMe1
+    {
+            public int B()
+            {
+                return 100;
+            }
+            public bool C()
+            {
+                return true;
+            }
+    }
+	using (JsEngine engine = new JsEngine())
+    using (JsContext ctx = engine.CreateContext())
+    {
+            GC.Collect();
+            System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+            stwatch.Start();
+
+			TestMe1 t1 = new TestMe1();
+
+            for (int i = 2000; i >= 0; --i)
+            {
+                ctx.SetVariableFromAny("x", t1);
+                object result = ctx.Execute("(function(){if(x.C()){return  x.B();}else{return 0;}})()");
+            }
+            stwatch.Stop();
+            Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+            //Assert.That(result, Is.EqualTo(100)); 
+   }
 ```
 
 ---------------
