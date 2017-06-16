@@ -67,8 +67,8 @@ Execute some Javascript:
 ```C#
     using (var js = new JsEngine()) 
     {
-	        var x = (int)js.Execute("3.14159+2.71828");
-		Console.WriteLine(x);  // prints 5.85987
+	    var x = (int)js.Execute("3.14159+2.71828");
+	    Console.WriteLine(x);  // prints 5.85987
     }
 ```
  
@@ -110,7 +110,7 @@ Access properties and call methods on CLR objects from Javascript:
             System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
             stwatch.Start();
 
-			TestMe1 t1 = new TestMe1();
+	    TestMe1 t1 = new TestMe1();
 
             for (int i = 2000; i >= 0; --i)
             {
