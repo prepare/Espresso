@@ -17,18 +17,20 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"C:\projects\node-v7.10.0\Debug\libespr.dll";
+            string currentdir = System.IO.Directory.GetCurrentDirectory();
+
+            string libEspr = @"../../../../../node-v8.1.0/Release/libespr.dll";
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"C:\projects\node-v7.10.0\Debug\node.dll", //from
+               @"../../../../../node-v8.1.0/Release/node.dll", //from
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
-            
+
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
