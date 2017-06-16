@@ -78,8 +78,7 @@ namespace Espresso
             return RunJsEngine(null, engineSetupCb);
         }
         public static int RunJsEngine(string[] otherNodeParameters, NativeEngineSetupCallback engineSetupCb)
-        {
-
+        { 
 
             List<string> nodeStartPars = new List<string>();
             //1. 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 namespace TestEspressoCore
 {
@@ -8,8 +9,8 @@ namespace TestEspressoCore
         public static void Main(string[] args)
         {
 
-
-            Espresso.JsBridge.V8Init(); 
+            //----------------------------
+            Espresso.JsBridge.V8Init();
             //----------------------------
             //prepare test cases 
             var testList = GetTestInfoList();
