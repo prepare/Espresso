@@ -65,18 +65,18 @@ Examples
 
 Execute some Javascript:
 ```C#
-	using (var js = new JsEngine()) 
-	{
-		var x = (int)js.Execute("3.14159+2.71828");
+    using (var js = new JsEngine()) 
+    {
+	        var x = (int)js.Execute("3.14159+2.71828");
 		Console.WriteLine(x);  // prints 5.85987
-	}
+    }
 ```
  
 
 Create and return a Javascript object, then call a method on it:
 
 ```C#
-	using (JsContext js = jsEngine.CreateContext())
+    using (JsContext js = jsEngine.CreateContext())
     {
                 var t = new TestClass();
                 js.SetVariableFromAny("o", t);
@@ -84,8 +84,7 @@ Create and return a Javascript object, then call a method on it:
                 var x = js.GetVariable("x") as JsObject;
 
                 Assert.That(x["nested"], Is.EqualTo(t));
-                Assert.That(t.Int32Property, Is.EqualTo(42));
-
+                Assert.That(t.Int32Property, Is.EqualTo(42)); 
     }
 ```
 
@@ -93,7 +92,7 @@ Create and return a Javascript object, then call a method on it:
 Access properties and call methods on CLR objects from Javascript:
 
 ```C#
-	class TestMe1
+    class TestMe1
     {
             public int B()
             {
@@ -104,7 +103,7 @@ Access properties and call methods on CLR objects from Javascript:
                 return true;
             }
     }
-	using (JsEngine engine = new JsEngine())
+    using (JsEngine engine = new JsEngine())
     using (JsContext ctx = engine.CreateContext())
     {
             GC.Collect();
