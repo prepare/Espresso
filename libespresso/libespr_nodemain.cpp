@@ -107,35 +107,36 @@ int myunixmain(int argc, char *argv[]) {
 //============================================================
 del_engineSetupCb jsEngineSetupCb;
 
-int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb)
-{
-	jsEngineSetupCb = (del_engineSetupCb)engine_setupcb;
+extern "C" {
+	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb)
+	{
+		jsEngineSetupCb = (del_engineSetupCb)engine_setupcb;
 #ifdef _WIN32
-	return mywinmain(argc, wargv);
+		return mywinmain(argc, wargv);
 #else
-	//convert from array of wide char* to array of
-	// Convert argv to to UTF8
-	char** argv = new char*[argc + 1];
-	for (int i = 0; i < argc; i++) {
-		// Compute the size of the required buffer
+		//convert from array of wide char* to array of
+		// Convert argv to to UTF8
+		char** argv = new char*[argc + 1];
+		for (int i = 0; i < argc; i++) {
+			// Compute the size of the required buffer
 
-		char buffer[255]; //this version we use on
-		memset(&buffer, 0, 0);//clear
-							  //int ret = wcstombs ( buffer, wargv[i], sizeof(buffer) );
+			char buffer[255]; //this version we use on
+			memset(&buffer, 0, 0);//clear
+								  //int ret = wcstombs ( buffer, wargv[i], sizeof(buffer) );
 
-		argv[i] = new char[255];
-		int result = wcstombs(buffer, wargv[i], sizeof(buffer));
-		if (result == 0) {
-			// This should never happen.
-			fprintf(stderr, "Could not convert arguments to utf8.");
-			exit(1);
+			argv[i] = new char[255];
+			int result = wcstombs(buffer, wargv[i], sizeof(buffer));
+			if (result == 0) {
+				// This should never happen.
+				fprintf(stderr, "Could not convert arguments to utf8.");
+				exit(1);
+			}
 		}
-	}
-	argv[argc] = nullptr; //last one
-	return myunixmain(argc, argv);
+		argv[argc] = nullptr; //last one
+		return myunixmain(argc, argv);
 #endif
-};
-
+	};
+}
 void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext) {
 	if (jsEngineSetupCb) {
 		jsEngineSetupCb(engine, jsContext);
