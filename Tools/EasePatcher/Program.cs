@@ -7,10 +7,10 @@ namespace EasePatcher
     class Program
     {
 
-        static string current_node_version = "node-v7.10.0";
-        static string patch_subdir = "node_patches/node7.10_modified";
+        static string current_node_version = "node-v8.1.4";
+        static string patch_subdir = "node_patches/node8.1.4_modified";
         //
-        static string original_node_srcdir = @"../../../node-v7.10.0";
+        static string original_node_srcdir = @"../../../node-v8.1.4";
         static string espresso_srcdir = "../../../Espresso";
         static string config_pars = "";
         //
