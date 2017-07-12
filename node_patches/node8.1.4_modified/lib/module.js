@@ -479,6 +479,12 @@ Module._resolveFilename = function(request, parent, isMain) {
 
   var paths = Module._resolveLookupPaths(request, parent, true);
 
+  ////////////////////////////////////////////
+  //#espresso, #3
+  if (request.endsWith(".espr")) {
+      return request;
+  }
+  ////////////////////////////////////////////  
   // look up the filename first, since that's the cache key.
   var filename = Module._findPath(request, paths, isMain);
   if (!filename) {
@@ -598,6 +604,14 @@ Module._extensions['.node'] = function(module, filename) {
   return process.dlopen(module, path._makeLong(filename));
 };
 
+//////////////////////////////////
+//#espresso, #4
+Module._extensions['.espr'] = function (module, filename) {
+    //this make node to callback to our module
+    var content = Module.external_loader.LoadMainSrcFile();
+    module._compile(internalModule.stripBOM(content), filename);
+};
+//////////////////////////////////
 
 // bootstrap main module.
 Module.runMain = function() {

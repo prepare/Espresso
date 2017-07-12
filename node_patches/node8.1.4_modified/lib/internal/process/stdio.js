@@ -179,9 +179,16 @@ function createWritableStdioStream(fd) {
       break;
 
     default:
-      // Probably an error on in uv_guess_handle()
-      const errors = lazyErrors();
-      throw new errors.Error('ERR_UNKNOWN_STREAM_TYPE');
+       // Probably an error on in uv_guess_handle()
+        //throw new Error('Implement me. Unknown stream file type!');
+        ////////////////////////////////////////
+        //#espresso, #6
+        const tty2 = require('tty');
+        stream = new tty2.WriteStream(fd);
+        stream._type = 'tty';
+        break;
+        ////////////////////////////////////////
+
   }
 
   // For supporting legacy API we put the FD here.

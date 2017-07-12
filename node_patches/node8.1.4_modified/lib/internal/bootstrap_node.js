@@ -144,6 +144,10 @@
 
         const Module = NativeModule.require('module');
 
+		/////////////////////////////////////////////
+        //#espresso, #5
+        Module.external_loader= LibEspresso;
+        /////////////////////////////////////////////
         // check if user passed `-c` or `--check` arguments to Node.
         if (process._syntax_check_only != null) {
           const fs = NativeModule.require('fs');

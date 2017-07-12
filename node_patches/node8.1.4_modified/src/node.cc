@@ -121,6 +121,11 @@ typedef int mode_t;
 extern char **environ;
 #endif
 
+//////////////////////////////////
+//#espresso ,#1 
+#include "../src/libespresso/bridge2.h"
+void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
+//////////////////////////////////
 namespace node {
 
 using v8::Array;
@@ -4282,6 +4287,7 @@ void ProcessArgv(int* argc,
   if (v8_argc > 1)
     V8::SetFlagsFromCommandLine(&v8_argc, const_cast<char**>(v8_argv), true);
 
+
   // Anything that's still in v8_argv is not a V8 or a node option.
   for (int i = 1; i < v8_argc; i++) {
     fprintf(stderr, "%s: bad option: %s\n", argv[0], v8_argv[i]);
@@ -4293,6 +4299,7 @@ void ProcessArgv(int* argc,
     exit(9);
   }
 }
+
 
 
 void Init(int* argc,
@@ -4491,6 +4498,16 @@ inline int Start(Isolate* isolate, IsolateData* isolate_data,
   uv_key_set(&thread_local_env, &env);
   env.Start(argc, argv, exec_argc, exec_argv, v8_is_profiling);
 
+  	////////////////////////////////
+		//#espresso ,#2 
+		JsEngine* jsEngine = JsEngine::NewFromExistingIsolate(isolate);
+		v8::Persistent<Context>* pcontext = new v8::Persistent<Context>(isolate, context);
+		JsContext* jscontext = JsContext::NewFromExistingContext(0, jsEngine, pcontext);
+		DoEngineSetupCallback(jsEngine, jscontext);
+		////////////////////////////////
+  
+  
+  
   const char* path = argc > 1 ? argv[1] : nullptr;
   StartInspector(&env, path, debug_options);
 
