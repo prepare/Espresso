@@ -135,7 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
-      <Project>{81692F45-7266-4D82-A864-9D7DD839C290}</Project>
+      <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
       <Name>Espresso.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
