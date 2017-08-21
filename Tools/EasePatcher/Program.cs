@@ -44,6 +44,7 @@ namespace EasePatcher
                 case PatcherOS.Windows:
                     //config_pars = "x64 release nosign nobuild"; //default build
                     config_pars = "x64 vc2015 release nosign nobuild";//temp, we use vc2015 
+                    //config_pars = "x86 vc2015 release nosign nobuild";//temp, we use vc2015 
                     break;
                 case PatcherOS.Mac:
                     config_pars = "--dest-cpu=x64 --shared --xcode";
