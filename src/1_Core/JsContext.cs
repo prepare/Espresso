@@ -384,8 +384,8 @@ namespace Espresso
         }
 
 
-        
-        bool _disposed; 
+
+        bool _disposed;
         public bool IsDisposed
         {
             get { return _disposed; }
@@ -715,7 +715,7 @@ namespace Espresso
                 output.I64 = (int)JsManagedError.NotFoundManagedObjectId;
                 return;
             }
-             
+
             Type constructorType = obj as Type;
             if (constructorType != null)
             {
