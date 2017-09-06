@@ -475,13 +475,13 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 		Handle<Array> object = Handle<Array>::Cast(value->ToObject());
 		int arrLen = object->Length();
 		//ON HEAP
-		jsvalue** arr = new jsvalue*[arrLen];
+		jsvalue* arr = (jsvalue*)calloc(arrLen,sizeof(jsvalue));
 		if (arr != NULL) {
 
 			output->i32 = arrLen; //i32 as array len
 			auto handle_object = Handle<Object>();
 			for (int i = 0; i < arrLen; i++) {
-				AnyFromV8(object->Get(i), handle_object, arr[i]);
+				AnyFromV8(object->Get(i), handle_object, (arr+i));
 			}
 			output->type = JSVALUE_TYPE_ARRAY;
 			output->ptr = arr;
@@ -491,23 +491,27 @@ void JsEngine::AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* o
 
 		Handle<Function> function = Handle<Function>::Cast(value);
 		//ON HEAP
-		jsvalue** arr = new jsvalue*[2];
+		jsvalue* arr = (jsvalue*)calloc(2,sizeof(jsvalue));
 		if (arr != NULL) {
-			arr[0]->ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
-			arr[0]->i32 = 0;
-			arr[0]->type = JSVALUE_TYPE_WRAPPED;
+			arr->ptr = new Persistent<Object>(isolate_, Persistent<Function>(isolate_, function));
+			arr->i32 = 0;
+			arr->type = JSVALUE_TYPE_WRAPPED;
+
+			jsvalue* arr_1 = arr + 1;
+
 			if (!thisArg.IsEmpty()) {
 				Persistent<Object> *persistent = new Persistent<Object>();
-				persistent->Reset(isolate_, Persistent<Object>(isolate_, thisArg));
-				arr[1]->type = JSVALUE_TYPE_WRAPPED;
-				arr[1]->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
-				arr[1]->i32 = 0;
+				persistent->Reset(isolate_, Persistent<Object>(isolate_, thisArg)); 
+				 
+				arr_1->type = JSVALUE_TYPE_WRAPPED;
+				arr_1->ptr = persistent;//new Persistent<Object>(Persistent<Object>(isolate_, thisArg));
+				arr_1->i32 = 0;
 
 			}
 			else {
-				arr[1]->type = JSVALUE_TYPE_NULL;
-				arr[1]->ptr = NULL;
-				arr[1]->i32 = 0;
+				arr_1->type = JSVALUE_TYPE_NULL;
+				arr_1->ptr = NULL;
+				arr_1->i32 = 0;
 			}
 			output->type = JSVALUE_TYPE_FUNCTION;
 			output->ptr = arr;
@@ -529,10 +533,10 @@ void JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsval
 
 	jsvalue_alloc_array(arg_len, output);
 	Local<Object> thisArg = args.Holder();
-	jsvalue** arr = (jsvalue**)output->ptr;
+	jsvalue*arr = (jsvalue*)output->ptr;
 	for (int i = 0; i < arg_len; i++)
 	{
-		AnyFromV8(args[i], thisArg, arr[i]);
+		AnyFromV8(args[i], thisArg, arr +i);
 	}
 }
 
@@ -619,10 +623,10 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId)
 	{
 		// Arrays are converted to JS native arrays.
 		int arrLen = v->i32;
-		jsvalue** arr = (jsvalue**)v->ptr;
+		jsvalue* arr = (jsvalue*)v->ptr;
 		Local<Array> a = Array::New(isolate_, arrLen); //i32 as length
 		for (int i = 0; i < arrLen; i++) {
-			a->Set(i, AnyToV8(arr[i], contextId));
+			a->Set(i, AnyToV8((arr+i), contextId));
 		}
 		return a;
 	}
@@ -660,9 +664,9 @@ int32_t JsEngine::ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value>
 		return -1;
 
 	int arrLen = value->i32;//arr len
-	jsvalue** arr = (jsvalue**)value->ptr;
+	jsvalue* arr = (jsvalue*)value->ptr;
 	for (int i = 0; i < arrLen; i++) {
-		preallocatedArgs[i] = AnyToV8(arr[i], contextId);
+		preallocatedArgs[i] = AnyToV8((arr+i), contextId);
 	}
 	return arrLen;
 }
