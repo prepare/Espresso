@@ -100,6 +100,8 @@ namespace TestEspressoCore
         [Test("3", "TestColl1")]
         static void TestColl1()
         {
+
+
 #if DEBUG
             JsBridge.dbugTestCallbacks();
 #endif
@@ -115,11 +117,16 @@ namespace TestEspressoCore
                 string[] ta = { "test" };
                 ctx.SetVariableFromAny("ta", ta);
                 object result = ctx.Execute("(function(){return JSON.stringify(ta);})()");
-                if ((string)result != ta[0]) throw new Exception("It should return the first element");
+
+                //please parse the string with some json lib
+                //(eg Json.net) to check the first elem
+
+                if ((string)result != "[\"" + ta[0] + "\"]") throw new Exception("!");
 
                 stwatch.Stop();
+                Console.WriteLine("result " + result);
                 Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
-                //Assert.That(result, Is.EqualTo(100)); 
+                 
             }
         } 
     }
