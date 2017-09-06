@@ -562,9 +562,9 @@ namespace Test3
             //test tsc.js
             //this needs EspressoHostForTsc 
             //-----------------
-            string esprima_code = File.ReadAllText("../../Samples/js_tools/tsc/tsc_espr.js");
+            string tsc_esprCode = File.ReadAllText("../../Samples/js_tools/tsc/tsc_espr.js");
             StringBuilder stbuilder = new StringBuilder();
-            stbuilder.Append(esprima_code);
+            stbuilder.Append(tsc_esprCode);
             //-----------------
 
             int version = JsBridge.LibVersion;

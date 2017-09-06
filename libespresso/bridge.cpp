@@ -30,7 +30,7 @@
 
 using namespace v8;
 
- 
+
 
 extern "C"
 {
@@ -40,7 +40,7 @@ extern "C"
 	}
 
 
-	 
+
 
 	EXPORT JsEngine* CALLCONV jsengine_new(keepalive_remove_f keepalive_remove,
 		keepalive_get_property_value_f keepalive_get_property_value,
@@ -268,32 +268,29 @@ extern "C"
 		return script->Compile(str, resourceName, output);
 	}
 
-	EXPORT void CALLCONV jsvalue_alloc_string(const uint16_t* str, jsvalue* output)
+	EXPORT void CALLCONV jsvalue_alloc_string(const uint16_t* str, int len, jsvalue* output)
 	{
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_string" << std::endl;
-#endif
-
-
-		int length = 0;
-		while (str[length] != '\0') {
-			length++;
-		}
+#endif 
 
 		//create on native heap
-		uint16_t* newstr = new uint16_t[length + 1]; //+1 for null-terminated string 
+		uint16_t* newstr = new uint16_t[len + 1]; //+1 for null-terminated string 
 		if (newstr != NULL) {
 			//alloc succeed
-			for (int i = length - 1; i >= 0; --i)
+			memcpy_s(newstr, (len + 1) * 2, str, len * 2);
+			/*for (int i = length - 1; i >= 0; --i)
 			{
 				newstr[i] = newstr[i];
-			}
+			}*/
+
 			//last one, close with null character
-			newstr[length] = '\0'; //null-terminated string 
+			//newstr[length] = '\0'; //null-terminated string 
+			newstr[len] = 0;
 			//----------------------------------
 			output->type = JSVALUE_TYPE_STRING;
 			output->ptr = newstr; //assign
-			output->i32 = length;
+			output->i32 = len;
 		}
 		else {
 			//alloc error
@@ -318,7 +315,7 @@ extern "C"
 			output->type = JSVALUE_TYPE_MEM_ERROR;
 			output->i32 = 0;
 		}
-	}
+}
 	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value)
 	{
 #ifdef DEBUG_TRACE_API

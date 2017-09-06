@@ -19,14 +19,14 @@ namespace TestNode01
             //we will get node.dll
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
-            string libEspr = @"../../../node-v8.1.4/Release/libespr.dll";
+            string libEspr = @"../../../node-v8.4.0/Release/libespr.dll";
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"../../../node-v8.1.4/Release/node.dll", //from
+               @"../../../node-v8.4.0/Release/node.dll", //from
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)

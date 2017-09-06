@@ -42,17 +42,19 @@ namespace Espresso
         static extern void jscontext_set_variable(HandleRef engine,
             string name,
             ref JsValue value,
-            ref JsValue output);
-
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        static internal extern void jsvalue_alloc_string(
-            string str,
-            ref JsValue output);
-
+            ref JsValue output); 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static internal unsafe extern void jsvalue_alloc_string(
-         string str,
-         JsValue* output);
+         char* str,
+         int  strLen,
+         ref JsValue output);
+
+        [DllImport(JsBridge.LIB_NAME, EntryPoint = "jsvalue_alloc_string", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        static internal unsafe extern void jsvalue_alloc_string2(
+        char* str,
+        int strLen,
+        JsValue* output);
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static internal extern void jsvalue_alloc_array(int length,
