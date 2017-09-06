@@ -303,7 +303,7 @@ extern "C"
 #ifdef DEBUG_TRACE_API
 		std::wcout << "jsvalue_alloc_array" << std::endl;
 #endif
-		jsvalue** newarr = new jsvalue*[length];
+		jsvalue* newarr = (jsvalue*)calloc(length,sizeof(jsvalue));
 		if (newarr != NULL) {
 			//alloc succeed
 			output->ptr = newarr;
@@ -315,7 +315,7 @@ extern "C"
 			output->type = JSVALUE_TYPE_MEM_ERROR;
 			output->i32 = 0;
 		}
-}
+	}
 	EXPORT void CALLCONV jsvalue_dispose(jsvalue* value)
 	{
 #ifdef DEBUG_TRACE_API
@@ -334,19 +334,19 @@ extern "C"
 		case JSVALUE_TYPE_ARRAY:
 		case JSVALUE_TYPE_FUNCTION:
 		{
-			jsvalue** arr = (jsvalue**)value->ptr;
+			jsvalue* arr = (jsvalue*)value->ptr;
 			for (int i = value->i32 - 1; i >= 0; --i) {
-				jsvalue_dispose(arr[i]);
+				jsvalue_dispose((arr + i));
 			}
 			if (arr != NULL) {
-				delete[] value->ptr;
+				delete value->ptr;
 			}
 		}break;
 		case JSVALUE_TYPE_DICT:
 		{
-			jsvalue** arr = (jsvalue**)value->ptr;
+			jsvalue* arr = (jsvalue*)value->ptr;
 			for (int i = (value->i32 * 2) - 1; i >= 0; --i) { //key-value
-				jsvalue_dispose(arr[i]);
+				jsvalue_dispose(arr+i);
 			}
 			if (arr != NULL) {
 				delete[] value->ptr;

@@ -83,10 +83,10 @@ namespace Espresso
                         object[] newarr = new object[len];
                         unsafe
                         {
-                            JsValue** arr = (JsValue**)v.Ptr;
+                            JsValue* arr = (JsValue*)v.Ptr;
                             for (int i = 0; i < len; ++i)
                             {
-                                newarr[i] = FromJsValuePtr(arr[i]);
+                                newarr[i] = FromJsValuePtr((arr + i));
                             }
                         }
                         return newarr;
@@ -129,8 +129,8 @@ namespace Espresso
                     //this compose of function ptr and delegate's target
                     unsafe
                     {
-                        JsValue** arr = (JsValue**)v.Ptr;
-                        return new JsFunction(_context, arr[0]->Ptr, arr[1]->Ptr);
+                        JsValue* arr = (JsValue*)v.Ptr;
+                        return new JsFunction(_context, (arr)->Ptr, (arr + 1)->Ptr);
                     }
                 default:
                     throw new InvalidOperationException("unknown type code: " + v.Type);
@@ -168,10 +168,10 @@ namespace Espresso
                     {
                         int len = v->I32;
                         object[] newarr = new object[len];
-                        JsValue** arr = (JsValue**)v->Ptr;
+                        JsValue* arr = (JsValue*)v->Ptr;
                         for (int i = 0; i < len; ++i)
                         {
-                            newarr[i] = FromJsValuePtr(arr[i]);
+                            newarr[i] = FromJsValuePtr((arr + i));
                         }
                         return newarr;
                     }
@@ -214,8 +214,8 @@ namespace Espresso
                     //this compose of function ptr and delegate's target
                     unsafe
                     {
-                        JsValue** arr = (JsValue**)v->Ptr;
-                        return new JsFunction(_context, arr[0]->Ptr, arr[1]->Ptr);
+                        JsValue* arr = (JsValue*)v->Ptr;
+                        return new JsFunction(_context, arr->Ptr, (arr + 1)->Ptr);
                     }
                 default:
                     throw new InvalidOperationException("unknown type code: " + v->Type);
@@ -229,11 +229,11 @@ namespace Espresso
             int count = v.I32 * 2;//key and value
             unsafe
             {
-                JsValue** arr = (JsValue**)v.Ptr;
+                JsValue* arr = (JsValue*)v.Ptr;
                 for (int i = 0; i < count;)
                 {
-                    JsValue* key = arr[i];
-                    JsValue* value = arr[i + 1];
+                    JsValue* key = arr + i;
+                    JsValue* value = arr + i + 1;
 
                     //TODO: review when key is not string 
                     obj[(string)FromJsValuePtr(key)] = FromJsValuePtr(value);
@@ -251,11 +251,11 @@ namespace Espresso
             int count = v->I32 * 2;//key and value
             unsafe
             {
-                JsValue** arr = (JsValue**)v->Ptr;
+                JsValue* arr = (JsValue*)v->Ptr;
                 for (int i = 0; i < count;)
                 {
-                    JsValue* key = arr[i];
-                    JsValue* value = arr[i + 1];
+                    JsValue* key = (arr + i);
+                    JsValue* value = (arr + i + 1);
 
                     //TODO: review when key is not string 
                     obj[(string)FromJsValuePtr(key)] = FromJsValuePtr(value);
@@ -356,10 +356,10 @@ namespace Espresso
             }
             unsafe
             {
-                JsValue** nativeArr = (JsValue**)output.Ptr;
+                JsValue* nativeArr = (JsValue*)output.Ptr;
                 for (int i = 0; i < len; i++)
                 {
-                    AnyToJsValuePtr(arr[i], nativeArr[i]);
+                    AnyToJsValuePtr(arr[i], nativeArr + i);
                 }
             }
         }
@@ -518,10 +518,10 @@ namespace Espresso
 
                 unsafe
                 {
-                    JsValue** jsarr = (JsValue**)output.Ptr;
+                    JsValue* jsarr = (JsValue*)output.Ptr;
                     for (int i = 0; i < arrLen; i++)
                     {
-                        AnyToJsValuePtr(array[i], jsarr[i]);
+                        AnyToJsValuePtr(array[i], (jsarr + i));
                     }
                 }
                 return;
@@ -563,7 +563,12 @@ namespace Espresso
             //-----
             Type type = obj.GetType();
             // Check for nullable types (we will cast the value out of the box later). 
-            type = type.ExtGetInnerTypeIfNullableValue();
+            Type innerTypeOfNullable = type.ExtGetInnerTypeIfNullableValue();
+            if (innerTypeOfNullable != null)
+            {
+                type = innerTypeOfNullable;
+            }
+
             if (type == typeof(Boolean))
             {
                 output->Type = JsValueType.Boolean;
@@ -682,10 +687,10 @@ namespace Espresso
                 output->Type = JsValueType.Array;
                 unsafe
                 {
-                    JsValue** arr = (JsValue**)output->Ptr;
+                    JsValue* arr = (JsValue*)output->Ptr;
                     for (int i = 0; i < arrLen; i++)
                     {
-                        AnyToJsValuePtr(array[i], arr[i]);
+                        AnyToJsValuePtr(array[i], arr + i);
                     }
                 }
 

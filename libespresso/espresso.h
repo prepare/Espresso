@@ -98,7 +98,7 @@ struct jsvalue
 	//this for 32 bits values, also be used as string len, array len  and index to managed slot index
 	int32_t     i32;
 	// native ptr (may point to native object, native array, native string)
-	void*		ptr; //uint16_t* or jsvalue**   arr or 
+	void*		ptr; //uint16_t* or jsvalue*  arr or 
 	//store float or double
 	double      num;
 	//store 64 bits value
