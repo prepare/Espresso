@@ -284,7 +284,15 @@ namespace Espresso
         public void ToJsValue(string value, ref JsValue output)
         {
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
-            JsContext.jsvalue_alloc_string(value, ref output);
+            char[] buff = value.ToCharArray();
+            unsafe
+            {
+                fixed (char* c1 = value)
+                {
+                    JsContext.jsvalue_alloc_string(c1, value.Length, ref output);
+                }
+            }
+
             output.Type = JsValueType.String;
             output.I32 = value.Length;
         }
@@ -292,7 +300,10 @@ namespace Espresso
         {
             //TODO: review here
             // We need to allocate some memory on the other side; will be free'd by unmanaged code.            
-            JsContext.jsvalue_alloc_string(c.ToString(), ref output);
+            unsafe
+            {
+                JsContext.jsvalue_alloc_string(&c, 1, ref output);
+            }
             output.Type = JsValueType.String;
             output.I32 = 1;
         }
@@ -401,9 +412,17 @@ namespace Espresso
             if (type == typeof(String) || type == typeof(Char))
             {
                 // We need to allocate some memory on the other side;
-                // will be free'd by unmanaged code.
+                // will be free'd by unmanaged code. 
+
+                string strdata = obj.ToString();
+                unsafe
+                {
+                    fixed (char* buffer = strdata)
+                    {
+                        JsContext.jsvalue_alloc_string(buffer, strdata.Length, ref output);
+                    }
+                }
                 output.Type = JsValueType.String;
-                JsContext.jsvalue_alloc_string(obj.ToString(), ref output);
                 return;
             }
             //-----------------------------------------------------------
@@ -556,7 +575,14 @@ namespace Espresso
             {
                 // We need to allocate some memory on the other side;
                 // will be free'd by unmanaged code.
-                JsContext.jsvalue_alloc_string(obj.ToString(), output);
+                string strdata = obj.ToString();
+                unsafe
+                {
+                    fixed (char* b = strdata)
+                    {
+                        JsContext.jsvalue_alloc_string2(b, strdata.Length, output);
+                    }
+                }
                 output->Type = JsValueType.String;
                 return;
             }
