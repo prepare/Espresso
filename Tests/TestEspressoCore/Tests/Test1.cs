@@ -95,5 +95,32 @@ namespace TestEspressoCore
                 //Assert.That(result, Is.EqualTo(100)); 
             }
         }
+
+
+        [Test("3", "TestColl1")]
+        static void TestColl1()
+        {
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //create js engine and context
+
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Start();
+
+                string[] ta = { "test" };
+                ctx.SetVariableFromAny("ta", ta);
+                object result = ctx.Execute("(function(){return JSON.stringify(ta);})()");
+                if ((string)result != ta[0]) throw new Exception("It should return the first element");
+
+                stwatch.Stop();
+                Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+                //Assert.That(result, Is.EqualTo(100)); 
+            }
+        } 
     }
 }
