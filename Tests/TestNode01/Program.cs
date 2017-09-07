@@ -12,7 +12,7 @@ namespace TestNode01
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        {   
             //-----------------------------------
             //1.
             //after we build nodejs in dll version
@@ -30,6 +30,8 @@ namespace TestNode01
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
+            //----------------------------------- 
+
 
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
@@ -38,7 +40,9 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
+            JsEngine.RunJsEngine(
+                new string[] { "--inspect", "hello.espr" },
+                (IntPtr nativeEngine, IntPtr nativeContext) =>
             {
 
                 JsEngine eng = new JsEngine(nativeEngine);
@@ -47,6 +51,7 @@ namespace TestNode01
                 //this LibEspressoClass object is need,
                 //so node can talk with us,
                 //-------------
+
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {
@@ -70,10 +75,8 @@ namespace TestNode01
                 {
                     args.SetResult(true);
                 }));
-                if (!jstypedef.IsRegisterd)
-                {
-                    ctx.RegisterTypeDefinition(jstypedef);
-                }
+
+                ctx.RegisterTypeDefinition(jstypedef);
                 //----------
                 //then register this as x***       
                 //this object is just an instance for reference        
@@ -95,6 +98,8 @@ namespace TestNode01
         {
 
         }
+
+
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);
