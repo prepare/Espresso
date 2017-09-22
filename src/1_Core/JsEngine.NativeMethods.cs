@@ -67,31 +67,28 @@ namespace Espresso
 
 
         //-------------------------------------------------------------------------------------------------------
-        //this is Node-Espresso
+        //this is Espresso-ND
         //the Espresso + NodeJS
         //-------------------------------------------------------------------------------------------------------
         public static int RunJsEngine(NativeEngineSetupCallback engineSetupCb)
         {
-            //hello.espr -> not exist on disk
-            //the engine will callback to our .net code
-            //our .net can load file
-            return RunJsEngine(null, engineSetupCb);
+
+            return RunJsEngine(
+
+                // "hello.espr" not on disk,
+                //this make espresso-ND callback to LoadMainSrcFile() in our .net code
+                //and we can handle how to load the rest
+
+                new string[] { "hello.espr" },
+                engineSetupCb);
         }
-        public static int RunJsEngine(string[] otherNodeParameters, NativeEngineSetupCallback engineSetupCb)
-        { 
+        public static int RunJsEngine(string[] parameters, NativeEngineSetupCallback engineSetupCb)
+        {
 
             List<string> nodeStartPars = new List<string>();
-            //1. 
-            //default 2 pars
-            //hello.espr -> not exist on disk
-            //the engine will callback to our .net code
-            //our .net can load file
-            nodeStartPars.AddRange(new string[] { "node", "hello.espr" });
-            //2. other pars
-            if (otherNodeParameters != null)
-            {
-                nodeStartPars.AddRange(otherNodeParameters);
-            }
+            nodeStartPars.Add("node"); //essential first parameter
+            if (parameters != null) nodeStartPars.AddRange(parameters);
+
             return RunJsEngine(nodeStartPars.Count, nodeStartPars.ToArray(), engineSetupCb);
         }
         //-------------------------------------------------------------------------------------------------------

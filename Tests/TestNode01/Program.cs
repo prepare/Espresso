@@ -12,7 +12,7 @@ namespace TestNode01
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        {   
             //-----------------------------------
             //1.
             //after we build nodejs in dll version
@@ -30,6 +30,8 @@ namespace TestNode01
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
+            //----------------------------------- 
+
 
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
@@ -38,20 +40,24 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
+            JsEngine.RunJsEngine(
+                new string[] { "--inspect", "hello.espr" },
+                (IntPtr nativeEngine, IntPtr nativeContext) =>
             {
 
                 JsEngine eng = new JsEngine(nativeEngine);
                 JsContext ctx = eng.CreateContext(nativeContext);
                 //-------------
-                //this LibEspressoClass object is need,
+                //this LibEspressoClass object is needed,
                 //so node can talk with us,
                 //-------------
+
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {
-                    string filedata = @"var http = require('http');
-                                                (function t(){
+                    //handle main src loading here
+                    string filedata = @"   var http = require('http');
+                                                (function(){
 	                                                console.log('hello from Espresso-ND');
 	                                                var server = http.createServer(function(req, res) {
                                                     res.writeHead(200);
@@ -60,20 +66,8 @@ namespace TestNode01
                                                     server.listen(8080,'localhost');
                                                 })();";
                     args.SetResult(filedata);
-                }));
-                jstypedef.AddMember(new JsMethodDefinition("C", args =>
-                {
-
-                    args.SetResult(true);
-                }));
-                jstypedef.AddMember(new JsMethodDefinition("E", args =>
-                {
-                    args.SetResult(true);
-                }));
-                if (!jstypedef.IsRegisterd)
-                {
-                    ctx.RegisterTypeDefinition(jstypedef);
-                }
+                })); 
+                ctx.RegisterTypeDefinition(jstypedef);
                 //----------
                 //then register this as x***       
                 //this object is just an instance for reference        
@@ -95,6 +89,8 @@ namespace TestNode01
         {
 
         }
+
+
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);

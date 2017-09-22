@@ -480,14 +480,13 @@ Module._resolveFilename = function(request, parent, isMain) {
   if (NativeModule.nonInternalExists(request)) {
     return request;
   }
-
-  var paths = Module._resolveLookupPaths(request, parent, true);
   ////////////////////////////////////////////
   //#espresso, #3
   if (request.endsWith(".espr")) {
       return request;
   }
   ////////////////////////////////////////////  
+  var paths = Module._resolveLookupPaths(request, parent, true);  
   // look up the filename first, since that's the cache key.
   var filename = Module._findPath(request, paths, isMain);
   if (!filename) {
