@@ -48,15 +48,16 @@ namespace TestNode01
                 JsEngine eng = new JsEngine(nativeEngine);
                 JsContext ctx = eng.CreateContext(nativeContext);
                 //-------------
-                //this LibEspressoClass object is need,
+                //this LibEspressoClass object is needed,
                 //so node can talk with us,
                 //-------------
 
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {
-                    string filedata = @"var http = require('http');
-                                                (function t(){
+                    //handle main src loading here
+                    string filedata = @"   var http = require('http');
+                                                (function(){
 	                                                console.log('hello from Espresso-ND');
 	                                                var server = http.createServer(function(req, res) {
                                                     res.writeHead(200);
@@ -65,17 +66,7 @@ namespace TestNode01
                                                     server.listen(8080,'localhost');
                                                 })();";
                     args.SetResult(filedata);
-                }));
-                jstypedef.AddMember(new JsMethodDefinition("C", args =>
-                {
-
-                    args.SetResult(true);
-                }));
-                jstypedef.AddMember(new JsMethodDefinition("E", args =>
-                {
-                    args.SetResult(true);
-                }));
-
+                })); 
                 ctx.RegisterTypeDefinition(jstypedef);
                 //----------
                 //then register this as x***       
