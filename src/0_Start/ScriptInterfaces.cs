@@ -295,6 +295,7 @@ namespace Espresso
         {
             this.methodCallDel = methodCallDel;
         }
+
         public JsMethodDefinition(string methodName, System.Reflection.MethodInfo method)
             : base(methodName, JsMemberKind.Method)
         {
@@ -305,20 +306,25 @@ namespace Espresso
             this.methodReturnType = method.ReturnType;
             this.isReturnTypeVoid = this.methodReturnType == typeof(void);
         }
+
         public void InvokeMethod(ManagedMethodArgs args)
         {
             if (method != null)
             {
                 //invoke method
-                var thisArg = args.GetThisArg();
+
+                object thisArg = args.GetThisArg();
+
                 //actual input arg count
                 int actualArgCount = args.ArgCount;
                 //prepare parameters
-                int expectedParameterCount = parameterInfoList.Length;
+                int expectedParameterCount = parameterInfoList.Length; 
                 object[] parameters = new object[expectedParameterCount];
-                int lim = Math.Min(actualArgCount, expectedParameterCount);
-                //fill from the begin
 
+                //TODO: review here
+                //check exact number
+                int lim = Math.Min(actualArgCount, expectedParameterCount);
+                //fill from the begin 
                 for (int i = 0; i < lim; ++i)
                 {
                     object arg = args.GetArgAsObject(i);
@@ -355,9 +361,27 @@ namespace Espresso
                 methodCallDel(args);
             }
         }
+
+
+        internal System.Reflection.ParameterInfo[] Parameters { get { return parameterInfoList; } }
+        internal System.Reflection.MethodInfo MethodInfo { get { return method; } }
+        internal JsMethodCallDel JsMetDelegate { get { return methodCallDel; } }
+
+#if DEBUG
+        public override string ToString()
+        {
+            return this.MemberName;
+        }
+#endif
     }
 
     public delegate void JsMethodCallDel(ManagedMethodArgs args);
+
+    public struct JsArgValue
+    {
+        JsValue jsvalue;
+    }
+
 
     public struct ManagedMethodArgs
     {
