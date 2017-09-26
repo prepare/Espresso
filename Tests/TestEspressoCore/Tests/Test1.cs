@@ -128,6 +128,50 @@ namespace TestEspressoCore
                 Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
                  
             }
-        } 
+        }
+
+        
+        //------------------------------------------
+        //data for test4
+        public class Base { string _id { get; set; } = "id"; }
+        public class A<T> where T : Base
+        {
+            public void Add(T a) { }
+            public void Add(Base a) { }
+            public void Add(object a) { }
+        }
+        public class B : Base { string data { get; set; } = "data"; }
+
+        //------------------------------------------
+        [Test("4", "TestOverload")]
+        static void TestOverload()
+        {
+
+
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //create js engine and context
+
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Start();
+
+                A<B> a = new A<B>();
+                ctx.SetVariableFromAny("a", a);
+                ctx.SetVariableFromAny("b", new B());
+                object result = ctx.Execute("(function(){a.Add(b);})()");
+                // if we get to here, we haven't thrown the exception 
+                stwatch.Stop();
+                Console.WriteLine("result " + result);
+                Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+
+            }
+        }
+
+        //------------------------------------------
     }
 }
