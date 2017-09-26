@@ -177,31 +177,6 @@ namespace Espresso
                 }
                 return null;
             }
-
-            static Type GetBaseType(Type t)
-            {
-#if NET20
-                return t.BaseType; 
-#else
-                return t.GetTypeInfo().BaseType;
-#endif 
-            }
-            static bool IsValueType(Type t)
-            {
-#if NET20                
-                return t.IsValueType; 
-#else
-                return t.GetTypeInfo().IsValueType;
-#endif 
-            }
-            static bool IsAssignable(Type dest, Type src)
-            {
-#if NET20
-                return dest.IsAssignableFrom(src);
-#else
-                return dest.GetTypeInfo().IsAssignableFrom(src);
-#endif 
-            }
         }
 
 
@@ -353,17 +328,13 @@ namespace Espresso
                 }
             }
         }
-#if NET20
         protected override JsTypeDefinition OnBuildRequest(Type t)
         {
-
-
             JsTypeDefinition typedefinition = new JsTypeDefinition(t.Name);
             //-------
             //only instance /public method /prop***  
             Dictionary<string, JsMethodGroup> methodGroups = new Dictionary<string, JsMethodGroup>();
-
-            foreach (MethodInfo met in t.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+            foreach (MethodInfo met in GetMehodIter(t, BindingFlags.Instance | BindingFlags.Public))
             {
                 var jsMethodDef = new JsMethodDefinition(met.Name, met);
                 JsMethodGroup existingGroup;
@@ -389,64 +360,53 @@ namespace Espresso
                 }
             }
             //-----------------
-            foreach (var property in t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            foreach (var property in GetPropertyIter(t, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
             {
                 typedefinition.AddMember(new JsPropertyDefinition(property.Name, property));
             }
 
-
-
             return typedefinition;
         }
-#else
-        protected override JsTypeDefinition OnBuildRequest(Type t)
+
+        static IEnumerable<MethodInfo> GetMehodIter(Type t, BindingFlags flags)
         {
-            JsTypeDefinition typedefinition = new JsTypeDefinition(t.Name);
-
-            //----------------------------
-            //only instance /public method /prop***
-            //MethodInfo[] methods = t.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public); 
-            foreach (var met in t.GetRuntimeMethods())
-            {
-                //this version we use only public instance method
-                if (!met.IsStatic && met.IsPublic)
-                {
-                    typedefinition.AddMember(new JsMethodDefinition(met.Name, met));
-                }
-            }
-
-            //var properties = t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public); 
-            //TODO finding GetProperties with BindingFlags
-            foreach (var property in t.GetRuntimeProperties())
-            {
-                //this version we use only public instance method 
-                typedefinition.AddMember(new JsPropertyDefinition(property.Name, property));
-
-            }
-
-            //--------------------------------
-            //find and fix overload method
-            List<JsMethodDefinition> mets = typedefinition.GetMethods();
-            Dictionary<string, JsMethodDefinition> uniqueNames = new Dictionary<string, JsMethodDefinition>();
-            int j = mets.Count;
-            for (int i = 0; i < j; ++i)
-            {
-                JsMethodDefinition met = mets[i];
-                JsMethodDefinition exitsingMet;
-                if (uniqueNames.TryGetValue(met.MemberName, out exitsingMet))
-                {
-                    //duplicated name
-
-                }
-                else
-                {
-                    uniqueNames.Add(met.MemberName, met);
-                }
-            }
-
-
-            return typedefinition;
-        }
+#if NET20
+            return t.GetMethods(flags);
+#else
+            return t.GetTypeInfo().GetMethods(flags);
 #endif
+        }
+        static IEnumerable<PropertyInfo> GetPropertyIter(Type t, BindingFlags flags)
+        {
+#if NET20
+            return t.GetProperties(flags);
+#else
+            return t.GetTypeInfo().GetProperties(flags);
+#endif
+        }
+        static Type GetBaseType(Type t)
+        {
+#if NET20
+            return t.BaseType; 
+#else
+            return t.GetTypeInfo().BaseType;
+#endif
+        }
+        static bool IsValueType(Type t)
+        {
+#if NET20
+                return t.IsValueType; 
+#else
+            return t.GetTypeInfo().IsValueType;
+#endif
+        }
+        static bool IsAssignable(Type dest, Type src)
+        {
+#if NET20
+                return dest.IsAssignableFrom(src);
+#else
+            return dest.GetTypeInfo().IsAssignableFrom(src);
+#endif
+        }
     }
 }
