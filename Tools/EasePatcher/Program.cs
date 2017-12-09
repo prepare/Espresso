@@ -7,12 +7,21 @@ namespace EasePatcher
     class Program
     {
 
-        static string current_node_version = "node-v8.4.0";
-        static string patch_subdir = "node_patches/node8.4.0_modified";
+        //static string current_node_version = "node-v8.4.0";
+        //static string patch_subdir = "node_patches/node8.4.0_modified";
+        ////
+        //static string original_node_srcdir = @"../../../node-v8.4.0";
+        //static string espresso_srcdir = "../../../Espresso";
+        //static string config_pars = "";
+
+        //for v8.9.3
+        static string current_node_version = "node-v8.9.3";
+        static string patch_subdir = "node_patches/node8.9.3_modified";
         //
-        static string original_node_srcdir = @"../../../node-v8.4.0";
+        static string original_node_srcdir = @"../../../node-v8.9.3";
         static string espresso_srcdir = "../../../Espresso";
         static string config_pars = "";
+
         //
         static PatcherOS currentOS;
 
@@ -42,7 +51,9 @@ namespace EasePatcher
             switch (currentOS)
             {
                 case PatcherOS.Windows:
-                    config_pars = "x64 release nosign nobuild"; //default build 
+                    //x64
+                    config_pars = " x86 release nosign nobuild"; //default build .
+                    //x86                     
                     break;
                 case PatcherOS.Mac:
                     config_pars = "--dest-cpu=x64 --shared --xcode";
