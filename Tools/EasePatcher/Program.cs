@@ -51,7 +51,9 @@ namespace EasePatcher
             switch (currentOS)
             {
                 case PatcherOS.Windows:
-                    config_pars = "x64 release nosign nobuild"; //default build 
+                    //x64
+                    config_pars = " x86 release nosign nobuild"; //default build .
+                    //x86                     
                     break;
                 case PatcherOS.Mac:
                     config_pars = "--dest-cpu=x64 --shared --xcode";
