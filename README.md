@@ -7,6 +7,10 @@ NodeJS engine with C# (in-process), => **Espresso-ND**
 
 ---
 
+Latest V8 Engine : from NodeJs **v8.9.3**
+
+---
+
 **Espresso** (from [vroomjs](https://github.com/Daniel15/vroomjs) ) is a bridge between the .NET CLR (think C# or F#) and the V8 Javascript
 engine that uses P/Invoke and a thin C layer (_libespr_).
 
