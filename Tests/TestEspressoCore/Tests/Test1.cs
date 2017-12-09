@@ -125,9 +125,75 @@ namespace TestEspressoCore
 
                 stwatch.Stop();
                 Console.WriteLine("result " + result);
-                Console.WriteLine("met2 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
-                 
+                Console.WriteLine("met3 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+
             }
-        } 
+        }
+
+
+        //------------------------------------------
+        //data for test4
+        public class Base { string _id { get; set; } = "id"; }
+        public class A<T> where T : Base
+        {
+            public void Add(T a) { Console.WriteLine("Add(T a)"); }
+            public void Add(Base a) { Console.WriteLine("Add(Base a)"); }
+            public void Add(object a) { Console.WriteLine("Add(object a)"); }
+        }
+        public class B : Base { string data { get; set; } = "data"; }
+
+
+        //------------------------------------------
+        [Test("4", "TestOverload")]
+        static void TestOverload()
+        {
+
+
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //create js engine and context
+
+            using (JsEngine engine = new JsEngine())
+            using (JsContext ctx = engine.CreateContext())
+            {
+                GC.Collect();
+                System.Diagnostics.Stopwatch stwatch = new System.Diagnostics.Stopwatch();
+                stwatch.Start();
+
+                A<B> a = new A<B>();
+                Base base1 = new Base();
+                B b = new B();
+                //----
+                Console.WriteLine("pure .net behaviour");
+                //test .net side
+                a.Add(null); //Add(T a)
+                a.Add(b); //Add(T a)
+                a.Add(base1);  //Add(Base a)
+                a.Add(new object()); // Add(object a)
+                a.Add(new object[0]); // Add(object a)
+                //----------
+                Console.WriteLine("----------");
+                Console.WriteLine("Espresso behaviour");
+
+                ctx.SetVariableFromAny("a", a);
+                ctx.SetVariableFromAny("b", b);
+                ctx.SetVariableFromAny("base1", base1);
+
+
+                ctx.Execute("(function(){a.Add(null);})()");//Add(T a)
+                ctx.Execute("(function(){a.Add(b);})()");//Add(T a)
+                ctx.Execute("(function(){a.Add(base1);})()");//Add(Base a)
+                ctx.Execute("(function(){a.Add({});})()");// Add(object a)
+                ctx.Execute("(function(){a.Add([]);})()");// Add(object a)
+
+                // if we get to here, we haven't thrown the exception 
+                stwatch.Stop();
+                Console.WriteLine("met4 managed reflection:" + stwatch.ElapsedMilliseconds.ToString());
+
+            }
+        }
+
+        //------------------------------------------
     }
 }
