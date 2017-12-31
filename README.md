@@ -147,11 +147,10 @@ see example, run nodejs http server
 ---
 **Espresso-ND with Http2**
 
-nodejs9 has built-in http2 server.
+NodeJs 9 has built-in http2 server.
 
 so, test it :)
-
-In this version you can use http2 with node9.3.0.
+ 
 
 ![node_9_3](https://user-images.githubusercontent.com/7447159/34459594-08a24386-ee27-11e7-8e67-8a15c8ec0a7e.png)
 _pic 1: http2 protocol example, on node v9.3.0_
@@ -160,7 +159,7 @@ _pic 1: http2 protocol example, on node v9.3.0_
 
 ![node_9_3_1](https://user-images.githubusercontent.com/7447159/34459593-086b696a-ee27-11e7-90b3-98d4785fc3c9.png)
 
-_pic2: (1) console screen, (2) http2 server say 'Hello' to Firefox_
+_pic2: (1) console screen, (2) http2 server says 'Hello World' to Firefox_
 
 
 ---
