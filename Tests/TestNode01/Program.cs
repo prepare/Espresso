@@ -12,21 +12,21 @@ namespace TestNode01
         /// </summary>
         [STAThread]
         static void Main()
-        {   
+        {
             //-----------------------------------
             //1.
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
-            string libEspr = @"../../../node-v8.9.3/Release/libespr.dll"; //previous version 8.4.0
+            string libEspr = @"../../../node-v9.3.0/Release/libespr.dll"; //previous version 8.4.0
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"../../../node-v8.9.3/Release/node.dll", // //previous version 8.4.0
+               @"../../../node-v9.3.0/Release/node.dll", // //previous version 8.4.0
                libEspr);
             //-----------------------------------
             //2. load libespr.dll (node.dll)
@@ -55,18 +55,52 @@ namespace TestNode01
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {
-                    //handle main src loading here
-                    string filedata = @"   var http = require('http');
-                                                (function(){
-	                                                console.log('hello from Espresso-ND');
-	                                                var server = http.createServer(function(req, res) {
-                                                    res.writeHead(200);
-                                                    res.end('Hello! from Espresso-ND');
-                                                    });
-                                                    server.listen(8080,'localhost');
-                                                })();";
+
+
+                    //handle main src loading here 
+                    //example 2:
+                    //test http2 --server side
+                    //(from https://nodejs.org/api/http2.html#http2_server_side_example)
+                    string filedata =
+                    @" const http2 = require('http2');
+                    const fs = require('fs');
+
+                    const server = http2.createSecureServer({
+                      key: fs.readFileSync('localhost-privkey.pem'),
+                      cert: fs.readFileSync('localhost-cert.pem')
+                    });
+                    server.on('error', (err) => console.error(err));
+                    server.on('socketError', (err) => console.error(err));
+
+                    server.on('stream', (stream, headers) => {
+                      // stream is a Duplex
+                      stream.respond({
+                        'content-type': 'text/html',
+                        ':status': 200
+                      });
+                      stream.end('<h1>Hello World</h1>');
+                    });
+
+                    server.listen(8443);
+                    ";
                     args.SetResult(filedata);
-                })); 
+                    //-------------------------
+
+                    //
+                    //example 1: simple http server
+                    //
+                    ////handle main src loading here
+                    //string filedata = @"   var http = require('http');
+                    //                            (function(){
+                    //                             console.log('hello from Espresso-ND');
+                    //                             var server = http.createServer(function(req, res) {
+                    //                                res.writeHead(200);
+                    //                                res.end('Hello! from Espresso-ND');
+                    //                                });
+                    //                                server.listen(8080,'localhost');
+                    //                            })();";
+                    //args.SetResult(filedata);
+                }));
                 ctx.RegisterTypeDefinition(jstypedef);
                 //----------
                 //then register this as x***       
