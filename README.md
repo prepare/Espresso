@@ -170,6 +170,11 @@ _pic2: (1) console screen, (2) http2 server says 'Hello World' to Firefox_
 see how to build it at https://github.com/prepare/Espresso/issues/30
 
 
+---
+License:
 
+MIT, 2013, Federico Di Gregorio <fog@initd.org>, https://github.com/fogzot/vroomjs
+ 
+MIT, 2015-2018, WinterDev
 
  
