@@ -171,7 +171,7 @@ see how to build it at https://github.com/prepare/Espresso/issues/30
 
 
 ---
-License:
+**License**:
 
 MIT, 2013, Federico Di Gregorio <fog@initd.org>, https://github.com/fogzot/vroomjs
  
