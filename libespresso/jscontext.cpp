@@ -84,7 +84,8 @@ void JsContext::Execute(const uint16_t* str, const uint16_t *resourceName, jsval
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
+
 	Handle<String> source = String::NewFromTwoByte(isolate_, str);
 	Handle<Script> script;
 
@@ -123,7 +124,7 @@ void JsContext::Execute(JsScript *jsscript, jsvalue* output)
 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 	Persistent<Script>* script = jsscript->GetScript();
 	Local<Script> scriptHandle = Local<Script>::New(isolate_, *script);//0.12.x
 	if (!((*script).IsEmpty())) {
@@ -167,7 +168,7 @@ void JsContext::GetGlobal(jsvalue* output) {
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 
 	Local<Value> value = ctx->Global();
@@ -191,7 +192,7 @@ void JsContext::GetVariable(const uint16_t* name, jsvalue* output)
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 	Local<Value> value = ctx->Global()->Get(String::NewFromTwoByte(isolate_, name));
 	if (!value.IsEmpty()) {
@@ -213,7 +214,7 @@ void JsContext::GetPropertyNames(Persistent<Object>* obj, jsvalue* output) {
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 	Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
 	Local<Value> value = objLocal->GetPropertyNames();
@@ -237,7 +238,7 @@ void JsContext::GetPropertyValue(Persistent<Object>* obj, const uint16_t* name, 
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 	Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
 	Local<Value> value = objLocal->Get(String::NewFromTwoByte(isolate_, name));
@@ -284,7 +285,7 @@ void JsContext::InvokeFunction(Persistent<Function>* func, Persistent<Object>* t
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 
 	Local<Function> prop = Local<Function>::New(isolate_, *func);
@@ -329,7 +330,7 @@ void JsContext::InvokeProperty(Persistent<Object>* obj, const uint16_t* name, js
 	Local<Context> ctx = Local<Context>::New(isolate_, *context_);
 	ctx->Enter();
 
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 	Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
 	Local<Value> prop = objLocal->Get(String::NewFromTwoByte(isolate_, name));

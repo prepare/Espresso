@@ -4,6 +4,7 @@
 *.config
 *.usertasks
 *.swp
+packages
 build/Debug
 build/Release
 test-results/

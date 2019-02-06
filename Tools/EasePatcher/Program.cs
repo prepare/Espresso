@@ -15,14 +15,30 @@ namespace EasePatcher
         //static string config_pars = "";
 
         //for v8.9.3
-        static string current_node_version = "node-v8.9.3";
-        static string patch_subdir = "node_patches/node8.9.3_modified";
+        //static string current_node_version = "node-v8.9.3";
+        //static string patch_subdir = "node_patches/node8.9.3_modified";
+        ////
+        //static string original_node_srcdir = @"../../../node-v8.9.3";
+        //static string espresso_srcdir = "../../../Espresso";
+        //static string config_pars = "";
+
         //
-        static string original_node_srcdir = @"../../../node-v8.9.3";
+        //for v9.3.0
+        //static string current_node_version = "node-v9.3.0";
+        //static string patch_subdir = "node_patches/node9.3.0_modified";
+        ////
+        //static string original_node_srcdir = @"../../../node-v9.3.0";
+        //static string espresso_srcdir = "../../../Espresso";
+        //static string config_pars = "";
+
+        //for v10.15.1
+        static string current_node_version = "node-v10.15.1";
+        static string patch_subdir = "node_patches/node10.15.1_modified";
+        //
+        static string original_node_srcdir = @"../../../node-v10.15.1";
         static string espresso_srcdir = "../../../Espresso";
         static string config_pars = "";
 
-        //
         static PatcherOS currentOS;
 
         static void Main(string[] args)
