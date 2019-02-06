@@ -46,7 +46,7 @@ namespace Espresso.Tests
         }
 
         [TestCase]
-        [ExpectedException(typeof(JsException))]
+        //[ExpectedException(typeof(JsException))]
         public void SimpleExpressionException()
         {
             using (JsContext js = jsEngine.CreateContext())
@@ -56,7 +56,7 @@ namespace Espresso.Tests
         }
 
         [TestCase]
-        [ExpectedException(typeof(JsException))]
+        //[ExpectedException(typeof(JsException))]
         public void JsObjectException()
         {
             using (JsContext js = jsEngine.CreateContext())
@@ -66,7 +66,7 @@ namespace Espresso.Tests
         }
 
         [TestCase]
-        [ExpectedException(typeof(JsException))]
+        //[ExpectedException(typeof(JsException))]
         public void CompilationException()
         {
             using (JsContext js = jsEngine.CreateContext())

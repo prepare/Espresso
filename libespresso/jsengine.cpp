@@ -232,7 +232,7 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 	Isolate::Scope isolate_scope(isolate_);
 
 	HandleScope scope(isolate_);
-	TryCatch trycatch;
+	TryCatch trycatch(isolate_);
 
 	((Context*)global_context_)->Enter();
 
@@ -260,7 +260,8 @@ Persistent<Script> *JsEngine::CompileScript(const uint16_t* str, const uint16_t 
 
 void JsEngine::TerminateExecution()
 {
-	V8::TerminateExecution(isolate_);
+	HandleScope scope(isolate_);
+	isolate_->TerminateExecution();	 
 }
 
 void JsEngine::DumpHeapStats()
