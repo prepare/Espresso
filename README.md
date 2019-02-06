@@ -174,6 +174,6 @@ see how to build it at https://github.com/prepare/Espresso/issues/30
 
 MIT, 2013, Federico Di Gregorio <fog@initd.org>, https://github.com/fogzot/vroomjs
  
-MIT, 2015-2018, WinterDev
+MIT, 2015-2019, WinterDev
 
  
