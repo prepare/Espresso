@@ -94,7 +94,20 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\..\node-v10.15.1\Debug\lib\v8_base_0.lib;..\..\node-v10.15.1\Debug\lib\v8_base_1.lib;..\..\node-v10.15.1\Debug\lib\v8_base_2.lib;..\..\node-v10.15.1\Debug\lib\v8_base_3.lib;..\..\node-v10.15.1\Debug\lib\v8_builtins_generators.lib;..\..\node-v10.15.1\Debug\lib\v8_builtins_setup.lib;..\..\node-v10.15.1\Debug\lib\v8_libbase.lib;..\..\node-v10.15.1\Debug\lib\v8_libplatform.lib;..\..\node-v10.15.1\Debug\lib\v8_libsampler.lib;..\..\node-v10.15.1\Debug\lib\v8_nosnapshot.lib;..\..\node-v10.15.1\Debug\lib\icudata.lib;..\..\node-v10.15.1\Debug\lib\icuucx.lib;..\..\node-v10.15.1\Debug\lib\icui18n.lib;..\..\node-v10.15.1\Debug\lib\icustubdata.lib;..\..\node-v10.15.1\Debug\lib\icutools.lib;winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+        ..\..\node-v10.15.1\Debug\lib\v8_base.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_init.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_initializers.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libbase.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libplatform.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libsampler.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_nosnapshot.lib;
+        ..\..\node-v10.15.1\Debug\lib\icudata.lib;
+        ..\..\node-v10.15.1\Debug\lib\icuucx.lib;
+        ..\..\node-v10.15.1\Debug\lib\icui18n.lib;
+        ..\..\node-v10.15.1\Debug\lib\icustubdata.lib;
+        ..\..\node-v10.15.1\Debug\lib\icutools.lib;
+        winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -146,7 +159,20 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\..\node-v10.15.1\Debug\lib\v8_base_0.lib;..\..\node-v10.15.1\Debug\lib\v8_base_1.lib;..\..\node-v10.15.1\Debug\lib\v8_base_2.lib;..\..\node-v10.15.1\Debug\lib\v8_base_3.lib;..\..\node-v10.15.1\Debug\lib\v8_builtins_generators.lib;..\..\node-v10.15.1\Debug\lib\v8_builtins_setup.lib;..\..\node-v10.15.1\Debug\lib\v8_libbase.lib;..\..\node-v10.15.1\Debug\lib\v8_nosnapshot.lib;..\..\node-v10.15.1\Debug\lib\v8_libplatform.lib;..\..\node-v10.15.1\Debug\lib\v8_libsampler.lib;..\..\node-v10.15.1\Debug\lib\icudata.lib;..\..\node-v10.15.1\Debug\lib\icuucx.lib;..\..\node-v10.15.1\Debug\lib\icui18n.lib;..\..\node-v10.15.1\Debug\lib\icustubdata.lib;..\..\node-v10.15.1\Debug\lib\icutools.lib;winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+        ..\..\node-v10.15.1\Debug\lib\v8_base.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_init.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_initializers.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libbase.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libplatform.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_libsampler.lib;
+        ..\..\node-v10.15.1\Debug\lib\v8_nosnapshot.lib;
+        ..\..\node-v10.15.1\Debug\lib\icudata.lib;
+        ..\..\node-v10.15.1\Debug\lib\icuucx.lib;
+        ..\..\node-v10.15.1\Debug\lib\icui18n.lib;
+        ..\..\node-v10.15.1\Debug\lib\icustubdata.lib;
+        ..\..\node-v10.15.1\Debug\lib\icutools.lib;
+        winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
