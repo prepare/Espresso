@@ -4,7 +4,7 @@ Espresso / Espresso-VE / Espresso-ND
 ---
  
 
-Latest V8 Engine : from NodeJs **v10.15.1**
+Latest V8 Engine : from NodeJs **v10.15.3**
 
 ---
 
