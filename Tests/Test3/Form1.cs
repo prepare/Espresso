@@ -6,7 +6,7 @@ using System.Drawing;
 
 using System.Text;
 using System.Windows.Forms;
-using Espresso; 
+using Espresso;
 
 namespace Test3
 {
@@ -83,14 +83,9 @@ namespace Test3
 
         class TestMe1
         {
-            public int B()
-            {
-                return 100;
-            }
-            public bool C()
-            {
-                return true;
-            }
+            public int B() => 100;
+
+            public bool C() => true;
         }
 
         delegate object AboutMeEventHandler(object[] args);
@@ -98,52 +93,38 @@ namespace Test3
         [JsType]
         class AboutMe
         {
-            AboutMeEventHandler mousedownEventHandler;
+            AboutMeEventHandler _mousedownEventHandler;
 
             [JsMethod]
-            public int Test1()
-            {
-                return 123;
-            }
+            public int Test1() => 123;
 
             [JsMethod]
-            public string Test2(string text)
-            {
-                return "hello " + text;
-            }
+            public string Test2(string text) => "hello " + text;
+
             [JsProperty]
-            public bool IsOK
-            {
-                get
-                {
-                    return true;
-                }
-            }
-            public bool GetOK()
-            {
-                return true;
-            }
+            public bool IsOK => true;
+
+            public bool GetOK() => true;
+
             [JsMethod]
-            public AboutMe NewAboutMe()
-            {
-                return new AboutMe();
-            }
+            public AboutMe NewAboutMe() => new AboutMe();
+
             [JsMethod]
             public void AttachEvent(string eventName, AboutMeEventHandler evHandler)
             {
-                this.mousedownEventHandler = evHandler;
+                this._mousedownEventHandler = evHandler;
             }
             [JsMethod]
             public void FireEventMouseDown(object eventArg)
             {
-                if (mousedownEventHandler != null)
+                if (_mousedownEventHandler != null)
                 {
                     //JsFunction func = mousedownEventHandler.Target as JsFunction;
                     //func.Invoke(eventArg);
                     //SimpleDelegate simpleDel = mousedownEventHandler as SimpleDelegate;
                     //simpleDel(new object[] { eventArg }); 
                     //mousedownEventHandler(new object[] { eventArg });
-                    mousedownEventHandler(new object[] { null, eventArg });
+                    _mousedownEventHandler(new object[] { null, eventArg });
                     //mousedownEventHandler(this, eventArg);
                 }
             }
@@ -518,6 +499,10 @@ namespace Test3
             //------------------------
             //test esprima package
             //------------------------
+
+            //update latest esprima from https://unpkg.com/esprima@4.0.1/dist/esprima.js
+            //(search google with 'Using Esprima in a web browser')
+
 
             string esprima_code = File.ReadAllText("../../Samples/js_tools/esprima/esprima.js");
             StringBuilder stbuilder = new StringBuilder();
@@ -1007,8 +992,8 @@ namespace Test3
             //    getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
             //    getDirectories: my_expr_ext.getDirectories,
             //     getEnvironmentVariable: function(vname){
-			//		return my_expr_ext.getEnvironmentVariable(vname);
-			//	},
+            //		return my_expr_ext.getEnvironmentVariable(vname);
+            //	},
             //    readDirectory: function(path, extensions, excludes, includes, _depth) {
             //            var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
             //            return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
