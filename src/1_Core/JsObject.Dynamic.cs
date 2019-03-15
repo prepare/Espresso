@@ -61,14 +61,8 @@ namespace Espresso
             result = null;
             return false;
         }
-        public virtual bool TrySetMember(string mbname, object value)
-        {
-            return false;
-        }
-        public virtual IEnumerable<string> GetDynamicMemberNames()
-        {
-            return null;
-        }
+        public virtual bool TrySetMember(string mbname, object value) => false;
+        public virtual IEnumerable<string> GetDynamicMemberNames() => null;
     }
 
 
@@ -85,12 +79,8 @@ namespace Espresso
             _context = context;
             _handle = ptr;
         }
+        public IntPtr Handle => _handle;
 
-
-        public IntPtr Handle
-        {
-            get { return _handle; }
-        }
         public virtual bool TryInvokeMember(string name, object[] args, out object result)
         {
             result = _context.InvokeProperty(this, name, args);
@@ -100,7 +90,6 @@ namespace Espresso
         public override bool TryGetMember(string mbname, out object result)
         {
             return (result = _context.GetPropertyValue(this, mbname)) != null;
-
         }
 
         public override bool TrySetMember(string mbname, object value)
@@ -113,10 +102,6 @@ namespace Espresso
         {
             return _context.GetMemberNames(this);
         }
-
-
-
-        
 
         public void Dispose()
         {

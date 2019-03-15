@@ -1,4 +1,4 @@
-//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 // This file is part of the VroomJs library.
 //
@@ -104,7 +104,7 @@ namespace Espresso
                     return _context.KeepAliveGet(v.I32);
                 case JsValueType.JsTypeWrap:
                     //auto unwrap
-                    return this._context.GetObjectProxy(v.I32).WrapObject;
+                    return _context.GetObjectProxy(v.I32).WrapObject;
                 case JsValueType.ManagedError:
                     Exception inner = _context.KeepAliveGet(v.I32) as Exception;
                     string msg = null;
@@ -190,7 +190,7 @@ namespace Espresso
                     return _context.KeepAliveGet(v->I32);
                 case JsValueType.JsTypeWrap:
                     //auto unwrap
-                    return this._context.GetObjectProxy(v->I32).WrapObject;
+                    return _context.GetObjectProxy(v->I32).WrapObject;
                 case JsValueType.ManagedError:
                     Exception inner = _context.KeepAliveGet(v->I32) as Exception;
                     string msg = null;
@@ -225,7 +225,7 @@ namespace Espresso
         JsObject CreateJsDictionaryObject(ref JsValue v)
         {
             //js dic is key-pair object
-            JsObject obj = new JsObject(this._context, v.Ptr);
+            JsObject obj = new JsObject(_context, v.Ptr);
             int count = v.I32 * 2;//key and value
             unsafe
             {
@@ -247,7 +247,7 @@ namespace Espresso
         {
             //js dic is key-pair
 
-            JsObject obj = new JsObject(this._context, v->Ptr);
+            JsObject obj = new JsObject(_context, v->Ptr);
             int count = v->I32 * 2;//key and value
             unsafe
             {
@@ -568,7 +568,8 @@ namespace Espresso
             {
                 type = innerTypeOfNullable;
             }
-
+            
+            
             if (type == typeof(Boolean))
             {
                 output->Type = JsValueType.Boolean;

@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 using System;
 using System.Collections.Generic;
@@ -9,84 +9,52 @@ namespace Espresso
 
     public abstract class JsTypeMemberDefinition
     {
-        string _mbname;
-        JsMemberKind _memberKind;
+        readonly string _mbname;
+        readonly JsMemberKind _memberKind;
         JsTypeDefinition _owner;
         int _memberId;
         internal INativeRef _nativeProxy;
         public JsTypeMemberDefinition(string mbname, JsMemberKind memberKind)
         {
-            this._mbname = mbname;
-            this._memberKind = memberKind;
+            _mbname = mbname;
+            _memberKind = memberKind;
         }
-        public bool IsRegisterd
-        {
-            get
-            {
-                return this._nativeProxy != null;
-            }
-        }
+        public bool IsRegisterd => _nativeProxy != null;
+        public string MemberName => _mbname;
+        public JsMemberKind MemberKind => _memberKind;
+        public void SetOwner(JsTypeDefinition owner) => _owner = owner;
 
-        public string MemberName
-        {
-            get
-            {
-                return this._mbname;
-            }
-        }
-        public JsMemberKind MemberKind
-        {
-            get
-            {
-                return this._memberKind;
-            }
-        }
-        public void SetOwner(JsTypeDefinition owner)
-        {
-            this._owner = owner;
-        }
         protected static void WriteUtf16String(string str, BinaryWriter writer)
         {
             char[] charBuff = str.ToCharArray();
             writer.Write((short)charBuff.Length);
             writer.Write(charBuff);
         }
+        public int MemberId => _memberId;
+        public void SetMemberId(int memberId) => _memberId = memberId;
 
-        public int MemberId
-        {
-            get
-            {
-                return this._memberId;
-            }
-        }
-        public void SetMemberId(int memberId)
-        {
-            this._memberId = memberId;
-        }
 
     }
     public class JsTypeDefinition : JsTypeMemberDefinition
     {
         //store definition for js
-        List<JsFieldDefinition> fields = new List<JsFieldDefinition>();
-        List<JsMethodDefinition> methods = new List<JsMethodDefinition>();
-        List<JsPropertyDefinition> props = new List<JsPropertyDefinition>();
+        List<JsFieldDefinition> _fields = new List<JsFieldDefinition>();
+        List<JsMethodDefinition> _methods = new List<JsMethodDefinition>();
+        List<JsPropertyDefinition> _props = new List<JsPropertyDefinition>();
 
         public JsTypeDefinition(string typename)
             : base(typename, JsMemberKind.Type)
         {
-
         }
-
         public void AddMember(JsMethodDefinition methodDef)
         {
             methodDef.SetOwner(this);
-            methods.Add(methodDef);
+            _methods.Add(methodDef);
         }
         public void AddMember(JsPropertyDefinition propDef)
         {
             propDef.SetOwner(this);
-            props.Add(propDef);
+            _props.Add(propDef);
 
         }
         /// <summary>
@@ -110,11 +78,11 @@ namespace Espresso
             WriteUtf16String(this.MemberName, writer);
 
             //4. num of field
-            int j = fields.Count;
+            int j = _fields.Count;
             writer.Write((short)j);
             for (int i = 0; i < j; ++i)
             {
-                JsFieldDefinition fielddef = fields[i];
+                JsFieldDefinition fielddef = _fields[i];
                 //field flags
                 writer.Write((short)0);
 
@@ -125,11 +93,11 @@ namespace Espresso
                 WriteUtf16String(fielddef.MemberName, writer);
             }
             //------------------
-            j = methods.Count;
+            j = _methods.Count;
             writer.Write((short)j);
             for (int i = 0; i < j; ++i)
             {
-                JsMethodDefinition methoddef = methods[i];
+                JsMethodDefinition methoddef = _methods[i];
                 //method flags
                 writer.Write((short)0);
                 //id
@@ -139,11 +107,11 @@ namespace Espresso
             }
 
             //property
-            j = props.Count;
+            j = _props.Count;
             writer.Write((short)j);
             for (int i = 0; i < j; ++i)
             {
-                JsPropertyDefinition property = this.props[i];
+                JsPropertyDefinition property = _props[i];
                 //flags
                 writer.Write((short)0);
                 //id
@@ -154,18 +122,12 @@ namespace Espresso
 
         }
 
-        internal List<JsFieldDefinition> GetFields()
-        {
-            return this.fields;
-        }
-        internal List<JsMethodDefinition> GetMethods()
-        {
-            return this.methods;
-        }
-        internal List<JsPropertyDefinition> GetProperties()
-        {
-            return this.props;
-        }
+        internal List<JsFieldDefinition> GetFields() => _fields;
+
+        internal List<JsMethodDefinition> GetMethods() => _methods;
+
+        internal List<JsPropertyDefinition> GetProperties() => _props;
+
     }
 
     public enum JsMemberKind
@@ -242,16 +204,8 @@ namespace Espresso
 #endif
 
         }
-        public JsPropertyGetDefinition GetterMethod
-        {
-            get;
-            set;
-        }
-        public JsPropertySetDefinition SetterMethod
-        {
-            get;
-            set;
-        }
+        public JsPropertyGetDefinition GetterMethod { get; set; }
+        public JsPropertySetDefinition SetterMethod { get; set; }
         public bool IsIndexer { get; set; }
     }
 
@@ -284,32 +238,36 @@ namespace Espresso
     public class JsMethodDefinition : JsTypeMemberDefinition
     {
 
-        JsMethodCallDel methodCallDel;
-        System.Reflection.MethodInfo method;
-        System.Reflection.ParameterInfo[] parameterInfoList;
-        System.Type methodReturnType;
-        bool isReturnTypeVoid;
+        JsMethodCallDel _methodCallDel;
+        System.Reflection.MethodInfo _method;
+        System.Reflection.ParameterInfo[] _parameterInfoList;
+        System.Type _methodReturnType;
+        bool _isReturnTypeVoid;
 
         public JsMethodDefinition(string methodName, JsMethodCallDel methodCallDel)
             : base(methodName, JsMemberKind.Method)
         {
-            this.methodCallDel = methodCallDel;
+            _methodCallDel = methodCallDel;
         }
 
         public JsMethodDefinition(string methodName, System.Reflection.MethodInfo method)
             : base(methodName, JsMemberKind.Method)
         {
-            this.method = method;
+            _method = method;
             //analyze expected arg type
             //and conversion plan
-            this.parameterInfoList = method.GetParameters();
-            this.methodReturnType = method.ReturnType;
-            this.isReturnTypeVoid = this.methodReturnType == typeof(void);
+            _parameterInfoList = method.GetParameters();
+            _methodReturnType = method.ReturnType;
+            _isReturnTypeVoid = _methodReturnType == typeof(void);
         }
+
+        internal System.Reflection.ParameterInfo[] Parameters => _parameterInfoList;
+        internal System.Reflection.MethodInfo MethodInfo => _method;
+        internal JsMethodCallDel JsMetDelegate => _methodCallDel;
 
         public void InvokeMethod(ManagedMethodArgs args)
         {
-            if (method != null)
+            if (_method != null)
             {
                 //invoke method
 
@@ -318,7 +276,7 @@ namespace Espresso
                 //actual input arg count
                 int actualArgCount = args.ArgCount;
                 //prepare parameters
-                int expectedParameterCount = parameterInfoList.Length;
+                int expectedParameterCount = _parameterInfoList.Length;
                 object[] parameters = new object[expectedParameterCount];
 
                 //TODO: review here
@@ -335,7 +293,7 @@ namespace Espresso
                         //check if the target need delegate
                         var func = (JsFunction)arg;
                         //create delegate for a specific target type***
-                        parameters[i] = func.MakeDelegate(parameterInfoList[i].ParameterType);
+                        parameters[i] = func.MakeDelegate(_parameterInfoList[i].ParameterType);
                     }
                     else
                     {
@@ -344,9 +302,9 @@ namespace Espresso
                 }
 
                 //send to .net 
-                object result = this.method.Invoke(thisArg, parameters);
+                object result = _method.Invoke(thisArg, parameters);
 
-                if (isReturnTypeVoid)
+                if (_isReturnTypeVoid)
                 {
                     //set to undefine because of void
                     args.SetResultUndefined();
@@ -358,14 +316,12 @@ namespace Espresso
             }
             else
             {
-                methodCallDel(args);
+                _methodCallDel(args);
             }
         }
 
 
-        internal System.Reflection.ParameterInfo[] Parameters { get { return parameterInfoList; } }
-        internal System.Reflection.MethodInfo MethodInfo { get { return method; } }
-        internal JsMethodCallDel JsMetDelegate { get { return methodCallDel; } }
+
 
 #if DEBUG
         public override string ToString()
@@ -385,91 +341,86 @@ namespace Espresso
 
     public struct ManagedMethodArgs
     {
-        IntPtr metArgsPtr;
-        JsContext context;
+        IntPtr _metArgsPtr;
+        JsContext _context;
         public ManagedMethodArgs(JsContext context, IntPtr metArgsPtr)
         {
-            this.context = context;
-            this.metArgsPtr = metArgsPtr;
+            _context = context;
+            _metArgsPtr = metArgsPtr;
         }
-        public int ArgCount
-        {
-            get
-            {
-                return NativeV8JsInterOp.ArgCount(this.metArgsPtr);
-            }
-        }
+        public int ArgCount => NativeV8JsInterOp.ArgCount(_metArgsPtr);
+
         public object GetThisArg()
         {
             JsValue output = new JsValue();
-            NativeV8JsInterOp.ArgGetThis(this.metArgsPtr, ref output);
-            return this.context.Converter.FromJsValue(ref output);
+            NativeV8JsInterOp.ArgGetThis(_metArgsPtr, ref output);
+            return _context.Converter.FromJsValue(ref output);
         }
         public object GetArgAsObject(int index)
         {
             JsValue output = new JsValue();
-            NativeV8JsInterOp.ArgGetObject(this.metArgsPtr, index, ref output);
-            return this.context.Converter.FromJsValue(ref output);
+            NativeV8JsInterOp.ArgGetObject(_metArgsPtr, index, ref output);
+            return _context.Converter.FromJsValue(ref output);
         }
         //--------------------------------------------------------------------
         public void SetResult(bool value)
         {
-            NativeV8JsInterOp.ResultSetBool(metArgsPtr, value);
+            NativeV8JsInterOp.ResultSetBool(_metArgsPtr, value);
         }
         public void SetResult(int value)
         {
-            NativeV8JsInterOp.ResultSetInt32(metArgsPtr, value);
+            NativeV8JsInterOp.ResultSetInt32(_metArgsPtr, value);
         }
         public void SetResult(string value)
         {
-            NativeV8JsInterOp.ResultSetString(metArgsPtr, value);
+            NativeV8JsInterOp.ResultSetString(_metArgsPtr, value);
         }
         public void SetResult(double value)
         {
-            NativeV8JsInterOp.ResultSetDouble(metArgsPtr, value);
+            NativeV8JsInterOp.ResultSetDouble(_metArgsPtr, value);
         }
         public void SetResult(float value)
         {
-            NativeV8JsInterOp.ResultSetFloat(metArgsPtr, value);
+            NativeV8JsInterOp.ResultSetFloat(_metArgsPtr, value);
         }
         public void SetResultNull()
         {
-            NativeV8JsInterOp.ResultSetJsNull(metArgsPtr);
+            NativeV8JsInterOp.ResultSetJsNull(_metArgsPtr);
         }
         public void SetResultUndefined()
         {
             //TODO: review here again
-            NativeV8JsInterOp.ResultSetJsVoid(metArgsPtr);
+            NativeV8JsInterOp.ResultSetJsVoid(_metArgsPtr);
         }
         public void SetResultObj(object result)
         {
             JsValue output = new JsValue();
-            this.context.Converter.AnyToJsValue(result, ref output);
-            NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
+            _context.Converter.AnyToJsValue(result, ref output);
+            NativeV8JsInterOp.ResultSetValue(_metArgsPtr, ref output);
         }
 
         public void SetResultObj(object result, JsTypeDefinition jsTypeDef)
         {
             if (!jsTypeDef.IsRegisterd)
             {
-                this.context.RegisterTypeDefinition(jsTypeDef);
+                _context.RegisterTypeDefinition(jsTypeDef);
             }
 
-            INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
+            INativeScriptable proxy = _context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter.ToJsValue(proxy, ref output);
-            NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
+            _context.Converter.ToJsValue(proxy, ref output);
+            NativeV8JsInterOp.ResultSetValue(_metArgsPtr, ref output);
         }
         public void SetResultAutoWrap<T>(T result)
             where T : class, new()
         {
 
             Type actualType = result.GetType();
-            JsTypeDefinition jsTypeDef = this.context.GetJsTypeDefinition(actualType);
-            INativeScriptable proxy = this.context.CreateWrapper(result, jsTypeDef);
+            JsTypeDefinition jsTypeDef = _context.GetJsTypeDefinition(actualType);
+            INativeScriptable proxy = _context.CreateWrapper(result, jsTypeDef);
             JsValue output = new JsValue();
-            this.context.Converter.ToJsValue(proxy, ref output);
-            NativeV8JsInterOp.ResultSetValue(metArgsPtr, ref output);
+            _context.Converter.ToJsValue(proxy, ref output);
+            NativeV8JsInterOp.ResultSetValue(_metArgsPtr, ref output);
 
         }
 

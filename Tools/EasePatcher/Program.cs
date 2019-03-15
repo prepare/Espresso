@@ -1,4 +1,4 @@
-﻿//MIT, 2017, EngineKit
+﻿//MIT, 2017-present,WinterDev, EngineKit
 using System;
 using System.IO;
 
@@ -81,8 +81,8 @@ namespace EasePatcher
             //
             Console.Write("original_node_srcdir: " + original_node_srcdir + " ->");
 
-            string[] files= Directory.GetFiles(espresso_srcdir);
- 
+            string[] files = Directory.GetFiles(espresso_srcdir);
+
             if (!Directory.Exists(original_node_srcdir))
             {
                 Console.WriteLine(" NOT FOUND! ");

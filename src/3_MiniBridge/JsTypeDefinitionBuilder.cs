@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +19,6 @@ namespace Espresso
     class DefaultJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {
 
-
-
         /// <summary>
         /// group of overload method that has the same arg count
         /// </summary>
@@ -31,8 +29,8 @@ namespace Espresso
             readonly int _argCount;
             public SameArgMethodList(int argCount, JsMethodDefinition onlyOneMember)
             {
-                this._argCount = argCount;
-                this._onlyOneMember = onlyOneMember;
+                _argCount = argCount;
+                _onlyOneMember = onlyOneMember;
             }
             public void AddMore(JsMethodDefinition anotherMethod)
             {
@@ -96,7 +94,7 @@ namespace Espresso
                     JsMethodDefinition met = _members[m];
                     int convScore = 0;
 
-                    for (int argNo = this._argCount - 1; argNo >= 0; --argNo)
+                    for (int argNo = _argCount - 1; argNo >= 0; --argNo)
                     {
                         //pick one arg
                         Type inputArgType = inputArgTypes[argNo];

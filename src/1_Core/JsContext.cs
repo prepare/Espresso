@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 // This file is part of the VroomJs library.
 //
@@ -61,7 +61,8 @@ namespace Espresso
         readonly JsConvert _convert;
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
-        // 
+        bool _disposed;
+
         internal JsContext(int id,
             JsEngine engine,
             Action<int> notifyDispose,
@@ -83,7 +84,7 @@ namespace Espresso
             _context = new HandleRef(this, nativeJsContext);
             _convert = new JsConvert(this);
 
-            this._jsTypeDefBuilder = jsTypeDefBuilder;
+            _jsTypeDefBuilder = jsTypeDefBuilder;
 
             _engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
             NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, _engineMethodCallbackDel);
@@ -92,16 +93,10 @@ namespace Espresso
             _proxyStore = new NativeObjectProxyStore(this);
         }
 
-        internal INativeRef GetObjectProxy(int index)
-        {
-            return this._proxyStore.GetProxyObject(index);
-        }
+        internal INativeRef GetObjectProxy(int index) => _proxyStore.GetProxyObject(index);
 
+        internal JsConvert Converter => _convert;
 
-        internal JsConvert Converter
-        {
-            get { return this._convert; }
-        }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
         {
 
@@ -167,14 +162,11 @@ namespace Espresso
                     break;
             }
         }
-        public JsEngine Engine
-        {
-            get { return _engine; }
-        }
-        public HandleRef NativeContextHandle
-        {
-            get { return _context; }
-        }
+
+        public JsEngine Engine => _engine;
+
+        public HandleRef NativeContextHandle => _context;
+
         public JsEngineStats GetStats()
         {
             return new JsEngineStats
@@ -363,33 +355,15 @@ namespace Espresso
             this.SetVariableFromAny(name, del);
         }
 
-        public void Flush()
-        {
-            jscontext_force_gc();
-        }
+        public void Flush() => jscontext_force_gc();
 
-        internal int KeepAliveAdd(object obj)
-        {
-            return _keepalives.Register(obj);
-        }
+        internal int KeepAliveAdd(object obj) => _keepalives.Register(obj);
 
-        internal object KeepAliveGet(int slot)
-        {
-            return _keepalives.Get(slot);
-        }
+        internal object KeepAliveGet(int slot) => _keepalives.Get(slot);
 
-        internal void KeepAliveRemove(int slot)
-        {
-            _keepalives.Remove(slot);
-        }
+        internal void KeepAliveRemove(int slot) => _keepalives.Remove(slot);
 
-
-
-        bool _disposed;
-        public bool IsDisposed
-        {
-            get { return _disposed; }
-        }
+        public bool IsDisposed => _disposed;
 
         public void Dispose()
         {
@@ -931,13 +905,13 @@ namespace Espresso
         {
 
             JsTypeDefinition found;
-            if (this._mappingJsTypeDefinition.TryGetValue(actualType, out found))
+            if (_mappingJsTypeDefinition.TryGetValue(actualType, out found))
                 return found;
 
             //if not found
             //just create it
-            found = this._jsTypeDefBuilder.BuildTypeDefinition(actualType);
-            this._mappingJsTypeDefinition.Add(actualType, found);
+            found = _jsTypeDefBuilder.BuildTypeDefinition(actualType);
+            _mappingJsTypeDefinition.Add(actualType, found);
             this.RegisterTypeDefinition(found);
 
             return found;
@@ -945,11 +919,11 @@ namespace Espresso
 
         internal bool GetCacheDelegateForType(Type anotherDelegateType, out DelegateTemplate delSample)
         {
-            return this._cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
+            return _cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
         }
         internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
         {
-            this._cachedDelSamples[anotherDelegateType] = delegateType;
+            _cachedDelSamples[anotherDelegateType] = delegateType;
         }
         //---------------------------------------------------------------------------------------- 
 

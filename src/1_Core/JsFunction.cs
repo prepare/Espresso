@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 //MIT, 2013, Federico Di Gregorio <fog@initd.org>
 
 using System;
@@ -34,8 +34,7 @@ namespace Espresso
         }
         public object Invoke(params object[] args)
         {
-            object result = _context.Invoke(_funcPtr, _thisPtr, args);
-            return result;
+            return _context.Invoke(_funcPtr, _thisPtr, args);
         }
         public Delegate MakeDelegate(Type targetDelegateType)
         {
@@ -43,7 +42,7 @@ namespace Espresso
             //if not found then create a new one  
 
             DelegateTemplate foundTemplate;
-            if (this._context.GetCacheDelegateForType(targetDelegateType, out foundTemplate))
+            if (_context.GetCacheDelegateForType(targetDelegateType, out foundTemplate))
             {
                 //found sample
                 //the create new holder from sample template
@@ -156,21 +155,19 @@ namespace Espresso
                 delHolderType,
                 Activator.CreateInstance(delHolderType) as DelegateHolder);
             //cache 
-            this._context.CacheDelegateForType(targetDelegateType, newTemplate);
+            _context.CacheDelegateForType(targetDelegateType, newTemplate);
 
             //new delegate created from sample
             return newTemplate.CreateNewDelegate(targetDelegateType, this);
 
         }
-         
-
-        
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        } 
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -178,10 +175,10 @@ namespace Espresso
 
             _disposed = true;
 
-            _context.Engine.DisposeObject(this._funcPtr);
+            _context.Engine.DisposeObject(_funcPtr);
             if (_thisPtr != IntPtr.Zero)
             {
-                _context.Engine.DisposeObject(this._thisPtr);
+                _context.Engine.DisposeObject(_thisPtr);
             }
         }
 

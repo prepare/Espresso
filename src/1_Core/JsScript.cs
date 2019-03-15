@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 //MIT, 2013, Federico Di Gregorio <fog@initd.org>
 using System;
 using System.Runtime.InteropServices;
@@ -7,12 +7,12 @@ namespace Espresso
 {
     public class JsScript : IDisposable
     {
-     
+
         readonly int _id;
         readonly JsEngine _engine;
         readonly HandleRef _script;
         readonly Action<int> _notifyDispose;
-
+        bool _disposed;
         internal JsScript(int id, JsEngine engine, HandleRef engineHandle, JsConvert convert, string code, string name, Action<int> notifyDispose)
         {
             _id = id;
@@ -31,21 +31,11 @@ namespace Espresso
             }
         }
 
-        internal JsEngine Engine
-        {
-            get { return _engine; }
-        }
-        internal HandleRef Handle
-        {
-            get { return _script; }
-        }
+        internal JsEngine Engine => _engine;
 
+        internal HandleRef Handle => _script;
 
-        bool _disposed;
-        public bool IsDisposed
-        {
-            get { return _disposed; }
-        }
+        public bool IsDisposed => _disposed;
 
         public void Dispose()
         {
