@@ -60,7 +60,7 @@ namespace Espresso
     class FuncDelegateHolder<TResult> : DelegateHolder
     {
 
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<TResult>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<TResult>>();
 
         public TResult Invoke()
         {
@@ -72,12 +72,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class FuncDelegateHolder<T, TResult> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T, TResult>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T, TResult>>();
 
         public TResult Invoke(T arg)
         {
@@ -89,12 +89,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class FuncDelegateHolder<T1, T2, TResult> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, TResult>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, TResult>>();
 
         public TResult Invoke(T1 arg1, T2 arg2)
         {
@@ -106,12 +106,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class FuncDelegateHolder<T1, T2, T3, TResult> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, T3, TResult>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, T3, TResult>>();
         public TResult Invoke(T1 arg1, T2 arg2, T3 arg3)
         {
             return (TResult)this.jsFunc.Invoke(arg1, arg2, arg3);
@@ -122,12 +122,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class FuncDelegateHolder<T1, T2, T3, T4, TResult> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, T3, T4, TResult>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<FuncDelegateHolder<T1, T2, T3, T4, TResult>>();
 
         public TResult Invoke(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
@@ -139,14 +139,14 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
 
 
     class ActionDelegateHolder : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder>();
         public void Invoke()
         {
             this.jsFunc.Invoke(new object[0]);
@@ -157,13 +157,13 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
 
     }
     class ActionDelegateHolder<T> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T>>();
         public void Invoke(T arg)
         {
             this.jsFunc.Invoke(arg);
@@ -174,12 +174,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class ActionDelegateHolder<T1, T2> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2>>();
         public void Invoke(T1 arg1, T2 arg2)
         {
             this.jsFunc.Invoke(arg1, arg2);
@@ -190,13 +190,13 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
 
     class ActionDelegateHolder<T1, T2, T3> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2, T3>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2, T3>>();
         public void Invoke(T1 arg1, T2 arg2, T3 arg3)
         {
             this.jsFunc.Invoke(arg1, arg2, arg3);
@@ -207,12 +207,12 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
     class ActionDelegateHolder<T1, T2, T3, T4> : DelegateHolder
     {
-        static MethodInfo invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2, T3, T4>>();
+        static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder<T1, T2, T3, T4>>();
         public void Invoke(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
             this.jsFunc.Invoke(arg1, arg2, arg3, arg4);
@@ -223,7 +223,7 @@ namespace Espresso
         }
         public override MethodInfo InvokeMethodInfo
         {
-            get { return invokeMethodInfo; }
+            get { return s_invokeMethodInfo; }
         }
     }
 

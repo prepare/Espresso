@@ -25,9 +25,8 @@ namespace Espresso
         int _currentContextId = 0;
         int _currentScriptId = 0;
         readonly HandleRef _engine;//native js engine 
-        JsTypeDefinitionBuilder defaultTypeBuilder;
-
-
+        JsTypeDefinitionBuilder _defaultTypeBuilder; 
+        bool _disposed;
 
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
@@ -50,7 +49,7 @@ namespace Espresso
                 _keepalive_enumerate_properties,
                 maxYoungSpace,
                 maxOldSpace));
-            this.defaultTypeBuilder = defaultTypeBuilder;
+            this._defaultTypeBuilder = defaultTypeBuilder;
         }
         public JsEngine(IntPtr nativeJsEnginePtr)
             : this(nativeJsEnginePtr, new DefaultJsTypeDefinitionBuilder())
@@ -81,7 +80,7 @@ namespace Espresso
                 _keepalive_enumerate_properties
                 );
             _engine = new HandleRef(this, nativeJsEnginePtr);
-            this.defaultTypeBuilder = defaultTypeBuilder;
+            this._defaultTypeBuilder = defaultTypeBuilder;
         }
         public JsEngine(int maxYoungSpace, int maxOldSpace)
            : this(new DefaultJsTypeDefinitionBuilder(), maxYoungSpace, maxOldSpace)
@@ -206,7 +205,7 @@ namespace Espresso
             CheckDisposed();
             //
             int newContextId = Interlocked.Increment(ref _currentContextId);
-            JsContext ctx = new JsContext(newContextId, this, ContextDisposed, this.defaultTypeBuilder);
+            JsContext ctx = new JsContext(newContextId, this, ContextDisposed, this._defaultTypeBuilder);
 
             _aliveContexts.Add(newContextId, ctx);
             return ctx;
@@ -216,7 +215,7 @@ namespace Espresso
             CheckDisposed();
             //
             int id = Interlocked.Increment(ref _currentContextId);
-            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this.defaultTypeBuilder);
+            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, this._defaultTypeBuilder);
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
@@ -257,7 +256,7 @@ namespace Espresso
         }
 
         //-------------------------------------------------
-        bool _disposed;
+       
 
         public bool IsDisposed
         {

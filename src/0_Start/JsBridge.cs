@@ -17,10 +17,9 @@ namespace Espresso
         {
             NativeV8JsInterOp.V8Init();
         }
-        public static int LibVersion
-        {
-            get { return getVersion(); }
-        }
+
+        public static int LibVersion => getVersion();
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern int getVersion();

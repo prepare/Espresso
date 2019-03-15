@@ -42,18 +42,18 @@ namespace Espresso
 
         readonly int _id;
         readonly JsEngine _engine;
-        readonly ManagedMethodCallDel engineMethodCallbackDel;
+        readonly ManagedMethodCallDel _engineMethodCallbackDel;
         readonly HandleRef _context; //native js context
         readonly Action<int> _notifyDispose;
 
-        List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
-        List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
+        List<JsMethodDefinition> _registerMethods = new List<JsMethodDefinition>();
+        List<JsPropertyDefinition> _registerProperties = new List<JsPropertyDefinition>();
 
-        Dictionary<Type, JsTypeDefinition> mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
-        Dictionary<Type, DelegateTemplate> cachedDelSamples = new Dictionary<Type, DelegateTemplate>();
+        Dictionary<Type, JsTypeDefinition> _mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
+        Dictionary<Type, DelegateTemplate> _cachedDelSamples = new Dictionary<Type, DelegateTemplate>();
 
-        NativeObjectProxyStore proxyStore;
-        JsTypeDefinitionBuilder jsTypeDefBuilder;
+        NativeObjectProxyStore _proxyStore;
+        JsTypeDefinitionBuilder _jsTypeDefBuilder;
 
         /// <summary>
         /// converter object for this context
@@ -83,18 +83,18 @@ namespace Espresso
             _context = new HandleRef(this, nativeJsContext);
             _convert = new JsConvert(this);
 
-            this.jsTypeDefBuilder = jsTypeDefBuilder;
+            this._jsTypeDefBuilder = jsTypeDefBuilder;
 
-            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
-            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
-            registerMethods.Add(null);//first is null
-            registerProperties.Add(null); //first is null 
-            proxyStore = new NativeObjectProxyStore(this);
+            _engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
+            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, _engineMethodCallbackDel);
+            _registerMethods.Add(null);//first is null
+            _registerProperties.Add(null); //first is null 
+            _proxyStore = new NativeObjectProxyStore(this);
         }
 
         internal INativeRef GetObjectProxy(int index)
         {
-            return this.proxyStore.GetProxyObject(index);
+            return this._proxyStore.GetProxyObject(index);
         }
 
 
@@ -110,8 +110,8 @@ namespace Espresso
             for (int i = 0; i < j; ++i)
             {
                 JsMethodDefinition met = methods[i];
-                met.SetMemberId(registerMethods.Count);
-                registerMethods.Add(met);
+                met.SetMemberId(_registerMethods.Count);
+                _registerMethods.Add(met);
             }
 
             List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
@@ -119,8 +119,8 @@ namespace Espresso
             for (int i = 0; i < j; ++i)
             {
                 JsPropertyDefinition p = properties[i];
-                p.SetMemberId(registerProperties.Count);
-                registerProperties.Add(p);
+                p.SetMemberId(_registerProperties.Count);
+                _registerProperties.Add(p);
             }
 
         }
@@ -134,7 +134,7 @@ namespace Espresso
                         //property get        
                         if (mIndex == 0) return;
                         //------------------------------------------
-                        JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
+                        JsMethodDefinition getterMethod = _registerProperties[mIndex].GetterMethod;
 
                         if (getterMethod != null)
                         {
@@ -148,7 +148,7 @@ namespace Espresso
                         //property set
                         if (mIndex == 0) return;
                         //------------------------------------------
-                        JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
+                        JsMethodDefinition setterMethod = _registerProperties[mIndex].SetterMethod;
                         if (setterMethod != null)
                         {
                             setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
@@ -158,7 +158,7 @@ namespace Espresso
                 default:
                     {
                         if (mIndex == 0) return;
-                        JsMethodDefinition foundMet = registerMethods[mIndex];
+                        JsMethodDefinition foundMet = _registerMethods[mIndex];
                         if (foundMet != null)
                         {
                             foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
@@ -920,24 +920,24 @@ namespace Espresso
         }
         public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
-            return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
+            return _proxyStore.CreateProxyForObject(o, jsTypeDefinition);
         }
         public void RegisterTypeDefinition(JsTypeDefinition jsTypeDefinition)
         {
-            proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
+            _proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
         //---------------------------------------------------------------------------------------- 
         public JsTypeDefinition GetJsTypeDefinition(Type actualType)
         {
 
             JsTypeDefinition found;
-            if (this.mappingJsTypeDefinition.TryGetValue(actualType, out found))
+            if (this._mappingJsTypeDefinition.TryGetValue(actualType, out found))
                 return found;
 
             //if not found
             //just create it
-            found = this.jsTypeDefBuilder.BuildTypeDefinition(actualType);
-            this.mappingJsTypeDefinition.Add(actualType, found);
+            found = this._jsTypeDefBuilder.BuildTypeDefinition(actualType);
+            this._mappingJsTypeDefinition.Add(actualType, found);
             this.RegisterTypeDefinition(found);
 
             return found;
@@ -945,11 +945,11 @@ namespace Espresso
 
         internal bool GetCacheDelegateForType(Type anotherDelegateType, out DelegateTemplate delSample)
         {
-            return this.cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
+            return this._cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
         }
         internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
         {
-            this.cachedDelSamples[anotherDelegateType] = delegateType;
+            this._cachedDelSamples[anotherDelegateType] = delegateType;
         }
         //---------------------------------------------------------------------------------------- 
 

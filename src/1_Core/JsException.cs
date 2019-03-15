@@ -33,6 +33,11 @@ namespace Espresso
 
     public class JsException : Exception
     {
+        protected string _type;
+        protected string _resource;
+        protected int _line;
+        protected int _column;
+        readonly JsObject _nativeException;
 
         internal static JsException Create(JsConvert convert, IntPtr nativeErrorObject)
         {
@@ -88,7 +93,6 @@ namespace Espresso
             _nativeException = nativeException;
         }
 
-        readonly JsObject _nativeException;
 
         public JsObject NativeException
         {
@@ -96,16 +100,16 @@ namespace Espresso
         }
 
 
-        protected string _type;
+
         public string Type { get { return _type; } }
 
-        protected string _resource;
+
         public string Resource { get { return _resource; } }
 
-        protected int _line;
+
         public int Line { get { return _line; } }
 
-        protected int _column;
+
         public int Column { get { return _column; } }
     }
 

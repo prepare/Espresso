@@ -90,7 +90,7 @@ namespace Espresso
         }
         public IntPtr UnmanagedTypeDefinitionPtr
         {
-            get { return this.jsTypeDef.nativeProxy.UnmanagedPtr; }
+            get { return this.jsTypeDef._nativeProxy.UnmanagedPtr; }
         }
     }
 
@@ -132,7 +132,7 @@ namespace Espresso
 
             var proxyObject = new NativeRef(nativeRefList.Count, jsTypeDefinition);
             //store data this side too
-            jsTypeDefinition.nativeProxy = proxyObject;
+            jsTypeDefinition._nativeProxy = proxyObject;
             //store in exported list
             nativeRefList.Add(proxyObject);
             //register type definition
@@ -284,7 +284,7 @@ namespace Espresso
         public static unsafe void RegisterTypeDef(JsContext context, JsTypeDefinition jsTypeDefinition)
         {
 
-            INativeRef proxObject = jsTypeDefinition.nativeProxy;
+            INativeRef proxObject = jsTypeDefinition._nativeProxy;
             byte[] finalBuffer = null;
             using (MemoryStream ms = new MemoryStream())
             {

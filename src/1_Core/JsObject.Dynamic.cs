@@ -31,18 +31,18 @@ namespace Espresso
     public class DynamicObject
     {
         //member cache
-        Dictionary<string, object> members = new Dictionary<string, object>();
+        Dictionary<string, object> _members = new Dictionary<string, object>();
         public object this[string name]
         {
             get
             {
                 object foundMember;
-                if (!members.TryGetValue(name, out foundMember))
+                if (!_members.TryGetValue(name, out foundMember))
                 {
                     if (this.TryGetMember(name, out foundMember))
                     {
                         //found
-                        members[name] = foundMember;
+                        _members[name] = foundMember;
                         return foundMember;
                     }
                     return null;
@@ -76,7 +76,7 @@ namespace Espresso
     {
         readonly JsContext _context;
         readonly IntPtr _handle;
-
+        bool _disposed;
         public JsObject(JsContext context, IntPtr ptr)
         {
             if (ptr == IntPtr.Zero)
@@ -116,7 +116,7 @@ namespace Espresso
 
 
 
-        bool _disposed;
+        
 
         public void Dispose()
         {

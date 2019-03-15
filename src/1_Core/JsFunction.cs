@@ -10,15 +10,15 @@ namespace Espresso
         readonly JsContext _context;
         readonly IntPtr _funcPtr;
         readonly IntPtr _thisPtr;
-
-        static MethodInfo myInvokeMethodInfo;
+        bool _disposed;
+        static MethodInfo s_myInvokeMethodInfo;
 
         static JsFunction()
         {
 #if NET20
-            myInvokeMethodInfo = typeof(JsFunction).GetMethod("Invoke");
+            s_myInvokeMethodInfo = typeof(JsFunction).GetMethod("Invoke");
 #else
-            myInvokeMethodInfo = typeof(JsFunction).GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
+            s_myInvokeMethodInfo = typeof(JsFunction).GetRuntimeMethod("Invoke", null);//.GetMethod("Invoke");
 #endif
         }
         public JsFunction(JsContext context, IntPtr funcPtr, IntPtr thisPtr)
@@ -164,7 +164,7 @@ namespace Espresso
         }
          
 
-        bool _disposed;
+        
 
         public void Dispose()
         {

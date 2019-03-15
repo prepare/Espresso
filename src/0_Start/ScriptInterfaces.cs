@@ -9,21 +9,21 @@ namespace Espresso
 
     public abstract class JsTypeMemberDefinition
     {
-        string mbname;
-        JsMemberKind memberKind;
-        JsTypeDefinition owner;
-        int memberId;
-        internal INativeRef nativeProxy;
+        string _mbname;
+        JsMemberKind _memberKind;
+        JsTypeDefinition _owner;
+        int _memberId;
+        internal INativeRef _nativeProxy;
         public JsTypeMemberDefinition(string mbname, JsMemberKind memberKind)
         {
-            this.mbname = mbname;
-            this.memberKind = memberKind;
+            this._mbname = mbname;
+            this._memberKind = memberKind;
         }
         public bool IsRegisterd
         {
             get
             {
-                return this.nativeProxy != null;
+                return this._nativeProxy != null;
             }
         }
 
@@ -31,19 +31,19 @@ namespace Espresso
         {
             get
             {
-                return this.mbname;
+                return this._mbname;
             }
         }
         public JsMemberKind MemberKind
         {
             get
             {
-                return this.memberKind;
+                return this._memberKind;
             }
         }
         public void SetOwner(JsTypeDefinition owner)
         {
-            this.owner = owner;
+            this._owner = owner;
         }
         protected static void WriteUtf16String(string str, BinaryWriter writer)
         {
@@ -56,12 +56,12 @@ namespace Espresso
         {
             get
             {
-                return this.memberId;
+                return this._memberId;
             }
         }
         public void SetMemberId(int memberId)
         {
-            this.memberId = memberId;
+            this._memberId = memberId;
         }
 
     }
@@ -318,7 +318,7 @@ namespace Espresso
                 //actual input arg count
                 int actualArgCount = args.ArgCount;
                 //prepare parameters
-                int expectedParameterCount = parameterInfoList.Length; 
+                int expectedParameterCount = parameterInfoList.Length;
                 object[] parameters = new object[expectedParameterCount];
 
                 //TODO: review here
