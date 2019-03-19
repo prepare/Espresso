@@ -68,7 +68,7 @@ namespace EasePatcher
             {
                 case PatcherOS.Windows:
                     //x64
-                    config_pars = " x86 release nosign nobuild"; //default build .
+                    config_pars = " x86 release nobuild full-icu download-all"; //default build .
                     //x86                     
                     break;
                 case PatcherOS.Mac:
