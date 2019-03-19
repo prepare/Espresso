@@ -1,4 +1,4 @@
-//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 // This file is part of the VroomJs library.
 //
@@ -33,6 +33,11 @@ namespace Espresso
 
     public class JsException : Exception
     {
+        string _type;
+        string _resource;
+        int _line;
+        int _column;
+        readonly JsObject _nativeException;
 
         internal static JsException Create(JsConvert convert, IntPtr nativeErrorObject)
         {
@@ -88,25 +93,15 @@ namespace Espresso
             _nativeException = nativeException;
         }
 
-        readonly JsObject _nativeException;
+        public JsObject NativeException => _nativeException;
 
-        public JsObject NativeException
-        {
-            get { return _nativeException; }
-        }
+        public string Type => _type;
 
+        public string Resource => _resource;
 
-        protected string _type;
-        public string Type { get { return _type; } }
+        public int Line => _line;
 
-        protected string _resource;
-        public string Resource { get { return _resource; } }
-
-        protected int _line;
-        public int Line { get { return _line; } }
-
-        protected int _column;
-        public int Column { get { return _column; } }
+        public int Column => _column;
     }
 
     public class JsSyntaxError : JsException

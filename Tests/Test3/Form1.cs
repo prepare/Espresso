@@ -6,7 +6,7 @@ using System.Drawing;
 
 using System.Text;
 using System.Windows.Forms;
-using Espresso; 
+using Espresso;
 
 namespace Test3
 {
@@ -83,14 +83,9 @@ namespace Test3
 
         class TestMe1
         {
-            public int B()
-            {
-                return 100;
-            }
-            public bool C()
-            {
-                return true;
-            }
+            public int B() => 100;
+
+            public bool C() => true;
         }
 
         delegate object AboutMeEventHandler(object[] args);
@@ -98,52 +93,38 @@ namespace Test3
         [JsType]
         class AboutMe
         {
-            AboutMeEventHandler mousedownEventHandler;
+            AboutMeEventHandler _mousedownEventHandler;
 
             [JsMethod]
-            public int Test1()
-            {
-                return 123;
-            }
+            public int Test1() => 123;
 
             [JsMethod]
-            public string Test2(string text)
-            {
-                return "hello " + text;
-            }
+            public string Test2(string text) => "hello " + text;
+
             [JsProperty]
-            public bool IsOK
-            {
-                get
-                {
-                    return true;
-                }
-            }
-            public bool GetOK()
-            {
-                return true;
-            }
+            public bool IsOK => true;
+
+            public bool GetOK() => true;
+
             [JsMethod]
-            public AboutMe NewAboutMe()
-            {
-                return new AboutMe();
-            }
+            public AboutMe NewAboutMe() => new AboutMe();
+
             [JsMethod]
             public void AttachEvent(string eventName, AboutMeEventHandler evHandler)
             {
-                this.mousedownEventHandler = evHandler;
+                this._mousedownEventHandler = evHandler;
             }
             [JsMethod]
             public void FireEventMouseDown(object eventArg)
             {
-                if (mousedownEventHandler != null)
+                if (_mousedownEventHandler != null)
                 {
                     //JsFunction func = mousedownEventHandler.Target as JsFunction;
                     //func.Invoke(eventArg);
                     //SimpleDelegate simpleDel = mousedownEventHandler as SimpleDelegate;
                     //simpleDel(new object[] { eventArg }); 
                     //mousedownEventHandler(new object[] { eventArg });
-                    mousedownEventHandler(new object[] { null, eventArg });
+                    _mousedownEventHandler(new object[] { null, eventArg });
                     //mousedownEventHandler(this, eventArg);
                 }
             }
@@ -519,6 +500,10 @@ namespace Test3
             //test esprima package
             //------------------------
 
+            //update latest esprima from https://unpkg.com/esprima@4.0.1/dist/esprima.js
+            //(search google with 'Using Esprima in a web browser')
+
+
             string esprima_code = File.ReadAllText("../../Samples/js_tools/esprima/esprima.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(esprima_code);
@@ -579,7 +564,7 @@ namespace Test3
                 stwatch.Reset();
                 stwatch.Start();
 
-                var my_expr_ext = new EspressoHostForTsc_21();
+                var my_expr_ext = new EspressoHostForTsc_2_1();
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
@@ -605,7 +590,7 @@ namespace Test3
 
 
         [JsType]
-        class EspressoHostForTsc_21
+        class EspressoHostForTsc_2_1
         {
             //-------------------------------------
             //function getEspressoSystem()
@@ -767,7 +752,6 @@ namespace Test3
             {
                 return false;
             }
-            [JsMethod]
             public bool FolderExists(string folderName)
             {
                 return false;
@@ -929,12 +913,16 @@ namespace Test3
 
         private void button12_Click(object sender, EventArgs e)
         {
+            //see how to build tsc.js at https://github.com/Microsoft/TypeScript
+            //or https://raw.githubusercontent.com/Microsoft/TypeScript/master/lib/tsc.js
+
+
             //very basic ***
             //-----------------
             //test tsc.js
             //this needs EspressoHostForTsc 
             //-----------------
-            string tsc_esprCode = File.ReadAllText("../../Samples/js_tools/tsc2_5/tsc_espr.js");
+            string tsc_esprCode = File.ReadAllText("../../Samples/js_tools/tsc3_3/tsc_espr.js");
             StringBuilder stbuilder = new StringBuilder();
             stbuilder.Append(tsc_esprCode);
             //-----------------
@@ -952,20 +940,20 @@ namespace Test3
                 stwatch.Reset();
                 stwatch.Start();
 
-                var my_expr_ext = new EspressoHostForTsc_25();
+                var my_expr_ext = new EspressoHostForTsc_3_3();
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
                        
                         // test1: general  compile through commamd line
-                        // ts.executeCommandLine(['greeter.ts']);
+                        //ts.executeCommandLine(['greeter.ts']);
                         //-------------------------------------------------
                         // test 2: generate ast 
-                        var filename=""greeter.ts"";  //example only
-                        my_expr_ext.ConsoleLog(filename);
+                        var filename='greeter.ts';  //example only
+                        //my_expr_ext.ConsoleLog(filename);
                         //parse
                         const sourceFile = ts.createSourceFile(filename,
-                        my_expr_ext.readFile(filename),2, false);
+                        my_expr_ext.readFile(filename),3,'.ts');
                         //send output as json to managed host
                         my_expr_ext.ConsoleLog(JSON.stringify( sourceFile));
                     })()";
@@ -978,7 +966,7 @@ namespace Test3
         }
 
         [JsType]
-        class EspressoHostForTsc_25
+        class EspressoHostForTsc_2_5
         {
             //function getEspressoSystem()
             //{
@@ -1007,8 +995,8 @@ namespace Test3
             //    getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
             //    getDirectories: my_expr_ext.getDirectories,
             //     getEnvironmentVariable: function(vname){
-			//		return my_expr_ext.getEnvironmentVariable(vname);
-			//	},
+            //		return my_expr_ext.getEnvironmentVariable(vname);
+            //	},
             //    readDirectory: function(path, extensions, excludes, includes, _depth) {
             //            var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
             //            return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
@@ -1062,9 +1050,6 @@ namespace Test3
                     return "";
                 }
             }
-
-
-
             [JsMethod]
             public string readFile(string filename)
             {
@@ -1196,6 +1181,242 @@ namespace Test3
                     return null;
                 }
             }
+
+        }
+
+
+        [JsType]
+        class EspressoHostForTsc_3_3
+        {
+
+            ////------------------------------------
+            ////#espresso #1
+            ////this is our Espresso Script Host
+            ////------------------------------------
+            //function getEspressoSystem()
+            //{
+            //    //my_expr_ext.ConsoleLog("test");
+            //    var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
+            //    return {
+            //    newLine: my_expr_ext.newLine || "\r\n",
+            //        args: my_expr_ext.GetArgs(),
+            //        useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
+            //        write: my_expr_ext.ConsoleLog,
+            //        readFile: function(path, _encoding) {
+            //            return my_expr_ext.readFile(path);
+            //        },
+            //        writeFile: function(path, data, writeByteOrderMark) {
+            //            if (writeByteOrderMark)
+            //            {
+            //                data = "\uFEFF" + data;
+            //            }
+            //            my_expr_ext.writeFile(path, data);
+            //        },
+            //    resolvePath: my_expr_ext.resolvePath,
+            //    fileExists: my_expr_ext.fileExists,
+            //    directoryExists: my_expr_ext.folderExists,
+            //    createDirectory: my_expr_ext.createFolder,
+            //    getExecutingFilePath: function() { return my_expr_ext.executingFile; },
+            //    getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
+            //    getDirectories: my_expr_ext.getDirectories,
+            //    getEnvironmentVariable: function(vname){
+            //            return my_expr_ext.getEnvironmentVariable(vname);
+            //        },
+            //    readDirectory: function(path, extensions, excludes, includes, _depth) {
+            //            var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
+            //            return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
+            //        },
+            //    exit: my_expr_ext.quit,
+            //    realpath: realpath
+            //    };
+            //}
+            ////------------------------------------
+
+            [JsMethod]
+            public string[] readDirectory(string path, string extensions, string basePaths, string excludePattern, string includeFilePattern, string includeDirectoryPattern)
+            {
+                //TODO: impl here
+                return new string[0];
+            }
+            [JsMethod]
+            public string getEnvironmentVariable(string varname)
+            {
+                return "";//test
+            }
+            [JsMethod]
+            public string realPath(string relativePath)
+            {
+                return relativePath;
+            }
+            [JsMethod]
+            public string resolvePath(string relativePath)
+            {
+                return relativePath;
+            }
+            [JsProperty]
+            public string newLine
+            {
+                get
+                {
+                    return "\r\n";
+                }
+            }
+            [JsProperty]
+            public bool useCaseSensitiveFileNames
+            {
+                get
+                {
+                    return true;
+                }
+            }
+            [JsProperty]
+            public string executingFile
+            {
+                get
+                {
+                    return "";
+                }
+            }
+            [JsMethod]
+            public string readFile(string filename)
+            {
+                //string sampleFileContent1 = @"function greeter(person) {
+                //                           return ""Hello, "" + person;
+                //                     }
+                //                     var user = ""Jane User"";
+                //                     document.body.innerHTML = greeter(user);";
+
+                //if (filename == "greeter.ts")
+                //{
+                string sampleFileContent2 =
+                    @"
+                        class Student {
+                            fullName: string;
+                            constructor(public firstName, public middleInitial, public lastName) {
+                                this.fullName = firstName + "" "" + middleInitial + "" "" + lastName;
+                            }
+                         }
+
+                        interface Person
+                        {
+                            firstName: string;
+                            lastName: string;
+                        }
+
+                        function greeter(person : Person)
+                        {
+                            return ""Hello, "" + person.firstName + "" "" + person.lastName;
+                        }
+
+                        var user = new Student(""Jane"", ""M."",""User"");
+                        document.body.innerHTML = greeter(user);
+                    ";
+                return sampleFileContent2;
+                //}
+                //else
+                //{
+                //    return "";
+                //}
+            }
+            [JsMethod]
+            public void writeFile(string filename, string data)
+            {
+                Console.WriteLine("req: write " + filename);
+                Console.WriteLine("");
+                Console.WriteLine("=== compiler output===");
+                Console.WriteLine("");
+                Console.WriteLine(data);
+                Console.WriteLine("");
+                Console.WriteLine("======");
+                Console.WriteLine("");
+            }
+            [JsMethod]
+            public string getDirectories(string path)
+            {
+                //get directory
+                return "";
+            }
+            [JsMethod]
+            public string GetAccessibleFileSystemEntries(string path)
+            {
+                //return { files: files, directories: directories };
+                //        return JSON.parse(my_expr_ext.GetAccessibleFileSystemEntries(path));
+                //get directory
+
+                return "";
+            }
+            [JsMethod]
+            public string GetCurrentDir()
+            {
+                return ".";
+            }
+            [JsMethod]
+            public bool fileExists(string filename)
+            {
+                return false;
+            }
+            [JsMethod]
+            public bool directoryExists(string folderName)
+            {
+                return false;
+            }
+            [JsMethod]
+            public string GetScriptFullName()
+            {
+                return "hello1.ts";
+            }
+            [JsMethod]
+            public void createFolder(string directoryName)
+            {
+
+            }
+            [JsMethod]
+            public void quit(int exitCode)
+            {
+                Console.WriteLine("quit:" + exitCode);
+            }
+
+
+            [JsMethod]
+            public string GetArgs()
+            {
+                //return json string
+                return "a";
+            }
+
+
+            [JsMethod]
+            public void ConsoleWrite(string msg)
+            {
+                Console.WriteLine("console write :" + msg);
+            }
+            [JsMethod]
+            public void ConsoleLog(object o)
+            {
+                Console.WriteLine("console write :" + o.ToString());
+            }
+            [JsMethod]
+            public object Require(string module)
+            {
+                //for require()
+                if (module == "fs")
+                {
+                    return this;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            [JsMethod]
+            public void deleteFile(string folderName)
+            {
+
+            }
+
+            //deleteFile: my_expr_ext.deleteFile,
+            //    getModifiedTime: my_expr_ext.getModifiedTime,
+            //    setModifiedTime: my_expr_ext.setModifiedTime,  
 
         }
     }

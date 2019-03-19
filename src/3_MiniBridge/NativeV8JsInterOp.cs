@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 using System;
 using System.Collections.Generic;
@@ -25,54 +25,30 @@ namespace Espresso
         /// <summary>
         /// managed obj
         /// </summary>
-        object wrapObject;
+        readonly object _wrapObject;
         /// <summary>
         /// manged side indeex
         /// </summary>
-        int mIndex;
+        readonly int _mIndex;
         /// <summary>
         /// unmanaged side 
         /// </summary>
-        IntPtr unmanagedObjectPtr;
+        IntPtr _unmanagedObjectPtr;
 
         public NativeRef(int mIndex, object wrapObject)
         {
-            this.mIndex = mIndex;
-            this.wrapObject = wrapObject;
+            _mIndex = mIndex;
+            _wrapObject = wrapObject;
         }
-        public int ManagedIndex
-        {
-            get
-            {
-                return this.mIndex;
-            }
-        }
-        public object WrapObject
-        {
-            get
-            {
-                return this.wrapObject;
-            }
-        }
+        public int ManagedIndex => _mIndex;
 
-        public bool HasNativeSide
-        {
-            get
-            {
-                return this.unmanagedObjectPtr != IntPtr.Zero;
-            }
-        }
-        public void SetUnmanagedPtr(IntPtr unmanagedObjectPtr)
-        {
-            this.unmanagedObjectPtr = unmanagedObjectPtr;
-        }
-        public IntPtr UnmanagedPtr
-        {
-            get
-            {
-                return this.unmanagedObjectPtr;
-            }
-        }
+        public object WrapObject => _wrapObject;
+
+        public bool HasNativeSide => _unmanagedObjectPtr != IntPtr.Zero;
+
+        public void SetUnmanagedPtr(IntPtr unmanagedObjectPtr) => _unmanagedObjectPtr = unmanagedObjectPtr;
+
+        public IntPtr UnmanagedPtr => _unmanagedObjectPtr;
 
     }
 
@@ -82,77 +58,68 @@ namespace Espresso
     /// </summary>
     class NativeJsInstanceProxy : NativeRef, INativeScriptable
     {
-        JsTypeDefinition jsTypeDef;
+        JsTypeDefinition _jsTypeDef;
         public NativeJsInstanceProxy(int mIndex, object wrapObject, JsTypeDefinition jsTypeDef)
             : base(mIndex, wrapObject)
         {
-            this.jsTypeDef = jsTypeDef;
+            _jsTypeDef = jsTypeDef;
         }
-        public IntPtr UnmanagedTypeDefinitionPtr
-        {
-            get { return this.jsTypeDef.nativeProxy.UnmanagedPtr; }
-        }
+        public IntPtr UnmanagedTypeDefinitionPtr => _jsTypeDef._nativeProxy.UnmanagedPtr;
     }
 
     class NativeObjectProxyStore
     {
-        List<INativeRef> nativeRefList = new List<INativeRef>();
-        JsContext ownerContext;
+        List<INativeRef> _nativeRefList = new List<INativeRef>();
+        JsContext _ownerContext;
 
-        Dictionary<object, NativeJsInstanceProxy> createdWrappers = new Dictionary<object, NativeJsInstanceProxy>();
+        Dictionary<object, NativeJsInstanceProxy> _createdWrappers = new Dictionary<object, NativeJsInstanceProxy>();
 
         public NativeObjectProxyStore(JsContext ownerContext)
         {
-            this.ownerContext = ownerContext;
+            _ownerContext = ownerContext;
         }
-
-
         public NativeJsInstanceProxy CreateProxyForObject(object o, JsTypeDefinition jsTypeDefinition)
         {
             NativeJsInstanceProxy found;
-            if (this.createdWrappers.TryGetValue(o, out found))
+            if (_createdWrappers.TryGetValue(o, out found))
             {
                 return found;
             }
 
             var proxyObject = new NativeJsInstanceProxy(
-                nativeRefList.Count,
+                _nativeRefList.Count,
                 o,
                 jsTypeDefinition);
 
-            nativeRefList.Add(proxyObject);
-            this.createdWrappers.Add(o, proxyObject);
+            _nativeRefList.Add(proxyObject);
+            _createdWrappers.Add(o, proxyObject);
 
             //register
-            NativeV8JsInterOp.CreateNativePart(ownerContext, proxyObject);
+            NativeV8JsInterOp.CreateNativePart(_ownerContext, proxyObject);
             return proxyObject;
         }
         public INativeRef CreateProxyForTypeDefinition(JsTypeDefinition jsTypeDefinition)
         {
 
-            var proxyObject = new NativeRef(nativeRefList.Count, jsTypeDefinition);
+            var proxyObject = new NativeRef(_nativeRefList.Count, jsTypeDefinition);
             //store data this side too
-            jsTypeDefinition.nativeProxy = proxyObject;
+            jsTypeDefinition._nativeProxy = proxyObject;
             //store in exported list
-            nativeRefList.Add(proxyObject);
+            _nativeRefList.Add(proxyObject);
             //register type definition
-            NativeV8JsInterOp.RegisterTypeDef(ownerContext, jsTypeDefinition);
+            NativeV8JsInterOp.RegisterTypeDef(_ownerContext, jsTypeDefinition);
             return proxyObject;
         }
         public void Dispose()
         {
-
-            int j = nativeRefList.Count;
-            for (int i = nativeRefList.Count - 1; i > -1; --i)
+            int j = _nativeRefList.Count;
+            for (int i = _nativeRefList.Count - 1; i > -1; --i)
             {
-                NativeV8JsInterOp.UnRegisterNativePart(nativeRefList[i]);
+                NativeV8JsInterOp.UnRegisterNativePart(_nativeRefList[i]);
             }
-            nativeRefList.Clear();
+            _nativeRefList.Clear();
         }
-        public INativeRef GetProxyObject(int index)
-        {
-            return this.nativeRefList[index];
-        }
+        public INativeRef GetProxyObject(int index) => _nativeRefList[index];
     }
 
 
@@ -167,7 +134,7 @@ namespace Espresso
     {
         //basic 
 
-        static ManagedListenerDel engineListenerDel;
+        static ManagedListenerDel s_engineListenerDel;
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -248,7 +215,7 @@ namespace Espresso
         static NativeV8JsInterOp()
         {
             //prepare 
-            engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
+            s_engineListenerDel = new ManagedListenerDel(EngineListener_Listen);
 
         }
 
@@ -273,7 +240,7 @@ namespace Espresso
             //------------------
             //built in listener
             //------------------
-            NativeV8JsInterOp.RegisterManagedListener(engineListenerDel);
+            NativeV8JsInterOp.RegisterManagedListener(s_engineListenerDel);
 
         }
         static void EngineListener_Listen(int mIndex, string methodName, IntPtr args)
@@ -284,7 +251,7 @@ namespace Espresso
         public static unsafe void RegisterTypeDef(JsContext context, JsTypeDefinition jsTypeDefinition)
         {
 
-            INativeRef proxObject = jsTypeDefinition.nativeProxy;
+            INativeRef proxObject = jsTypeDefinition._nativeProxy;
             byte[] finalBuffer = null;
             using (MemoryStream ms = new MemoryStream())
             {

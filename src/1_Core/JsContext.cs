@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 // This file is part of the VroomJs library.
 //
@@ -42,18 +42,18 @@ namespace Espresso
 
         readonly int _id;
         readonly JsEngine _engine;
-        readonly ManagedMethodCallDel engineMethodCallbackDel;
+        readonly ManagedMethodCallDel _engineMethodCallbackDel;
         readonly HandleRef _context; //native js context
         readonly Action<int> _notifyDispose;
 
-        List<JsMethodDefinition> registerMethods = new List<JsMethodDefinition>();
-        List<JsPropertyDefinition> registerProperties = new List<JsPropertyDefinition>();
+        List<JsMethodDefinition> _registerMethods = new List<JsMethodDefinition>();
+        List<JsPropertyDefinition> _registerProperties = new List<JsPropertyDefinition>();
 
-        Dictionary<Type, JsTypeDefinition> mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
-        Dictionary<Type, DelegateTemplate> cachedDelSamples = new Dictionary<Type, DelegateTemplate>();
+        Dictionary<Type, JsTypeDefinition> _mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
+        Dictionary<Type, DelegateTemplate> _cachedDelSamples = new Dictionary<Type, DelegateTemplate>();
 
-        NativeObjectProxyStore proxyStore;
-        JsTypeDefinitionBuilder jsTypeDefBuilder;
+        NativeObjectProxyStore _proxyStore;
+        JsTypeDefinitionBuilder _jsTypeDefBuilder;
 
         /// <summary>
         /// converter object for this context
@@ -61,7 +61,8 @@ namespace Espresso
         readonly JsConvert _convert;
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
-        // 
+        bool _disposed;
+
         internal JsContext(int id,
             JsEngine engine,
             Action<int> notifyDispose,
@@ -83,25 +84,19 @@ namespace Espresso
             _context = new HandleRef(this, nativeJsContext);
             _convert = new JsConvert(this);
 
-            this.jsTypeDefBuilder = jsTypeDefBuilder;
+            _jsTypeDefBuilder = jsTypeDefBuilder;
 
-            engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
-            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, engineMethodCallbackDel);
-            registerMethods.Add(null);//first is null
-            registerProperties.Add(null); //first is null 
-            proxyStore = new NativeObjectProxyStore(this);
+            _engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
+            NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, _engineMethodCallbackDel);
+            _registerMethods.Add(null);//first is null
+            _registerProperties.Add(null); //first is null 
+            _proxyStore = new NativeObjectProxyStore(this);
         }
 
-        internal INativeRef GetObjectProxy(int index)
-        {
-            return this.proxyStore.GetProxyObject(index);
-        }
+        internal INativeRef GetObjectProxy(int index) => _proxyStore.GetProxyObject(index);
 
+        internal JsConvert Converter => _convert;
 
-        internal JsConvert Converter
-        {
-            get { return this._convert; }
-        }
         internal void CollectionTypeMembers(JsTypeDefinition jsTypeDefinition)
         {
 
@@ -110,8 +105,8 @@ namespace Espresso
             for (int i = 0; i < j; ++i)
             {
                 JsMethodDefinition met = methods[i];
-                met.SetMemberId(registerMethods.Count);
-                registerMethods.Add(met);
+                met.SetMemberId(_registerMethods.Count);
+                _registerMethods.Add(met);
             }
 
             List<JsPropertyDefinition> properties = jsTypeDefinition.GetProperties();
@@ -119,8 +114,8 @@ namespace Espresso
             for (int i = 0; i < j; ++i)
             {
                 JsPropertyDefinition p = properties[i];
-                p.SetMemberId(registerProperties.Count);
-                registerProperties.Add(p);
+                p.SetMemberId(_registerProperties.Count);
+                _registerProperties.Add(p);
             }
 
         }
@@ -134,7 +129,7 @@ namespace Espresso
                         //property get        
                         if (mIndex == 0) return;
                         //------------------------------------------
-                        JsMethodDefinition getterMethod = registerProperties[mIndex].GetterMethod;
+                        JsMethodDefinition getterMethod = _registerProperties[mIndex].GetterMethod;
 
                         if (getterMethod != null)
                         {
@@ -148,7 +143,7 @@ namespace Espresso
                         //property set
                         if (mIndex == 0) return;
                         //------------------------------------------
-                        JsMethodDefinition setterMethod = registerProperties[mIndex].SetterMethod;
+                        JsMethodDefinition setterMethod = _registerProperties[mIndex].SetterMethod;
                         if (setterMethod != null)
                         {
                             setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
@@ -158,7 +153,7 @@ namespace Espresso
                 default:
                     {
                         if (mIndex == 0) return;
-                        JsMethodDefinition foundMet = registerMethods[mIndex];
+                        JsMethodDefinition foundMet = _registerMethods[mIndex];
                         if (foundMet != null)
                         {
                             foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
@@ -167,14 +162,11 @@ namespace Espresso
                     break;
             }
         }
-        public JsEngine Engine
-        {
-            get { return _engine; }
-        }
-        public HandleRef NativeContextHandle
-        {
-            get { return _context; }
-        }
+
+        public JsEngine Engine => _engine;
+
+        public HandleRef NativeContextHandle => _context;
+
         public JsEngineStats GetStats()
         {
             return new JsEngineStats
@@ -363,33 +355,15 @@ namespace Espresso
             this.SetVariableFromAny(name, del);
         }
 
-        public void Flush()
-        {
-            jscontext_force_gc();
-        }
+        public void Flush() => jscontext_force_gc();
 
-        internal int KeepAliveAdd(object obj)
-        {
-            return _keepalives.Register(obj);
-        }
+        internal int KeepAliveAdd(object obj) => _keepalives.Register(obj);
 
-        internal object KeepAliveGet(int slot)
-        {
-            return _keepalives.Get(slot);
-        }
+        internal object KeepAliveGet(int slot) => _keepalives.Get(slot);
 
-        internal void KeepAliveRemove(int slot)
-        {
-            _keepalives.Remove(slot);
-        }
+        internal void KeepAliveRemove(int slot) => _keepalives.Remove(slot);
 
-
-
-        bool _disposed;
-        public bool IsDisposed
-        {
-            get { return _disposed; }
-        }
+        public bool IsDisposed => _disposed;
 
         public void Dispose()
         {
@@ -920,24 +894,24 @@ namespace Espresso
         }
         public INativeScriptable CreateWrapper(object o, JsTypeDefinition jsTypeDefinition)
         {
-            return proxyStore.CreateProxyForObject(o, jsTypeDefinition);
+            return _proxyStore.CreateProxyForObject(o, jsTypeDefinition);
         }
         public void RegisterTypeDefinition(JsTypeDefinition jsTypeDefinition)
         {
-            proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
+            _proxyStore.CreateProxyForTypeDefinition(jsTypeDefinition);
         }
         //---------------------------------------------------------------------------------------- 
         public JsTypeDefinition GetJsTypeDefinition(Type actualType)
         {
 
             JsTypeDefinition found;
-            if (this.mappingJsTypeDefinition.TryGetValue(actualType, out found))
+            if (_mappingJsTypeDefinition.TryGetValue(actualType, out found))
                 return found;
 
             //if not found
             //just create it
-            found = this.jsTypeDefBuilder.BuildTypeDefinition(actualType);
-            this.mappingJsTypeDefinition.Add(actualType, found);
+            found = _jsTypeDefBuilder.BuildTypeDefinition(actualType);
+            _mappingJsTypeDefinition.Add(actualType, found);
             this.RegisterTypeDefinition(found);
 
             return found;
@@ -945,11 +919,11 @@ namespace Espresso
 
         internal bool GetCacheDelegateForType(Type anotherDelegateType, out DelegateTemplate delSample)
         {
-            return this.cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
+            return _cachedDelSamples.TryGetValue(anotherDelegateType, out delSample);
         }
         internal void CacheDelegateForType(Type anotherDelegateType, DelegateTemplate delegateType)
         {
-            this.cachedDelSamples[anotherDelegateType] = delegateType;
+            _cachedDelSamples[anotherDelegateType] = delegateType;
         }
         //---------------------------------------------------------------------------------------- 
 

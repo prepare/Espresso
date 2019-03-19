@@ -42,8 +42,6 @@ namespace Espresso
         {
             Type = type;
             MethodName = name;
-        }
-
-       
+        } 
     }
 }

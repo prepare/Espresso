@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 namespace TestEspressoCore
 {
@@ -21,7 +20,7 @@ namespace TestEspressoCore
                 testDictionary.Add(t.Choice, t);
             }
 
-            AGAIN:
+        AGAIN:
             //----------------------------------------------
             Menu(testList);
             Console.WriteLine("");

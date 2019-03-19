@@ -1,4 +1,4 @@
-﻿//MIT, 2017, EngineKit
+﻿//MIT, 2017-present,WinterDev, EngineKit
 using System;
 using System.IO;
 
@@ -68,7 +68,7 @@ namespace EasePatcher
             {
                 case PatcherOS.Windows:
                     //x64
-                    config_pars = " x86 release nosign nobuild"; //default build .
+                    config_pars = " x86 release nobuild full-icu download-all"; //default build .
                     //x86                     
                     break;
                 case PatcherOS.Mac:
@@ -81,8 +81,8 @@ namespace EasePatcher
             //
             Console.Write("original_node_srcdir: " + original_node_srcdir + " ->");
 
-            string[] files= Directory.GetFiles(espresso_srcdir);
- 
+            string[] files = Directory.GetFiles(espresso_srcdir);
+
             if (!Directory.Exists(original_node_srcdir))
             {
                 Console.WriteLine(" NOT FOUND! ");

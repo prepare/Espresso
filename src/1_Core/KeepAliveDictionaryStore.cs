@@ -33,20 +33,11 @@ namespace Espresso
         Dictionary<int, object> _store = new Dictionary<int, object>();
         int _store_index = 1;
 
-        public int MaxSlots
-        {
-            get { return Int32.MaxValue; }
-        }
+        public int MaxSlots => Int32.MaxValue;
 
-        public int AllocatedSlots
-        {
-            get { return _store.Count; }
-        }
+        public int AllocatedSlots => _store.Count;
 
-        public int UsedSlots
-        {
-            get { return _store.Count; }
-        }
+        public int UsedSlots => _store.Count;
 
         public int Register(object obj)
         {

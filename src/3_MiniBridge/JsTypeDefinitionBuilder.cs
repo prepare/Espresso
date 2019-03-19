@@ -1,4 +1,4 @@
-﻿//MIT, 2015-2017, WinterDev, EngineKit, brezza92
+﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 using System;
 using System.Collections.Generic;
@@ -19,30 +19,28 @@ namespace Espresso
     class DefaultJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {
 
-
-
         /// <summary>
         /// group of overload method that has the same arg count
         /// </summary>
         class SameArgMethodList
         {
-            JsMethodDefinition onlyOneMember;
-            List<JsMethodDefinition> members;
-            readonly int argCount;
+            JsMethodDefinition _onlyOneMember;
+            List<JsMethodDefinition> _members;
+            readonly int _argCount;
             public SameArgMethodList(int argCount, JsMethodDefinition onlyOneMember)
             {
-                this.argCount = argCount;
-                this.onlyOneMember = onlyOneMember;
+                _argCount = argCount;
+                _onlyOneMember = onlyOneMember;
             }
             public void AddMore(JsMethodDefinition anotherMethod)
             {
-                if (members == null)
+                if (_members == null)
                 {
-                    members = new List<JsMethodDefinition>();
-                    members.Add(onlyOneMember);
-                    onlyOneMember = null;
+                    _members = new List<JsMethodDefinition>();
+                    _members.Add(_onlyOneMember);
+                    _onlyOneMember = null;
                 }
-                members.Add(anotherMethod);
+                _members.Add(anotherMethod);
             }
 
             static int CalculateTypeDepth(Type testType, Type baseType)
@@ -75,9 +73,9 @@ namespace Espresso
             }
             public JsMethodDefinition SelectBestMethod(Type[] inputArgTypes)
             {
-                if (onlyOneMember != null)
+                if (_onlyOneMember != null)
                 {
-                    return onlyOneMember;
+                    return _onlyOneMember;
                 }
                 //------------------------------               
                 //TODO: check performance here 
@@ -85,7 +83,7 @@ namespace Espresso
                 //-----------------------------
                 //best fit? 
 
-                int memberCount = members.Count;
+                int memberCount = _members.Count;
                 int[] bestScores = new int[memberCount];
                 int maxBestScore = -1;
                 int candidateMaxIndex = 0;
@@ -93,10 +91,10 @@ namespace Espresso
 
                 for (int m = memberCount - 1; m >= 0; --m)
                 {
-                    JsMethodDefinition met = members[m];
+                    JsMethodDefinition met = _members[m];
                     int convScore = 0;
 
-                    for (int argNo = this.argCount - 1; argNo >= 0; --argNo)
+                    for (int argNo = _argCount - 1; argNo >= 0; --argNo)
                     {
                         //pick one arg
                         Type inputArgType = inputArgTypes[argNo];
@@ -150,7 +148,7 @@ namespace Espresso
                 }
                 if (hasOnly1Candidate)
                 {
-                    return members[candidateMaxIndex];
+                    return _members[candidateMaxIndex];
                 }
                 //TODO: review ...
 
@@ -161,7 +159,7 @@ namespace Espresso
                 {
                     if (bestScores[i] == maxBestScore)
                     {
-                        candidateMethods[n] = members[i];
+                        candidateMethods[n] = _members[i];
                         n++;
                     }
                 }

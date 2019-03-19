@@ -1,4 +1,4 @@
-﻿//MIT, 2017, EngineKit
+﻿//MIT, 2017-present,WinterDev, EngineKit
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -177,8 +177,8 @@ namespace EasePatcher
         {
             _buildState = BuildState.Zero;
             _initBuildParameters = initBuildParameters;
-            this._original_node_src_dir = original_node_src_dir;
-            this._espresso_src = espresso_src;
+            _original_node_src_dir = original_node_src_dir;
+            _espresso_src = espresso_src;
         }
         public bool ConfigHasSomeErrs
         {
@@ -302,7 +302,7 @@ namespace EasePatcher
                         //found insertion point 
                         add_impl_files = true;
 
-                        int impl_count = this._newCppImplFiles.Count;
+                        int impl_count = _newCppImplFiles.Count;
                         for (int m = 0; m < impl_count; ++m)
                         {
                             allLines.Insert(i + 2 + m, "<ClCompile Include=\"" + _newCppImplFiles[m] + "\" />");
@@ -312,7 +312,7 @@ namespace EasePatcher
                     else if (!add_header_files && line.StartsWith("<ClInclude"))
                     {
                         add_header_files = true;
-                        int header_count = this._newHeaderFiles.Count;
+                        int header_count = _newHeaderFiles.Count;
                         for (int m = 0; m < header_count; ++m)
                         {
                             allLines.Insert(i + 2 + m, "<ClInclude Include=\"" + _newHeaderFiles[m] + "\" />");
@@ -344,9 +344,9 @@ namespace EasePatcher
         public void Setup(string original_node_src, string espresso_src, string initBuildParameters = "")
         {
             _buildState = BuildState.Zero;
-            this._init_build_pars = initBuildParameters;
-            this._original_node_src_dir = original_node_src;
-            this._espresso_src = espresso_src;
+            _init_build_pars = initBuildParameters;
+            _original_node_src_dir = original_node_src;
+            _espresso_src = espresso_src;
         }
         public void PatchGyp(SimpleAction nextAction)
         {
