@@ -106,6 +106,7 @@ namespace EasePatcher
                 {
                     default:
                         break;
+                    case ".js":
                     case ".h":
                     case ".cpp":
                     case ".cc":
