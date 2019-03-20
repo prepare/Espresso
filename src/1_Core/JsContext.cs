@@ -266,6 +266,7 @@ namespace Espresso
             }
             catch (Exception ex)
             {
+                Console.WriteLine("exec_err:" + ex.Message);
             }
             finally
             {
