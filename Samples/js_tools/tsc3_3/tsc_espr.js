@@ -2582,10 +2582,10 @@ var ts;
 				my_expr_ext.ConsoleLog("test");
                 var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
                 return {
-                    newLine: my_expr_ext.newLine || "\r\n",
-                    args: my_expr_ext.GetArgs(),
+                    newLine: my_expr_ext.newLine || "\r\n", 
+					args: my_expr_ext.args,
                     useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
-                    write: my_expr_ext.ConsoleLog,
+                    write: function(s){ my_expr_ext.ConsoleLog(s);},
                     readFile: function(path, _encoding) {
                         return my_expr_ext.readFile(path);
                     },
@@ -2599,7 +2599,7 @@ var ts;
                 resolvePath: my_expr_ext.resolvePath,
                 fileExists: my_expr_ext.fileExists,
 				deleteFile: my_expr_ext.deleteFile, 
-                directoryExists: my_expr_ext.directoryExists,
+                directoryExists: function(dirname){my_expr_ext.directoryExists(dirname);},
                 createDirectory: my_expr_ext.createFolder,
                 getExecutingFilePath: function() { return my_expr_ext.executingFile; },
                 getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
@@ -2611,7 +2611,7 @@ var ts;
                         var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
                         return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
                     },
-                exit: my_expr_ext.quit,
+                exit: function(exitcode){my_expr_ext.quit(exitcode);},
                 realpath: realpath
                 };
         }	 

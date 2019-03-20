@@ -944,7 +944,27 @@ namespace Test3
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
-                       
+        
+                        var cache = []; //from https://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json
+                        function json_custom_replacer(key, value){ 
+                            if (typeof value === 'object' && value !== null) {
+                                if (cache.indexOf(value) !== -1) {
+                                    // Duplicate reference found
+                                    try {
+                                        // If this value does not reference a parent it can be deduped
+                                        return JSON.parse(JSON.stringify(value));
+                                    } catch (error) {
+                                        // discard key if value cannot be deduped
+                                        return;
+                                    }
+                                }
+                                // Store value in our collection
+                                cache.push(value);
+                            }
+                            return value;
+                        }
+
+
                         // test1: general  compile through commamd line
                         //ts.executeCommandLine(['greeter.ts']);
                         //-------------------------------------------------
@@ -955,8 +975,13 @@ namespace Test3
                         const sourceFile = ts.createSourceFile(filename,
                         my_expr_ext.readFile(filename),3,'.ts');
                         //send output as json to managed host
-                        my_expr_ext.ConsoleLog(JSON.stringify( sourceFile));
+                        my_expr_ext.ConsoleLog(JSON.stringify(sourceFile,json_custom_replacer));
                     })()";
+                //string testsrc = @"(function(){
+
+
+                //    })()";
+
                 stbuilder.Append(testsrc);
                 ctx.Execute(stbuilder.ToString());
 
@@ -1189,48 +1214,49 @@ namespace Test3
         class EspressoHostForTsc_3_3
         {
 
-            ////------------------------------------
-            ////#espresso #1
-            ////this is our Espresso Script Host
-            ////------------------------------------
-            //function getEspressoSystem()
-            //{
-            //    //my_expr_ext.ConsoleLog("test");
-            //    var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
-            //    return {
-            //    newLine: my_expr_ext.newLine || "\r\n",
-            //        args: my_expr_ext.GetArgs(),
-            //        useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
-            //        write: my_expr_ext.ConsoleLog,
-            //        readFile: function(path, _encoding) {
-            //            return my_expr_ext.readFile(path);
-            //        },
-            //        writeFile: function(path, data, writeByteOrderMark) {
-            //            if (writeByteOrderMark)
-            //            {
-            //                data = "\uFEFF" + data;
-            //            }
-            //            my_expr_ext.writeFile(path, data);
-            //        },
-            //    resolvePath: my_expr_ext.resolvePath,
-            //    fileExists: my_expr_ext.fileExists,
-            //    directoryExists: my_expr_ext.folderExists,
-            //    createDirectory: my_expr_ext.createFolder,
-            //    getExecutingFilePath: function() { return my_expr_ext.executingFile; },
-            //    getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
-            //    getDirectories: my_expr_ext.getDirectories,
-            //    getEnvironmentVariable: function(vname){
-            //            return my_expr_ext.getEnvironmentVariable(vname);
-            //        },
-            //    readDirectory: function(path, extensions, excludes, includes, _depth) {
-            //            var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
-            //            return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
-            //        },
-            //    exit: my_expr_ext.quit,
-            //    realpath: realpath
-            //    };
-            //}
-            ////------------------------------------
+            //        //------------------------------------
+            //        //#espresso #1
+            //        //this is our Espresso Script Host
+            //        //------------------------------------
+            //        function getEspressoSystem()
+            //        {
+            //            my_expr_ext.ConsoleLog("test");
+            //            var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
+            //            return {
+            //            newLine: my_expr_ext.newLine || "\r\n", 
+            //	              args: my_expr_ext.args,
+            //                useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
+            //                write: function(s){ my_expr_ext.ConsoleLog(s); },
+            //                readFile: function(path, _encoding) {
+            //                    return my_expr_ext.readFile(path);
+            //                },
+            //                writeFile: function(path, data, writeByteOrderMark) {
+            //                    if (writeByteOrderMark)
+            //                    {
+            //                        data = "\uFEFF" + data;
+            //                    }
+            //                    my_expr_ext.writeFile(path, data);
+            //                },
+            //            resolvePath: my_expr_ext.resolvePath,
+            //            fileExists: my_expr_ext.fileExists,
+            //            deleteFile: my_expr_ext.deleteFile, 
+            //            directoryExists: function(dirname){ my_expr_ext.directoryExists(dirname); },
+            //            createDirectory: my_expr_ext.createFolder,
+            //            getExecutingFilePath: function() { return my_expr_ext.executingFile; },
+            //            getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
+            //            getDirectories: my_expr_ext.getDirectories,
+            //            getEnvironmentVariable: function(vname){
+            //                    return my_expr_ext.getEnvironmentVariable(vname);
+            //                },
+            //            readDirectory: function(path, extensions, excludes, includes, _depth) {
+            //                    var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
+            //                    return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
+            //                },
+            //            exit: function(exitcode){ my_expr_ext.quit(exitcode); },
+            //            realpath: realpath
+            //            };
+            //        }
+            //        //------------------------------------
 
             [JsMethod]
             public string[] readDirectory(string path, string extensions, string basePaths, string excludePattern, string includeFilePattern, string includeDirectoryPattern)
@@ -1280,15 +1306,24 @@ namespace Test3
             [JsMethod]
             public string readFile(string filename)
             {
+
                 //string sampleFileContent1 = @"function greeter(person) {
                 //                           return ""Hello, "" + person;
                 //                     }
                 //                     var user = ""Jane User"";
                 //                     document.body.innerHTML = greeter(user);";
-
-                //if (filename == "greeter.ts")
-                //{
-                string sampleFileContent2 =
+                if (filename == "lib.d.ts" || filename == "lib.es5.d.ts")
+                {
+                    //example
+                    if (File.Exists(filename))
+                    {
+                        return File.ReadAllText(filename);
+                    }
+                    return "";
+                }
+                else if (filename == "greeter.ts")
+                {
+                    string sampleFileContent2 =
                     @"
                         class Student {
                             fullName: string;
@@ -1311,12 +1346,12 @@ namespace Test3
                         var user = new Student(""Jane"", ""M."",""User"");
                         document.body.innerHTML = greeter(user);
                     ";
-                return sampleFileContent2;
-                //}
-                //else
-                //{
-                //    return "";
-                //}
+                    return sampleFileContent2;
+                }
+                else
+                {
+                    return "";
+                }
             }
             [JsMethod]
             public void writeFile(string filename, string data)
@@ -1376,12 +1411,13 @@ namespace Test3
                 Console.WriteLine("quit:" + exitCode);
             }
 
-
-            [JsMethod]
-            public string GetArgs()
+            [JsProperty]
+            public string args
             {
-                //return json string
-                return "a";
+                get
+                {
+                    return "a";
+                }
             }
 
 
