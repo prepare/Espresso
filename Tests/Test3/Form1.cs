@@ -1214,48 +1214,49 @@ namespace Test3
         class EspressoHostForTsc_3_3
         {
 
-            ////------------------------------------
-            ////#espresso #1
-            ////this is our Espresso Script Host
-            ////------------------------------------
-            //function getEspressoSystem()
-            //{
-            //    //my_expr_ext.ConsoleLog("test");
-            //    var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
-            //    return {
-            //    newLine: my_expr_ext.newLine || "\r\n",
-            //        args: my_expr_ext.GetArgs(),
-            //        useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
-            //        write: my_expr_ext.ConsoleLog,
-            //        readFile: function(path, _encoding) {
-            //            return my_expr_ext.readFile(path);
-            //        },
-            //        writeFile: function(path, data, writeByteOrderMark) {
-            //            if (writeByteOrderMark)
-            //            {
-            //                data = "\uFEFF" + data;
-            //            }
-            //            my_expr_ext.writeFile(path, data);
-            //        },
-            //    resolvePath: my_expr_ext.resolvePath,
-            //    fileExists: my_expr_ext.fileExists,
-            //    directoryExists: my_expr_ext.folderExists,
-            //    createDirectory: my_expr_ext.createFolder,
-            //    getExecutingFilePath: function() { return my_expr_ext.executingFile; },
-            //    getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
-            //    getDirectories: my_expr_ext.getDirectories,
-            //    getEnvironmentVariable: function(vname){
-            //            return my_expr_ext.getEnvironmentVariable(vname);
-            //        },
-            //    readDirectory: function(path, extensions, excludes, includes, _depth) {
-            //            var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
-            //            return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
-            //        },
-            //    exit: my_expr_ext.quit,
-            //    realpath: realpath
-            //    };
-            //}
-            ////------------------------------------
+            //        //------------------------------------
+            //        //#espresso #1
+            //        //this is our Espresso Script Host
+            //        //------------------------------------
+            //        function getEspressoSystem()
+            //        {
+            //            my_expr_ext.ConsoleLog("test");
+            //            var realpath = my_expr_ext.realpath && (function(path) { return my_expr_ext.realpath(path); });
+            //            return {
+            //            newLine: my_expr_ext.newLine || "\r\n", 
+            //	              args: my_expr_ext.args,
+            //                useCaseSensitiveFileNames: !!my_expr_ext.useCaseSensitiveFileNames,
+            //                write: function(s){ my_expr_ext.ConsoleLog(s); },
+            //                readFile: function(path, _encoding) {
+            //                    return my_expr_ext.readFile(path);
+            //                },
+            //                writeFile: function(path, data, writeByteOrderMark) {
+            //                    if (writeByteOrderMark)
+            //                    {
+            //                        data = "\uFEFF" + data;
+            //                    }
+            //                    my_expr_ext.writeFile(path, data);
+            //                },
+            //            resolvePath: my_expr_ext.resolvePath,
+            //            fileExists: my_expr_ext.fileExists,
+            //            deleteFile: my_expr_ext.deleteFile, 
+            //            directoryExists: function(dirname){ my_expr_ext.directoryExists(dirname); },
+            //            createDirectory: my_expr_ext.createFolder,
+            //            getExecutingFilePath: function() { return my_expr_ext.executingFile; },
+            //            getCurrentDirectory: function() { return my_expr_ext.GetCurrentDir(); },
+            //            getDirectories: my_expr_ext.getDirectories,
+            //            getEnvironmentVariable: function(vname){
+            //                    return my_expr_ext.getEnvironmentVariable(vname);
+            //                },
+            //            readDirectory: function(path, extensions, excludes, includes, _depth) {
+            //                    var pattern = ts.getFileMatcherPatterns(path, excludes, includes, !!my_expr_ext.useCaseSensitiveFileNames, my_expr_ext.GetCurrentDir());
+            //                    return my_expr_ext.readDirectory(path, extensions, pattern.basePaths, pattern.excludePattern, pattern.includeFilePattern, pattern.includeDirectoryPattern);
+            //                },
+            //            exit: function(exitcode){ my_expr_ext.quit(exitcode); },
+            //            realpath: realpath
+            //            };
+            //        }
+            //        //------------------------------------
 
             [JsMethod]
             public string[] readDirectory(string path, string extensions, string basePaths, string excludePattern, string includeFilePattern, string includeDirectoryPattern)
