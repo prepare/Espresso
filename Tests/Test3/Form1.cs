@@ -944,7 +944,27 @@ namespace Test3
                 ctx.SetVariableAutoWrap("my_expr_ext", my_expr_ext);
 
                 string testsrc = @"(function(){
-                       
+        
+                        var cache = []; //from https://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json
+                        function json_custom_replacer(key, value){ 
+                            if (typeof value === 'object' && value !== null) {
+                                if (cache.indexOf(value) !== -1) {
+                                    // Duplicate reference found
+                                    try {
+                                        // If this value does not reference a parent it can be deduped
+                                        return JSON.parse(JSON.stringify(value));
+                                    } catch (error) {
+                                        // discard key if value cannot be deduped
+                                        return;
+                                    }
+                                }
+                                // Store value in our collection
+                                cache.push(value);
+                            }
+                            return value;
+                        }
+
+
                         // test1: general  compile through commamd line
                         //ts.executeCommandLine(['greeter.ts']);
                         //-------------------------------------------------
@@ -955,8 +975,13 @@ namespace Test3
                         const sourceFile = ts.createSourceFile(filename,
                         my_expr_ext.readFile(filename),3,'.ts');
                         //send output as json to managed host
-                        my_expr_ext.ConsoleLog(JSON.stringify( sourceFile));
+                        my_expr_ext.ConsoleLog(JSON.stringify(sourceFile,json_custom_replacer));
                     })()";
+                //string testsrc = @"(function(){
+
+
+                //    })()";
+
                 stbuilder.Append(testsrc);
                 ctx.Execute(stbuilder.ToString());
 
@@ -1280,15 +1305,24 @@ namespace Test3
             [JsMethod]
             public string readFile(string filename)
             {
+
                 //string sampleFileContent1 = @"function greeter(person) {
                 //                           return ""Hello, "" + person;
                 //                     }
                 //                     var user = ""Jane User"";
                 //                     document.body.innerHTML = greeter(user);";
-
-                //if (filename == "greeter.ts")
-                //{
-                string sampleFileContent2 =
+                if (filename == "lib.d.ts" || filename == "lib.es5.d.ts")
+                {
+                    //example
+                    if (File.Exists(filename))
+                    {
+                        return File.ReadAllText(filename);
+                    }
+                    return "";
+                }
+                else if (filename == "greeter.ts")
+                {
+                    string sampleFileContent2 =
                     @"
                         class Student {
                             fullName: string;
@@ -1311,12 +1345,12 @@ namespace Test3
                         var user = new Student(""Jane"", ""M."",""User"");
                         document.body.innerHTML = greeter(user);
                     ";
-                return sampleFileContent2;
-                //}
-                //else
-                //{
-                //    return "";
-                //}
+                    return sampleFileContent2;
+                }
+                else
+                {
+                    return "";
+                }
             }
             [JsMethod]
             public void writeFile(string filename, string data)
@@ -1376,12 +1410,13 @@ namespace Test3
                 Console.WriteLine("quit:" + exitCode);
             }
 
-
-            [JsMethod]
-            public string GetArgs()
+            [JsProperty]
+            public string args
             {
-                //return json string
-                return "a";
+                get
+                {
+                    return "a";
+                }
             }
 
 
