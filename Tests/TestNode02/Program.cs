@@ -19,7 +19,7 @@ namespace TestNode01
             //we will get node.dll
             //then just copy it to another name 'libespr'   
             //string currentdir = System.IO.Directory.GetCurrentDirectory();
-            //string libEspr = @"../../../node-v10.15.3/Release/libespr.dll"; //previous version 8.4.0
+            string libEspr = @"../../../node-v10.15.3/Release/libespr.dll"; //previous version 8.4.0
             //if (File.Exists(libEspr))
             //{
             //    //delete the old one
@@ -32,11 +32,18 @@ namespace TestNode01
             //2. load libespr.dll (node.dll)
             //----------------------------------- 
 
-            string libEspr = "libespr.dll";
+            //string libEspr = "libespr.dll";
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
 
+
+            TestNodeVM_Example();
+
+            //TestSocketIO_ChatExample(); 
+        }
+        static void TestSocketIO_ChatExample()
+        {
             //change working dir to target app and run 
             //test with socket.io's chat sample
             System.IO.Directory.SetCurrentDirectory(@"../../../socket.io/examples/chat");
@@ -82,10 +89,87 @@ namespace TestNode01
             });
 
             string userInput = Console.ReadLine();
-
         }
 
 
+        static void TestNodeVM_Example()
+        {
+
+            //from https://nodejs.org/dist/latest-v10.x/docs/api/vm.html
+            //const vm = require('vm');
+
+            //const x = 1;
+
+            //const sandbox = { x: 2 };
+            //vm.createContext(sandbox); // Contextify the sandbox.
+
+            //const code = 'x += 40; var y = 17;';
+            //// x and y are global variables in the sandboxed environment.
+            //// Initially, x has the value 2 because that is the value of sandbox.x.
+            //vm.runInContext(code, sandbox);
+
+            //console.log(sandbox.x); // 42
+            //console.log(sandbox.y); // 17
+
+            //console.log(x); // 1; y is not defined.
+
+
+            //-----------
+
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //------------ 
+            JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
+            {
+
+                JsEngine eng = new JsEngine(nativeEngine);
+                JsContext ctx = eng.CreateContext(nativeContext);
+                //-------------
+                //this LibEspressoClass object is need,
+                //so node can talk with us,
+                //-------------
+                JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
+                jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
+                {
+                    //since this is sample socket io app
+                    string filedata = @"
+                    const vm = require('vm');
+
+                    const x = 1;
+
+                    const sandbox = { x: 2 };
+                    vm.createContext(sandbox); // Contextify the sandbox.
+
+                    const code = 'x += 40; var y = 17;';
+                    // x and y are global variables in the sandboxed environment.
+                    // Initially, x has the value 2 because that is the value of sandbox.x.
+                    vm.runInContext(code, sandbox);
+
+                    console.log(sandbox.x); // 42
+                    console.log(sandbox.y); // 17
+
+                    console.log(x); // 1; y is not defined.";
+
+
+                    args.SetResult(filedata);
+                }));
+
+                if (!jstypedef.IsRegisterd)
+                {
+                    ctx.RegisterTypeDefinition(jstypedef);
+                }
+
+                //----------
+                //then register this as x***       
+                //this object is just an instance for reference        
+                ctx.SetVariableFromAny("LibEspresso",
+                      ctx.CreateWrapper(new object(), jstypedef));
+            });
+
+            string userInput = Console.ReadLine();
+
+        }
         private static void Proc_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
 
