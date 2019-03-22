@@ -28,6 +28,8 @@ namespace Espresso
         JsTypeDefinitionBuilder _defaultTypeBuilder;
         bool _disposed;
 
+
+        bool _engineFromNativePtr;
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
 
@@ -51,8 +53,21 @@ namespace Espresso
                 maxOldSpace));
             _defaultTypeBuilder = defaultTypeBuilder;
         }
+      
+        public JsEngine(int maxYoungSpace, int maxOldSpace)
+           : this(new DefaultJsTypeDefinitionBuilder(), maxYoungSpace, maxOldSpace)
+        {
+
+        }
+        public JsEngine()
+            : this(new DefaultJsTypeDefinitionBuilder(), -1, -1)
+        {
+
+        }
+
+
         public JsEngine(IntPtr nativeJsEnginePtr)
-            : this(nativeJsEnginePtr, new DefaultJsTypeDefinitionBuilder())
+          : this(nativeJsEnginePtr, new DefaultJsTypeDefinitionBuilder())
         {
         }
         public JsEngine(IntPtr nativeJsEnginePtr,
@@ -81,17 +96,9 @@ namespace Espresso
                 );
             _engine = new HandleRef(this, nativeJsEnginePtr);
             _defaultTypeBuilder = defaultTypeBuilder;
+            _engineFromNativePtr = true;
         }
-        public JsEngine(int maxYoungSpace, int maxOldSpace)
-           : this(new DefaultJsTypeDefinitionBuilder(), maxYoungSpace, maxOldSpace)
-        {
 
-        }
-        public JsEngine()
-            : this(new DefaultJsTypeDefinitionBuilder(), -1, -1)
-        {
-
-        }
         internal HandleRef UnmanagedEngineHandler => _engine;
 
         public void TerminateExecution()

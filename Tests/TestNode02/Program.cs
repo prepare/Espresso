@@ -18,21 +18,18 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            //string currentdir = System.IO.Directory.GetCurrentDirectory();
-            string libEspr = @"../../../node-v10.15.3/Release/libespr.dll"; //previous version 8.4.0
-            //if (File.Exists(libEspr))
-            //{
-            //    //delete the old one
-            //    File.Delete(libEspr);
-            //}
-            //File.Copy(
-            //   @"../../../node-v10.15.3/Release/node.dll", // //previous version 8.4.0
-            //   libEspr);
-            //-----------------------------------
-            //2. load libespr.dll (node.dll)
-            //----------------------------------- 
+            string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            //string libEspr = "libespr.dll";
+            string libEspr = @"../../../node-v11.12.0/Debug/libespr.dll"; //previous version 8.4.0
+            if (File.Exists(libEspr))
+            {
+                //delete the old one
+                File.Delete(libEspr);
+            }
+            File.Copy(
+               @"../../../node-v11.12.0/Debug/node.dll", // //previous version 8.4.0
+               libEspr);
+
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
@@ -134,6 +131,7 @@ namespace TestNode01
                 {
                     //since this is sample socket io app
                     string filedata = @"
+                    (function(){
                     const vm = require('vm');
 
                     const x = 1;
@@ -149,7 +147,9 @@ namespace TestNode01
                     console.log(sandbox.x); // 42
                     console.log(sandbox.y); // 17
 
-                    console.log(x); // 1; y is not defined.";
+                    console.log(x); // 1; y is not defined.
+                    })();
+                    ";
 
 
                     args.SetResult(filedata);
