@@ -41,7 +41,7 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine(
+            NodeJsEngine.Run(
                 new string[] { "--inspect", "hello.espr" },
                 (eng, ctx) =>
             {

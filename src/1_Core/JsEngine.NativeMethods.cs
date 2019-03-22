@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Espresso
 {
-    public delegate void EngineSetupCallback(JsEngine jsEngine, JsContext ctx);
+
 
     partial class JsEngine : IDisposable
     {
@@ -66,36 +66,44 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void jsengine_dispose_object(HandleRef engine, IntPtr obj);
 
+    }
 
+
+    public delegate void EngineSetupCallback(JsEngine jsEngine, JsContext ctx);
+
+    
+
+    public static class NodeJsEngine
+    {
         //-------------------------------------------------------------------------------------------------------
         //this is Espresso-ND
         //the Espresso + NodeJS
         //-------------------------------------------------------------------------------------------------------
 
-        public static int RunJsEngine(EngineSetupCallback engineSetup)
+        public static int Run(EngineSetupCallback engineSetup)
         {
             JsEngine eng = null;
-            return JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
+            return RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
             {
-                eng = new JsEngine(nativeEngine);
-                JsContext context = eng.CreateContext(nativeContext);
-                engineSetup(eng, context);
+               eng = new JsEngine(nativeEngine);
+               JsContext context = eng.CreateContext(nativeContext);
+               engineSetup(eng, context);
             },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
             {
                 JsEngine.DisposeEngineFromNativeSide(eng);
             });
         }
-        public static int RunJsEngine(string[] parameters, EngineSetupCallback engineSetup)
+        public static int Run(string[] parameters, EngineSetupCallback engineSetup)
         {
             JsEngine eng = null;
-            return JsEngine.RunJsEngine(parameters, (IntPtr nativeEngine, IntPtr nativeContext) =>
-             {
-                 eng = new JsEngine(nativeEngine);
-                 //
-                 JsContext context = eng.CreateContext(nativeContext);
-                 engineSetup(eng, context);
-             },
+            return RunJsEngine(parameters, (IntPtr nativeEngine, IntPtr nativeContext) =>
+           {
+               eng = new JsEngine(nativeEngine);
+               //
+               JsContext context = eng.CreateContext(nativeContext);
+               engineSetup(eng, context);
+           },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
             {
                 JsEngine.DisposeEngineFromNativeSide(eng);
@@ -128,6 +136,5 @@ namespace Espresso
         //-------------------------------------------------------------------------------------------------------
         [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb, NativeEngineClosingCallback engineClosingCb);
-
     }
 }

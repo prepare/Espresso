@@ -49,7 +49,7 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine((eng, ctx) =>
+            NodeJsEngine.Run((eng, ctx) =>
             {
                 //-------------
                 //this LibEspressoClass object is need,
@@ -116,7 +116,7 @@ namespace TestNode01
             //------------ 
 
 
-            JsEngine.RunJsEngine((eng, ctx) =>
+            NodeJsEngine.Run((eng, ctx) =>
             {
                 //-------------
                 //this LibEspressoClass object is need,
