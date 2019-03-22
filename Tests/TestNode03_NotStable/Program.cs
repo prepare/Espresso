@@ -141,11 +141,14 @@ MainLoop();");
                     {
                         work();
                     }
-
                 }));
                 _context.RegisterTypeDefinition(jstypedef);
                 _context.SetVariableFromAny("LibEspresso", _context.CreateWrapper(new object(), jstypedef));
-            });
+            },
+            (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
+             {
+                 //the engine and its context is closing on native side
+             });
         }
         public void Execute(string script, Dictionary<string, object> processData, Action<object> doneWithResult)
         {
@@ -171,11 +174,11 @@ MainLoop();");
         }
         public Task<object> ExecuteAsync(string script, Dictionary<string, object> processData)
         {
-            var tcs = new TaskCompletionSource<object>(); 
+            var tcs = new TaskCompletionSource<object>();
             Execute(script, processData, result =>
             {
                 tcs.SetResult(result);
-            }); 
+            });
             return tcs.Task;
         }
 

@@ -20,7 +20,7 @@ const char MET_SETTER = 2;
 
 typedef void (CALLINGCONVENTION *del02)(int oIndex, const char16_t* methodName, MetCallingArgs* args);
 typedef void (CALLINGCONVENTION *del_engineSetupCb)(JsEngine* jsEngine, JsContext* enginContext);
-
+typedef void(CALLINGCONVENTION* del_engineClosingCb)(JsEngine* jsEngine, JsContext* enginContext,int exitCode);
 
 extern "C" {
 

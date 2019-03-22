@@ -5,6 +5,7 @@ namespace Espresso
 {
 
     public delegate void NativeEngineSetupCallback(IntPtr nativeEngine, IntPtr nativeContext);
+    public delegate void NativeEngineClosingCallback(IntPtr nativeEngine, IntPtr nativeContext,int exitCode);
 
     public static partial class JsBridge
     {

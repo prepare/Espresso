@@ -106,11 +106,14 @@ int myunixmain(int argc, char *argv[]) {
 #endif
 //============================================================
 del_engineSetupCb jsEngineSetupCb;
+del_engineClosingCb jsEngineClosingCb;
 
 extern "C" {
-	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb)
+	EXPORT int RunJsEngine(int argc, wchar_t *wargv[], void* engine_setupcb,void* ening_closingcb)
 	{
 		jsEngineSetupCb = (del_engineSetupCb)engine_setupcb;
+        jsEngineClosingCb = (del_engineClosingCb)ening_closingcb;
+
 #ifdef _WIN32
 		return mywinmain(argc, wargv);
 #else
@@ -141,4 +144,9 @@ void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext) {
 	if (jsEngineSetupCb) {
 		jsEngineSetupCb(engine, jsContext);
 	}
+}
+void DoEngineClosingCallback(JsEngine* engine, JsContext* jsContext,int exitcode) {
+  if (jsEngineClosingCb) {
+     jsEngineClosingCb(engine, jsContext, exitcode);
+  }
 }

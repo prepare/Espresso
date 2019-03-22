@@ -28,8 +28,11 @@ namespace Espresso
         JsTypeDefinitionBuilder _defaultTypeBuilder;
         bool _disposed;
 
-
         bool _engineFromNativePtr;
+        bool _nativeSideWasDisposed;
+        bool _shutingDown;
+
+
         public JsEngine(JsTypeDefinitionBuilder defaultTypeBuilder, int maxYoungSpace, int maxOldSpace)
         {
 
@@ -53,7 +56,7 @@ namespace Espresso
                 maxOldSpace));
             _defaultTypeBuilder = defaultTypeBuilder;
         }
-      
+
         public JsEngine(int maxYoungSpace, int maxOldSpace)
            : this(new DefaultJsTypeDefinitionBuilder(), maxYoungSpace, maxOldSpace)
         {
@@ -219,6 +222,7 @@ namespace Espresso
             //
             int id = Interlocked.Increment(ref _currentContextId);
             JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, _defaultTypeBuilder);
+            ctx.IsFromNativeContext = true;
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
@@ -250,6 +254,8 @@ namespace Espresso
 
         private void ContextDisposed(int id)
         {
+            if (_shutingDown) return;
+
             _aliveContexts.Remove(id);
         }
 
@@ -257,9 +263,7 @@ namespace Espresso
         {
             _aliveScripts.Remove(id);
         }
-
-        //-------------------------------------------------
-
+        //------------------------------------------------- 
 
         public bool IsDisposed => _disposed;
 
@@ -273,14 +277,20 @@ namespace Espresso
         protected virtual void Dispose(bool disposing)
         {
             CheckDisposed();
-            _disposed = true; //? here?
 
             if (disposing)
             {
-
+                _shutingDown = true;
                 foreach (JsContext context in _aliveContexts.Values)
                 {
-                    context.Dispose();
+                    if (context.IsFromNativeContext)
+                    {
+                        context.Dispose();
+                    }
+                    else
+                    {
+                        JsContext.DisposeContextFromNativeSide(context);
+                    }
                 }
                 _aliveContexts.Clear();
                 //
@@ -290,10 +300,18 @@ namespace Espresso
                 }
                 _aliveScripts.Clear();
             }
+
+
+            _disposed = true; //? here?
+
 #if DEBUG_TRACE_API
 				Console.WriteLine("Calling jsEngine dispose: " + _engine.Handle.ToInt64());
-#endif      
-            jsengine_dispose(_engine);
+#endif
+
+            if (!this._nativeSideWasDisposed)
+            {
+                jsengine_dispose(_engine);
+            }
         }
 
         void CheckDisposed()
@@ -302,6 +320,15 @@ namespace Espresso
                 throw new ObjectDisposedException("JsEngine:" + _engine.Handle);
         }
 
+        public static void DisposeEngineFromNativeSide(JsEngine engine)
+        {
+            if (!engine._engineFromNativePtr)
+            {
+                throw new NotSupportedException();
+            }
+            engine._nativeSideWasDisposed = true;
+            engine.Dispose();
+        }
 
         public static void DumpAllocatedItems()
         {
