@@ -49,37 +49,9 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            NodeJsEngine.Run((eng, ctx) =>
+            NodeJsEngineHelper.Run(ss =>
             {
-                //-------------
-                //this LibEspressoClass object is need,
-                //so node can talk with us,
-                //-------------
-                JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
-                jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
-                 {
-                     //since this is sample socket io app
-                     string filedata = File.ReadAllText("index.js");
-                     args.SetResult(filedata);
-                 }));
-                jstypedef.AddMember(new JsMethodDefinition("C", args =>
-                 {
-
-                     args.SetResult(true);
-                 }));
-                jstypedef.AddMember(new JsMethodDefinition("E", args =>
-                 {
-                     args.SetResult(true);
-                 }));
-                if (!jstypedef.IsRegisterd)
-                {
-                    ctx.RegisterTypeDefinition(jstypedef);
-                }
-                //----------
-                //then register this as x***       
-                //this object is just an instance for reference        
-                ctx.SetVariableFromAny("LibEspresso",
-                   ctx.CreateWrapper(new object(), jstypedef));
+                ss.SetMainSrcFile(() => File.ReadAllText("index.js"));
             });
 
             string userInput = Console.ReadLine();
@@ -115,19 +87,10 @@ namespace TestNode01
 #endif
             //------------ 
 
-
-            NodeJsEngine.Run((eng, ctx) =>
+            NodeJsEngineHelper.Run(() =>
             {
-                //-------------
-                //this LibEspressoClass object is need,
-                //so node can talk with us,
-                //-------------
-                JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
-                jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
-                {
-                    //since this is sample socket io app
-                    string filedata = @"
-                    (function(){
+                return @"
+                     
                     const vm = require('vm');
 
                     const x = 1;
@@ -144,22 +107,9 @@ namespace TestNode01
                     console.log(sandbox.y); // 17
 
                     console.log(x); // 1; y is not defined.
-                    })();
+                    
                     ";
-                    args.SetResult(filedata);
-                }));
-
-                if (!jstypedef.IsRegisterd)
-                {
-                    ctx.RegisterTypeDefinition(jstypedef);
-                }
-
-                //----------
-                //then register this as x***       
-                //this object is just an instance for reference        
-                ctx.SetVariableFromAny("LibEspresso", ctx.CreateWrapper(new object(), jstypedef));
-            });
-
+            }); 
             string userInput = Console.ReadLine();
 
         }
