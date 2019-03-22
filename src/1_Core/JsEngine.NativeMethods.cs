@@ -103,12 +103,12 @@ namespace Espresso
         {
             JsEngine eng = null;
             return RunJsEngine(parameters, (IntPtr nativeEngine, IntPtr nativeContext) =>
-           {
+            {
                eng = new JsEngine(nativeEngine);
                //
                JsContext context = eng.CreateContext(nativeContext, s_jsTypeDefBuilder);
                engineSetup(eng, context);
-           },
+            },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
             {
                 JsEngine.DisposeEngineFromNativeSide(eng);

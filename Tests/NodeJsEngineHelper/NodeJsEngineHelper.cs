@@ -24,6 +24,37 @@ namespace Espresso
 
     public static class NodeJsEngineHelper
     {
+        const string LIB_ESPRESSO_CLASS = "LibEspressionClass";        
+        const string LOAD_MAIN_SRC_FILE = "LoadMainSrcFile";
+        const string LIB_ESPRESSO = "LibEspresso";
+
+        public static void Run(string[] parameters, NodeJsExecSessionSetup nodeExecSession)
+        {
+            //------------ 
+            NodeJsEngine.Run(parameters, (eng, ctx) =>
+            {
+                //-------------
+                //this LibEspressoClass object is need,
+                //so node can talk with us,
+                //-------------
+                JsTypeDefinition jstypedef = new JsTypeDefinition(LIB_ESPRESSO_CLASS);
+                NodeJsExecSession nodeJsExecSession = new NodeJsExecSession(eng, ctx);
+                string mainSrc = nodeExecSession(nodeJsExecSession);
+
+                jstypedef.AddMember(new JsMethodDefinition(LOAD_MAIN_SRC_FILE, args =>
+                 {
+                     args.SetResult(mainSrc);
+                 }));
+                if (!jstypedef.IsRegisterd)
+                {
+                    ctx.RegisterTypeDefinition(jstypedef);
+                }
+                //----------
+                //then register this as x***       
+                //this object is just an instance for reference        
+                ctx.SetVariableFromAny(LIB_ESPRESSO, ctx.CreateWrapper(new object(), jstypedef));
+            });
+        }
         public static void Run(NodeJsExecSessionSetup nodeExecSession)
         {
             //------------ 
@@ -34,11 +65,11 @@ namespace Espresso
                 //so node can talk with us,
                 //-------------
 
-                JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
+                JsTypeDefinition jstypedef = new JsTypeDefinition(LIB_ESPRESSO_CLASS);
                 NodeJsExecSession nodeJsExecSession = new NodeJsExecSession(eng, ctx);
                 string mainSrc = nodeExecSession(nodeJsExecSession);
 
-                jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
+                jstypedef.AddMember(new JsMethodDefinition(LOAD_MAIN_SRC_FILE, args =>
                 {
                     args.SetResult(mainSrc);
                 }));
@@ -49,7 +80,7 @@ namespace Espresso
                 //----------
                 //then register this as x***       
                 //this object is just an instance for reference        
-                ctx.SetVariableFromAny("LibEspresso", ctx.CreateWrapper(new object(), jstypedef));
+                ctx.SetVariableFromAny(LIB_ESPRESSO, ctx.CreateWrapper(new object(), jstypedef));
             });
         }
         public static void Run(LoadMainSrcFile loadMainSrcFile)
@@ -61,8 +92,8 @@ namespace Espresso
                 //this LibEspressoClass object is need,
                 //so node can talk with us,
                 //-------------
-                JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
-                jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
+                JsTypeDefinition jstypedef = new JsTypeDefinition(LIB_ESPRESSO_CLASS);
+                jstypedef.AddMember(new JsMethodDefinition(LOAD_MAIN_SRC_FILE, args =>
                 {
                     args.SetResult(loadMainSrcFile());
                 }));
@@ -73,7 +104,7 @@ namespace Espresso
                 //----------
                 //then register this as x***       
                 //this object is just an instance for reference        
-                ctx.SetVariableFromAny("LibEspresso", ctx.CreateWrapper(new object(), jstypedef));
+                ctx.SetVariableFromAny(LIB_ESPRESSO, ctx.CreateWrapper(new object(), jstypedef));
             });
 
         }
