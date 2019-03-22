@@ -13,7 +13,7 @@ namespace Test3
         static void Main()
         {
             //load and init v8 engine*** 
-            string libespr = @"libespr.dll";  
+            string libespr = @"libespr.dll";
             Espresso.JsBridge.LoadV8(libespr);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

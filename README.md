@@ -4,7 +4,9 @@ Espresso / Espresso-VE / Espresso-ND
 ---
  
 
-Latest V8 Engine : from NodeJs **v10.15.3**
+Latest V8 Engine : from NodeJs **v11.12.0**
+
+(for NodeJS 10.15.3, visit => https://github.com/prepare/Espresso/tree/v_10_15_3)
 
 ---
 
