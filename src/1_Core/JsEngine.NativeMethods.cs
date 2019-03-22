@@ -71,7 +71,7 @@ namespace Espresso
 
     public delegate void EngineSetupCallback(JsEngine jsEngine, JsContext ctx);
 
-    
+
 
     public static class NodeJsEngine
     {
@@ -80,14 +80,19 @@ namespace Espresso
         //the Espresso + NodeJS
         //-------------------------------------------------------------------------------------------------------
 
+        static JsTypeDefinitionBuilder s_jsTypeDefBuilder = new DefaultJsTypeDefinitionBuilder();
+        public static void SetDefaultJsTypeDefinitionBuilder(JsTypeDefinitionBuilder jstypedefBuilder)
+        {
+            s_jsTypeDefBuilder = jstypedefBuilder;
+        }
         public static int Run(EngineSetupCallback engineSetup)
         {
             JsEngine eng = null;
             return RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
             {
-               eng = new JsEngine(nativeEngine);
-               JsContext context = eng.CreateContext(nativeContext);
-               engineSetup(eng, context);
+                eng = new JsEngine(nativeEngine);
+                JsContext context = eng.CreateContext(nativeContext, s_jsTypeDefBuilder);
+                engineSetup(eng, context);
             },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
             {
@@ -101,7 +106,7 @@ namespace Espresso
            {
                eng = new JsEngine(nativeEngine);
                //
-               JsContext context = eng.CreateContext(nativeContext);
+               JsContext context = eng.CreateContext(nativeContext, s_jsTypeDefBuilder);
                engineSetup(eng, context);
            },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>

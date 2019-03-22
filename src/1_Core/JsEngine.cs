@@ -216,16 +216,17 @@ namespace Espresso
             _aliveContexts.Add(newContextId, ctx);
             return ctx;
         }
-        public JsContext CreateContext(IntPtr nativeJsContext)
+        public JsContext CreateContext(IntPtr nativeJsContext, JsTypeDefinitionBuilder typedefBuilder = null)
         {
             CheckDisposed();
             //
             int id = Interlocked.Increment(ref _currentContextId);
-            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, _defaultTypeBuilder);
+            JsContext ctx = new JsContext(id, this, ContextDisposed, nativeJsContext, typedefBuilder ?? _defaultTypeBuilder);
             ctx.IsFromNativeContext = true;
             _aliveContexts.Add(id, ctx);
             return ctx;
         }
+
         public JsContext CreateContext(JsTypeDefinitionBuilder customTypeDefBuilder)
         {
             CheckDisposed();

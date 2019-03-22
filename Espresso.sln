@@ -39,7 +39,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNode03_NotStable", "Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSSLCertUtils", "Tests\OpenSSLCertUtils\OpenSSLCertUtils.csproj", "{1CFE3D44-AAA7-430C-9F0D-0D49E024792B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NodeJsEngineHelper", "Tests\NodeJsEngineHelper\NodeJsEngineHelper.shproj", "{25C800D8-D92C-4EE9-9512-3FE928E2B6C4}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{25c800d8-d92c-4ee9-9512-3fe928e2b6c4}*SharedItemsImports = 13
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3ae55809-8020-4b59-b969-44ed49111c14}*SharedItemsImports = 4
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{d03a94f4-7fa3-491d-94fd-b3ce9800ef80}*SharedItemsImports = 4
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e0270099-2d7e-441f-b70e-5654d7bb780f}*SharedItemsImports = 4
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e2cff41d-e996-47d1-b135-38ae6ebe66c6}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -333,6 +342,7 @@ Global
 		{3AE55809-8020-4B59-B969-44ED49111C14} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 		{E0270099-2D7E-441F-B70E-5654D7BB780F} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 		{1CFE3D44-AAA7-430C-9F0D-0D49E024792B} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
+		{25C800D8-D92C-4EE9-9512-3FE928E2B6C4} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98455A9B-B480-4424-A3C8-D72CDD4D76FA}
