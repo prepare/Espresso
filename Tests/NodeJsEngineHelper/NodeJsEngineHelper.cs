@@ -9,21 +9,13 @@ namespace Espresso
 
     public class NodeJsExecSession
     {
-        public readonly JsEngine Engine;
-        public readonly JsContext Context;
-        public readonly JsTypeDefinition LibEspressoClass;
-
-        //internal LoadMainSrcFile _loadMainSrcFile;
-        internal NodeJsExecSession(JsEngine engine, JsContext ctx, JsTypeDefinition libEspressoClass)
+        readonly JsEngine Engine;
+        readonly JsContext Context;
+        internal NodeJsExecSession(JsEngine engine, JsContext ctx)
         {
             Engine = engine;
             Context = ctx;
-            LibEspressoClass = libEspressoClass;
         }
-        //public void SetMainSrcFile(LoadMainSrcFile loadMainSrcFile)
-        //{
-        //    _loadMainSrcFile = loadMainSrcFile;
-        //}
         public void SetExternalObj<T>(string name, T obj) where T : class
         {
             Context.SetVariableAutoWrap<T>(name, obj);
@@ -43,12 +35,12 @@ namespace Espresso
                 //-------------
 
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
-                NodeJsExecSession nodeJsExecSession = new NodeJsExecSession(eng, ctx, jstypedef);
+                NodeJsExecSession nodeJsExecSession = new NodeJsExecSession(eng, ctx);
                 string mainSrc = nodeExecSession(nodeJsExecSession);
 
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
-                { 
-                    args.SetResult(mainSrc); 
+                {
+                    args.SetResult(mainSrc);
                 }));
                 if (!jstypedef.IsRegisterd)
                 {
