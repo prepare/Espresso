@@ -45,6 +45,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{25c800d8-d92c-4ee9-9512-3fe928e2b6c4}*SharedItemsImports = 13
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3ae55809-8020-4b59-b969-44ed49111c14}*SharedItemsImports = 4
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{d03a94f4-7fa3-491d-94fd-b3ce9800ef80}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e0270099-2d7e-441f-b70e-5654d7bb780f}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e2cff41d-e996-47d1-b135-38ae6ebe66c6}*SharedItemsImports = 4
 	EndGlobalSection

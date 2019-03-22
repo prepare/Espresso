@@ -9,6 +9,8 @@
     <Import_RootNamespace>NodeJsEngineHelper</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)JsAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JsTypeDefinitionBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NodeJsEngineHelper.cs" />
   </ItemGroup>
 </Project>

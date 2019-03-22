@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Espresso
 {
     public delegate string LoadMainSrcFile();
-    public delegate void NodeJsExecSessionSetup(NodeJsExecSession session);
+    public delegate string NodeJsExecSessionSetup(NodeJsExecSession session);
 
     public class NodeJsExecSession
     {
@@ -13,17 +13,21 @@ namespace Espresso
         public readonly JsContext Context;
         public readonly JsTypeDefinition LibEspressoClass;
 
-        internal LoadMainSrcFile _loadMainSrcFile; 
+        //internal LoadMainSrcFile _loadMainSrcFile;
         internal NodeJsExecSession(JsEngine engine, JsContext ctx, JsTypeDefinition libEspressoClass)
         {
             Engine = engine;
             Context = ctx;
             LibEspressoClass = libEspressoClass;
         }
-        public void SetMainSrcFile(LoadMainSrcFile loadMainSrcFile)
+        //public void SetMainSrcFile(LoadMainSrcFile loadMainSrcFile)
+        //{
+        //    _loadMainSrcFile = loadMainSrcFile;
+        //}
+        public void SetExternalObj<T>(string name, T obj) where T : class
         {
-            _loadMainSrcFile = loadMainSrcFile;
-        } 
+            Context.SetVariableAutoWrap<T>(name, obj);
+        }
     }
 
     public static class NodeJsEngineHelper
@@ -40,19 +44,11 @@ namespace Espresso
 
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 NodeJsExecSession nodeJsExecSession = new NodeJsExecSession(eng, ctx, jstypedef);
-                nodeExecSession(nodeJsExecSession);
+                string mainSrc = nodeExecSession(nodeJsExecSession);
 
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
-                {
-                    if (nodeJsExecSession._loadMainSrcFile != null)
-                    {
-                        args.SetResult(nodeJsExecSession._loadMainSrcFile());
-                    }
-                    else
-                    {
-                        args.SetResult("");
-                    }
-
+                { 
+                    args.SetResult(mainSrc); 
                 }));
                 if (!jstypedef.IsRegisterd)
                 {

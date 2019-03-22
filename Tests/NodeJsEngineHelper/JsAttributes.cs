@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Test3
+namespace Espresso
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class JsTypeAttribute : Attribute

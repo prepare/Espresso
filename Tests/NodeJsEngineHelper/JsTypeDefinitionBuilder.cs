@@ -1,9 +1,8 @@
 ﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 
 using System;
-using Espresso;
 
-namespace Test3
+namespace Espresso
 {
     class MyJsTypeDefinitionBuilder : JsTypeDefinitionBuilder
     {
