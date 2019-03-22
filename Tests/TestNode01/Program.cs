@@ -41,18 +41,14 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine(
+            NodeJsEngine.Run(
                 new string[] { "--inspect", "hello.espr" },
-                (IntPtr nativeEngine, IntPtr nativeContext) =>
+                (eng, ctx) =>
             {
-
-                JsEngine eng = new JsEngine(nativeEngine);
-                JsContext ctx = eng.CreateContext(nativeContext);
                 //-------------
                 //this LibEspressoClass object is needed,
                 //so node can talk with us,
-                //-------------
-
+                //------------- 
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
                 {

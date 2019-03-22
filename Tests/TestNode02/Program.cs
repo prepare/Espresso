@@ -18,21 +18,18 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            //string currentdir = System.IO.Directory.GetCurrentDirectory();
-            string libEspr = @"../../../node-v10.15.3/Release/libespr.dll"; //previous version 8.4.0
-            //if (File.Exists(libEspr))
-            //{
-            //    //delete the old one
-            //    File.Delete(libEspr);
-            //}
-            //File.Copy(
-            //   @"../../../node-v10.15.3/Release/node.dll", // //previous version 8.4.0
-            //   libEspr);
-            //-----------------------------------
-            //2. load libespr.dll (node.dll)
-            //----------------------------------- 
+            string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            //string libEspr = "libespr.dll";
+            string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
+            if (File.Exists(libEspr))
+            {
+                //delete the old one
+                File.Delete(libEspr);
+            }
+            File.Copy(
+               @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
+               libEspr);
+
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
@@ -52,31 +49,28 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
+            NodeJsEngine.Run((eng, ctx) =>
             {
-
-                JsEngine eng = new JsEngine(nativeEngine);
-                JsContext ctx = eng.CreateContext(nativeContext);
                 //-------------
                 //this LibEspressoClass object is need,
                 //so node can talk with us,
                 //-------------
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
-                {
-                    //since this is sample socket io app
-                    string filedata = File.ReadAllText("index.js");
-                    args.SetResult(filedata);
-                }));
+                 {
+                     //since this is sample socket io app
+                     string filedata = File.ReadAllText("index.js");
+                     args.SetResult(filedata);
+                 }));
                 jstypedef.AddMember(new JsMethodDefinition("C", args =>
-                {
+                 {
 
-                    args.SetResult(true);
-                }));
+                     args.SetResult(true);
+                 }));
                 jstypedef.AddMember(new JsMethodDefinition("E", args =>
-                {
-                    args.SetResult(true);
-                }));
+                 {
+                     args.SetResult(true);
+                 }));
                 if (!jstypedef.IsRegisterd)
                 {
                     ctx.RegisterTypeDefinition(jstypedef);
@@ -85,7 +79,7 @@ namespace TestNode01
                 //then register this as x***       
                 //this object is just an instance for reference        
                 ctx.SetVariableFromAny("LibEspresso",
-                      ctx.CreateWrapper(new object(), jstypedef));
+                   ctx.CreateWrapper(new object(), jstypedef));
             });
 
             string userInput = Console.ReadLine();
@@ -120,11 +114,10 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            JsEngine.RunJsEngine((IntPtr nativeEngine, IntPtr nativeContext) =>
-            {
 
-                JsEngine eng = new JsEngine(nativeEngine);
-                JsContext ctx = eng.CreateContext(nativeContext);
+
+            NodeJsEngine.Run((eng, ctx) =>
+            {
                 //-------------
                 //this LibEspressoClass object is need,
                 //so node can talk with us,
@@ -134,6 +127,7 @@ namespace TestNode01
                 {
                     //since this is sample socket io app
                     string filedata = @"
+                    (function(){
                     const vm = require('vm');
 
                     const x = 1;
@@ -149,9 +143,9 @@ namespace TestNode01
                     console.log(sandbox.x); // 42
                     console.log(sandbox.y); // 17
 
-                    console.log(x); // 1; y is not defined.";
-
-
+                    console.log(x); // 1; y is not defined.
+                    })();
+                    ";
                     args.SetResult(filedata);
                 }));
 
@@ -163,8 +157,7 @@ namespace TestNode01
                 //----------
                 //then register this as x***       
                 //this object is just an instance for reference        
-                ctx.SetVariableFromAny("LibEspresso",
-                      ctx.CreateWrapper(new object(), jstypedef));
+                ctx.SetVariableFromAny("LibEspresso", ctx.CreateWrapper(new object(), jstypedef));
             });
 
             string userInput = Console.ReadLine();
