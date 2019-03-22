@@ -49,10 +49,8 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif
             //------------ 
-            NodeJsEngineHelper.Run(ss =>
-            {
-                ss.SetMainSrcFile(() => File.ReadAllText("index.js"));
-            });
+
+            NodeJsEngineHelper.Run(ss => File.ReadAllText("index.js"));
 
             string userInput = Console.ReadLine();
         }
@@ -109,7 +107,7 @@ namespace TestNode01
                     console.log(x); // 1; y is not defined.
                     
                     ";
-            }); 
+            });
             string userInput = Console.ReadLine();
 
         }
