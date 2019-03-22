@@ -20,14 +20,14 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = @"../../../node-v11.12.0/Debug/libespr.dll"; //previous version 8.4.0
+            string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"../../../node-v11.12.0/Debug/node.dll", // //previous version 8.4.0
+               @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
                libEspr);
 
             IntPtr intptr = LoadLibrary(libEspr);
