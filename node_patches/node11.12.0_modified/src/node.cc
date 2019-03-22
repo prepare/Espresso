@@ -120,6 +120,7 @@
 //#espresso ,#1
 #include "../src/libespresso/bridge2.h"
 void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
+void DoEngineClosingCallback(JsEngine* engine, JsContext* jsContext,int exitCode);
 //////////////////////////////////
 
 namespace node {
@@ -855,6 +856,13 @@ inline int StartNodeWithIsolate(Isolate* isolate,
   env.set_trace_sync_io(false);
 
   exit_code = EmitExit(&env);
+
+  ////////////////////////////////
+  //#espresso ,#3
+  DoEngineClosingCallback(jsEngine, jscontext,exit_code);
+  ////////////////////////////////
+
+
 
   WaitForInspectorDisconnect(&env);
 

@@ -618,7 +618,7 @@ Module._resolveFilename = function(request, parent, isMain, options) {
   }
 
   ////////////////////////////////////////////
-  //#espresso, #3
+  //#espresso, #4
   if (request.endsWith(".espr")) {
       return request;
   }
@@ -846,9 +846,9 @@ Module._extensions['.node'] = function(module, filename) {
   // Be aware this doesn't use `content`
   return process.dlopen(module, path.toNamespacedPath(filename));
 };
-
+ 
 //////////////////////////////////
-//#espresso, #4
+//#espresso, #5
 Module.external_loader= LibEspresso;
 Module._extensions['.espr'] = function (module, filename) {
     //this make node to callback to our module
