@@ -35,9 +35,10 @@ namespace TestNode01
             int libesprVer = JsBridge.LibVersion;
 
 
-            TestNodeVM_Example();
-
             //TestSocketIO_ChatExample(); 
+            //TestNodeVM_Example();
+            //TestNodeFeature_OS_Example1();
+            TestNodeFeature_OS_Example2();
         }
         static void TestSocketIO_ChatExample()
         {
@@ -59,7 +60,7 @@ namespace TestNode01
         static void TestNodeVM_Example()
         {
 
-            //from https://nodejs.org/dist/latest-v10.x/docs/api/vm.html
+            //https://nodejs.org/dist/latest-v11.x/docs/api/vm.html
             //const vm = require('vm');
 
             //const x = 1;
@@ -111,6 +112,63 @@ namespace TestNode01
             string userInput = Console.ReadLine();
 
         }
+        static void TestNodeFeature_OS_Example1()
+        {
+            //https://nodejs.org/dist/latest-v11.x/docs/api/os.html
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //------------ 
+
+            //example1: just show value
+            NodeJsEngineHelper.Run(() =>
+            {
+                return @"                     
+                    const os = require('os'); 
+                    console.log('arch = '+ os.arch());
+                    console.log('cpus = '+ JSON.stringify(os.cpus()));
+                    console.log('hostname='+ os.hostname());
+                    ";
+            }); 
+            string userInput = Console.ReadLine();
+        }
+        static void TestNodeFeature_OS_Example2()
+        {
+            //https://nodejs.org/dist/latest-v11.x/docs/api/os.html
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //------------ 
+ 
+            ////example2: get value from node js 
+            OsInfo myOsInfo = new OsInfo();
+            NodeJsEngineHelper.Run(ss =>
+            {
+                ss.SetExternalObj("my_osInfo", myOsInfo);
+
+                return @"                     
+                    const os = require('os');                      
+                    my_osInfo.Arch = os.arch();
+                    my_osInfo.Hostname = os.hostname();
+                    ";
+            }); 
+            Console.WriteLine("arch=" + myOsInfo.Arch);
+            Console.WriteLine("hostname=" + myOsInfo.Hostname);
+
+
+            string userInput = Console.ReadLine();
+        }
+
+        [JsType]
+        class OsInfo
+        {
+            [JsProperty]
+            public string Arch { get; set; }
+            [JsProperty]
+            public string Hostname { get; set; }
+        }
+
+
         private static void Proc_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
 
