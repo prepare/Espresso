@@ -208,7 +208,7 @@ void JsContext::GetPropertyNames(Persistent<Object>* obj, jsvalue* output) {
   TryCatch trycatch(isolate_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  Local<Value> value = objLocal->GetPropertyNames();
+  Local<Value> value = objLocal->GetPropertyNames(ctx).ToLocalChecked();
   if (!value.IsEmpty()) {
     engine_->AnyFromV8(value, Handle<Object>(), output);
   } else {
@@ -294,7 +294,7 @@ void JsContext::InvokeFunction(Persistent<Function>* func,
     // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)
     Local<Function> func = Local<Function>::Cast(prop);
     Local<Value> value =
-        func->Call(reciever, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, reciever, args->i32, &argv[0]).ToLocalChecked();  // i32 as length
     if (!value.IsEmpty()) {
       engine_->AnyFromV8(value, Handle<Object>(), output);
     } else {
@@ -331,7 +331,7 @@ void JsContext::InvokeProperty(Persistent<Object>* obj,
     Local<Function> func = Local<Function>::Cast(prop);
 
     Local<Value> value =
-        func->Call(objLocal, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, objLocal, args->i32, &argv[0]).ToLocalChecked();  // i32 as length
     if (!value.IsEmpty()) {
       engine_->AnyFromV8(value, Handle<Object>(), output);
     } else {

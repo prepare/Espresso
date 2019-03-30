@@ -37,12 +37,12 @@ Handle<Value> ManagedRef::GetPropertyValue(Local<String> name)
 {
 	Handle<Value> res;
 
-	String::Value s(name);
+	Isolate* isolate = Isolate::GetCurrent();
+	String::Value s(isolate, name);
 
 #ifdef DEBUG_TRACE_API
 	std::cout << "GetPropertyValue" << std::endl;
 #endif
-	Isolate* isolate = Isolate::GetCurrent();
 	jsvalue r;
 	memset(&r, 0, sizeof(jsvalue));
 	engine_->CallGetPropertyValue(contextId_, id_, *s, &r);
@@ -64,12 +64,12 @@ Handle<Boolean> ManagedRef::DeleteProperty(Local<String> name)
 {
 	Handle<Value> res;
 
-	String::Value s(name);
+	Isolate* isolate = Isolate::GetCurrent();
+	String::Value s(isolate, name);
 
 #ifdef DEBUG_TRACE_API
 	std::cout << "DeleteProperty" << std::endl;
 #endif
-	Isolate* isolate = Isolate::GetCurrent();
 	jsvalue r;
 	memset(&r, 0, sizeof(jsvalue));
 	engine_->CallDeleteProperty(contextId_, id_, *s, &r);
@@ -83,19 +83,19 @@ Handle<Boolean> ManagedRef::DeleteProperty(Local<String> name)
 #endif
 	// We don't need the jsvalue anymore and the CLR side never reuse them.
 	jsvalue_dispose(&r);
-	return res->ToBoolean();
+	return res->ToBoolean(isolate);
 }
 
 Handle<Value> ManagedRef::SetPropertyValue(Local<String> name, Local<Value> value)
 {
 	Handle<Value> res;
 
-	String::Value s(name);
+	Isolate* isolate = Isolate::GetCurrent();
+	String::Value s(isolate, name);
 
 #ifdef DEBUG_TRACE_API
 	std::cout << "SetPropertyValue" << std::endl;
 #endif
-	Isolate* isolate = Isolate::GetCurrent();
 	jsvalue r, v;
 	memset(&r, 0, sizeof(jsvalue));
 	memset(&v, 0, sizeof(jsvalue));
