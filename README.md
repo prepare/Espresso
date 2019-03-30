@@ -1,3 +1,14 @@
+Espresso Modified by John Chen
+===============
+Modified to build with the latest version of Nuget-V8 (7.4.288.11). NodeJS support dropped. 
+
+License:
+MIT, 2013, Federico Di Gregorio fog@initd.org, https://github.com/fogzot/vroomjs
+
+MIT, 2015-2019, WinterDev
+
+MIT, 2019, John Chen
+
 Espresso / Espresso-VE / Espresso-ND
 ===============
 
