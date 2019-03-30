@@ -1,5 +1,6 @@
 ﻿//MIT, 2015-present, WinterDev, EngineKit, brezza92
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 namespace Espresso
 {
@@ -19,7 +20,7 @@ namespace Espresso
             if (doV8Init)
             {
                 //sometime we set to false , and  let underlying lib init the v8 engine.
-                NativeV8JsInterOp.V8Init();
+                NativeV8JsInterOp.V8Init(Path.GetDirectoryName(dllfile));
             }
         }
 

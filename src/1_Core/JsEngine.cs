@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading;
 
 namespace Espresso
@@ -295,7 +296,7 @@ namespace Espresso
                 }
                 _aliveContexts.Clear();
                 //
-                foreach (JsScript script in _aliveScripts.Values)
+                foreach (JsScript script in _aliveScripts.Values.ToArray())
                 {
                     script.Dispose();
                 }

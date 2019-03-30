@@ -276,7 +276,9 @@ Persistent<Script>* JsEngine::CompileScript(const uint16_t* str,
 	HandleScope scope(isolate_);
 	TryCatch trycatch(isolate_);
 
-	((Context*)global_context_)->Enter();
+	Local<Context> ctx = Local<Context>::New(isolate_, *global_context_);
+	ctx->Enter();
+	//((Context*)global_context_)->Enter();
 
 	Handle<String> source = String::NewFromTwoByte(isolate_, str);
 	Handle<Script> script;
@@ -295,7 +297,8 @@ Persistent<Script>* JsEngine::CompileScript(const uint16_t* str,
 		ErrorFromV8(trycatch, error);
 	}
 
-	((Context*)global_context_)->Exit();
+	ctx->Exit();
+	//((Context*)global_context_)->Exit();
 	Persistent<Script>* pScript = new Persistent<Script>();
 	pScript->Reset(isolate_, script);
 	return pScript;

@@ -387,10 +387,12 @@ int ArgCount(MetCallingArgs* args)
 //======================================================  
 
 static v8::Platform* default_platform;
-void V8Init()
+void V8Init(char* location)
 {
 	const int thread_pool_size = 4;
 	/*auto p = V8::*/
+	v8::V8::InitializeICUDefaultLocation(location);
+	v8::V8::InitializeExternalStartupData(location);
 	default_platform = v8::platform::NewDefaultPlatform(thread_pool_size).release();
 	V8::InitializePlatform(default_platform);
 	V8::Initialize();

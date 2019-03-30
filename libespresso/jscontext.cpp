@@ -151,7 +151,8 @@ void JsContext::SetVariable(const uint16_t* name,
   if (ctx->Global()->Set(String::NewFromTwoByte(isolate_, name), v) ==
       false) {  // 0.12.x
     // TODO: Return an error if set failed.
-  }
+	  ctx->Exit();
+  } else
 
   ctx->Exit();
 
