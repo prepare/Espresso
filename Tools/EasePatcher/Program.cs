@@ -31,11 +31,27 @@ namespace EasePatcher
         //static string espresso_srcdir = "../../../Espresso";
         //static string config_pars = "";
 
-        //for v10.15.1
-        static string current_node_version = "node-v10.15.3";
-        static string patch_subdir = "node_patches/node10.15.3_modified";
+         
+        //static string current_node_version = "node-v10.15.3";
+        //static string patch_subdir = "node_patches/node10.15.3_modified";
+        ////
+        //static string original_node_srcdir = @"../../../../../../node-v10.15.3";
+        //static string espresso_srcdir = "../../../../../../Espresso";
+        //static string config_pars = "";
+
+
+     
+        //static string current_node_version = "node-v11.12.0";
+        //static string patch_subdir = "node_patches/node11.12.0_modified";
+        ////
+        //static string original_node_srcdir = @"../../../../../../node-v11.12.0";
+        //static string espresso_srcdir = "../../../../../../Espresso";
+        //static string config_pars = "";
+
+        static string current_node_version = "node-v11.15.0";
+        static string patch_subdir = "node_patches/node11.15.0_modified";
         //
-        static string original_node_srcdir = @"../../../../../../node-v10.15.3";
+        static string original_node_srcdir = @"../../../../../../node-v11.15.0";
         static string espresso_srcdir = "../../../../../../Espresso";
         static string config_pars = "";
 
@@ -67,9 +83,10 @@ namespace EasePatcher
             switch (currentOS)
             {
                 case PatcherOS.Windows:
-                    //x64
-                    config_pars = " x86 release nobuild full-icu download-all"; //default build .
-                    //x86                     
+                    //x64                  
+                    config_pars = "  nobuild full-icu"; //default build .
+                    //x86            
+                    //  //config_pars = " x86 release nobuild full-icu download-all"; //default build .
                     break;
                 case PatcherOS.Mac:
                     config_pars = "--dest-cpu=x64 --shared --xcode";

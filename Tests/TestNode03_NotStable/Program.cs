@@ -111,11 +111,11 @@ namespace Test03_NotStable
         private void ScriptThread(object obj)
         {
             workQueue.Enqueue(InitializeJsGlobals);
-            JsEngine.RunJsEngine(Debugger.IsAttached ? new string[] { "--inspect", "hello.espr" } : new string[] { "hello.espr" },
-            (IntPtr nativeEngine, IntPtr nativeContext) =>
+            NodeJsEngine.Run(Debugger.IsAttached ? new string[] { "--inspect", "hello.espr" } : new string[] { "hello.espr" },
+            (eng, ctx) =>
             {
-                _engine = new JsEngine(nativeEngine);
-                _context = _engine.CreateContext(nativeContext);
+                _engine = eng;
+                _context = ctx;
 
                 JsTypeDefinition jstypedef = new JsTypeDefinition("LibEspressoClass");
                 jstypedef.AddMember(new JsMethodDefinition("LoadMainSrcFile", args =>
@@ -141,7 +141,6 @@ MainLoop();");
                     {
                         work();
                     }
-
                 }));
                 _context.RegisterTypeDefinition(jstypedef);
                 _context.SetVariableFromAny("LibEspresso", _context.CreateWrapper(new object(), jstypedef));
@@ -171,11 +170,11 @@ MainLoop();");
         }
         public Task<object> ExecuteAsync(string script, Dictionary<string, object> processData)
         {
-            var tcs = new TaskCompletionSource<object>(); 
+            var tcs = new TaskCompletionSource<object>();
             Execute(script, processData, result =>
             {
                 tcs.SetResult(result);
-            }); 
+            });
             return tcs.Task;
         }
 

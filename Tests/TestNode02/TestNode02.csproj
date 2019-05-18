@@ -48,5 +48,6 @@
       <Name>EspressoCore</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\NodeJsEngineHelper\NodeJsEngineHelper.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

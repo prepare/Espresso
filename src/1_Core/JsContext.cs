@@ -62,6 +62,7 @@ namespace Espresso
         // Keep objects passed to V8 alive even if no other references exist.
         readonly IKeepAliveStore _keepalives;
         bool _disposed;
+        bool _nativeSideWasDisposed;
 
         internal JsContext(int id,
             JsEngine engine,
@@ -92,6 +93,7 @@ namespace Espresso
             _registerProperties.Add(null); //first is null 
             _proxyStore = new NativeObjectProxyStore(this);
         }
+        internal bool IsFromNativeContext { get; set; }
 
         internal INativeRef GetObjectProxy(int index) => _proxyStore.GetProxyObject(index);
 
@@ -378,7 +380,11 @@ namespace Espresso
 
             _disposed = true;
 
-            jscontext_dispose(_context);
+            if(!IsFromNativeContext)
+            {
+                jscontext_dispose(_context);
+            }
+            
 
             if (disposing)
             {
@@ -1106,6 +1112,15 @@ namespace Espresso
             this.SetVariable(name, proxy);
         }
 
+        public static void DisposeContextFromNativeSide(JsContext context)
+        {
+            if (!context.IsFromNativeContext)
+            {
+                throw new NotSupportedException();
+            }
+            context._nativeSideWasDisposed = true;
+            context.Dispose();
+        }
     }
 
     class Timer

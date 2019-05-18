@@ -20,15 +20,17 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = @"../../../node-v11.15.0/Release/libespr.dll";
-            if (File.Exists(libEspr))
-            {
-                //delete the old one
-                File.Delete(libEspr);
-            }
-            File.Copy(
-               @"../../../node-v11.15.0/Release/node.dll",
-               libEspr);
+            string libEspr = "libespr.dll";
+
+            ////string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
+            //if (File.Exists(libEspr))
+            //{
+            //    //delete the old one
+            //    File.Delete(libEspr);
+            //}
+            //File.Copy(
+            //   @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
+            //   libEspr);
 
             //-----------------------------------
             //2. load libespr.dll (node.dll)
@@ -41,32 +43,34 @@ namespace TestNode01
             JsBridge.dbugTestCallbacks();
 #endif  
             //------------
-            NodeJsEngineHelper.Run(new string[] { "--inspect", "hello.espr" },
-                ss => @" const http2 = require('http2');
-                    const fs = require('fs');
+            //http2 client
+            NodeJsEngineHelper.Run(
+                ss => @"const http2 = require('http2');
+                        const fs = require('fs');
+                        const client = http2.connect('https://localhost:8443', {
+                          ca: fs.readFileSync('localhost-cert.pem')
+                        });
+                        client.on('error', (err) => console.error(err));
 
-                    const server = http2.createSecureServer({
-                      key: fs.readFileSync('localhost-privkey.pem'),
-                      cert: fs.readFileSync('localhost-cert.pem')
-                    });
-                    server.on('error', (err) => console.error(err));
-                    server.on('socketError', (err) => console.error(err));
+                        const req = client.request({ ':path': '/' });
 
-                    server.on('stream', (stream, headers) => {
-                      // stream is a Duplex
-                      stream.respond({
-                        'content-type': 'text/html',
-                        ':status': 200
-                      });
-                      stream.end('<h1>Hello World, EspressoND, node 11.15.0</h1>');
-                    });
+                        req.on('response', (headers, flags) => {
+                          for (const name in headers) {
+                            console.log(`${name}: ${headers[name]}`);
+                          }
+                        });
 
-                    server.listen(8443);
+                        req.setEncoding('utf8');
+                        let data = '';
+                        req.on('data', (chunk) => { data += chunk; });
+                        req.on('end', () => {
+                          console.log(`\n${data}`);
+                          client.close();
+                        });
+                        req.end();
                     ");
             string userInput = Console.ReadLine();
         }
-
-
         private static void Proc_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
 
