@@ -239,7 +239,7 @@ namespace EasePatcher
             //-------
             //modify vcx project
             //insert
-            string vcx = _original_node_src_dir + "/node.vcxproj";
+            string vcx = _original_node_src_dir + "/libnode.vcxproj";
             List<string> allLines = new List<string>();
             //-------
             //create backup

@@ -24,7 +24,7 @@
 // THE SOFTWARE.
 
 //MIT, 2015, WinterDev
-//MIT, 2015-2017, EngineKit, brezza92
+//MIT, 2015-2019, EngineKit, brezza92
 
 
 #ifndef LIBVROOMJS_H
@@ -241,10 +241,12 @@ public:
 	// Conversions. Note that all the conversion functions should be called
 	// with an HandleScope already on the stack or sill misarabily fail.
 	void ErrorFromV8(TryCatch& trycatch, jsvalue* output);
-	void StringFromV8(Handle<Value> value, jsvalue* output);
-	void WrappedFromV8(Handle<Object> obj, jsvalue* output);
-	void ManagedFromV8(Handle<Object> obj, jsvalue* output);
-	void AnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output);
+    void StringFromV8(v8::Local<Value> value, jsvalue* output);
+    void WrappedFromV8(Local<Object> obj, jsvalue* output);
+    void ManagedFromV8(Local<Object> obj, jsvalue* output);
+    void AnyFromV8(Local<Value> value,
+                       Local<Object> thisArg,
+                       jsvalue* output);
 
 	Persistent<Script> *CompileScript(const uint16_t* str, const uint16_t* resourceName, jsvalue* error);
 
@@ -252,9 +254,11 @@ public:
 	//jsvalue ArrayFromArguments(const Arguments& args);//(0.10.x)
 	void ArrayFromArguments(const FunctionCallbackInfo<Value>& args, jsvalue* output);
 
-	Handle<Value> AnyToV8(jsvalue* value, int32_t contextId);
+	Local<Value> AnyToV8(jsvalue* value, int32_t contextId);
 	// Needed to create an array of args on the stack for calling functions.
-	int32_t ArrayToV8Args(jsvalue* value, int32_t contextId, Handle<Value> preallocatedArgs[]);
+        int32_t ArrayToV8Args(jsvalue* value,
+                              int32_t contextId,
+                              Local<Value> preallocatedArgs[]);
 
 	// Dispose a Persistent<Object> that was pinned on the CLR side by JsObject.
 	void DisposeObject(Persistent<Object>* obj);
@@ -329,12 +333,14 @@ public:
 	inline int32_t Id() { return id_; }
 	inline bool IsJsTypeDef() { return isJsTypeDef_; }
 
-	Handle<Value> GetPropertyValue(Local<String> name);
-	Handle<Value> SetPropertyValue(Local<String> name, Local<Value> value);
-	Handle<Value> GetValueOf();
-	Handle<Value> Invoke(const FunctionCallbackInfo<Value>& args);//(0.12.x)
-	Handle<Boolean> DeleteProperty(Local<String> name);
-	Handle<Array> EnumerateProperties();
+	v8::Local<Value> GetPropertyValue(Local<String> name);
+        v8::Local<Value> SetPropertyValue(Local<String> name,
+                                          Local<Value> value);
+        v8::Local<Value> GetValueOf();
+        v8::Local<Value> Invoke(
+            const FunctionCallbackInfo<Value>& args);  //(0.12.x)
+        v8::Local<Boolean> DeleteProperty(Local<String> name);
+        v8::Local<Array> EnumerateProperties();
 
 	v8::Persistent<v8::Object> v8InstanceHandler;
 
@@ -384,8 +390,10 @@ public:
 	void RegisterManagedCallback(void* callback, int callBackKind);
 	ManagedRef* CreateWrapperForManagedObject(int mIndex, ExternalTypeDefinition* externalTypeDef);
 
-	void ConvAnyFromV8(Handle<Value> value, Handle<Object> thisArg, jsvalue* output);
-	Handle<Value> AnyToV8(jsvalue* v);
+	void ConvAnyFromV8(Local<Value> value,
+                           Local<Object> thisArg,
+                           jsvalue* output);
+    Local<Value> AnyToV8(jsvalue* v);
 
 	inline int32_t GetId() {
 		return id_;

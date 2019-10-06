@@ -20,14 +20,14 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
+            string libEspr = @"../../../node-v12.11.1/out/Release/libespr.dll"; 
             if (File.Exists(libEspr))
             {
                 //delete the old one
                 File.Delete(libEspr);
             }
             File.Copy(
-               @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
+               @"../../../node-v12.11.1/out/Release/node.dll",
                libEspr);
 
             //-----------------------------------
@@ -58,7 +58,7 @@ namespace TestNode01
                         'content-type': 'text/html',
                         ':status': 200
                       });
-                      stream.end('<h1>Hello World, EspressoND, node 11.12.0</h1>');
+                      stream.end('<h1>Hello World, EspressoND, node 12.11.1</h1>');
                     });
 
                     server.listen(8443);
