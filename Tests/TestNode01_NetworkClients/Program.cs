@@ -20,17 +20,17 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = "libespr.dll";
+            
 
-            ////string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
-            //if (File.Exists(libEspr))
-            //{
-            //    //delete the old one
-            //    File.Delete(libEspr);
-            //}
-            //File.Copy(
-            //   @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
-            //   libEspr);
+            string libEspr = @"../../../node-v12.11.1/out/Release/libespr.dll";
+            if (File.Exists(libEspr))
+            {
+                //delete the old one
+                File.Delete(libEspr);
+            }
+            File.Copy(
+               @"../../../node-v12.11.1/out/Release/node.dll",
+               libEspr);
 
             //-----------------------------------
             //2. load libespr.dll (node.dll)
@@ -71,16 +71,7 @@ namespace TestNode01
                     ");
             string userInput = Console.ReadLine();
         }
-        private static void Proc_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
-        {
-
-        }
-
-        private static void Proc_ErrorDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
-        {
-
-        }
-
+     
 
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]

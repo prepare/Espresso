@@ -8,7 +8,7 @@ namespace Espresso
 {
     partial class JsContext
     {
-
+       
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr jscontext_new(int id, HandleRef engine);
@@ -62,6 +62,17 @@ namespace Espresso
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static internal unsafe extern void jsvalue_alloc_array(int length,
             JsValue* output);
+
+
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void jsvalue_buffer_get_len(HandleRef contextPtr, IntPtr jsNativeBuffer, ref JsValue output);
+
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void jsvalue_buffer_copy_buffer_data(HandleRef contextPtr, IntPtr jsNativeBuffer,
+            IntPtr dstMem,
+            int len, ref JsValue output);
+        //---------------------------------------------
 
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

@@ -403,17 +403,18 @@ public:
 		DECREMENT(js_mem_debug_context_count);
 	}
 	del_JsBridge myMangedCallBack;
-private:
+
+	Isolate* isolate_;
+
+ private:
 	inline JsContext() {
 		INCREMENT(js_mem_debug_context_count);
 	}
 
 	int32_t id_;
-	Isolate *isolate_;
+	
 	JsEngine *engine_;
 	Persistent<Context> *context_;
-
-
 };
 
 

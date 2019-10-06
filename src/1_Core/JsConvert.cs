@@ -33,6 +33,32 @@ using Espresso.Extension;
 
 namespace Espresso
 {
+    public class NodeJsBuffer
+    {
+        JsObject _jsobj;
+        public NodeJsBuffer(JsObject jsobj)
+        {
+            _jsobj = jsobj;
+        }
+        public int GetBufferLen(JsContext context)
+        {
+            JsValue value = new JsValue();
+            JsContext.jsvalue_buffer_get_len(context.NativeContextHandle, _jsobj.Handle, ref value);
+            return value.I32;
+        }
+        public int CopyBuffer(JsContext context, IntPtr dstmem, int len)
+        {
+            JsValue value = new JsValue();
+            JsContext.jsvalue_buffer_copy_buffer_data(
+                context.NativeContextHandle,
+                _jsobj.Handle,
+                dstmem,
+                len,
+                ref value);
+
+            return value.I32;
+        }
+    }
     class JsConvert
     {
         static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

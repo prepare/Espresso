@@ -25,7 +25,6 @@
 
 using System;
 using NUnit.Framework;
-
 namespace Espresso.Tests
 {
     [TestFixture]
