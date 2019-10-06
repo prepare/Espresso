@@ -40,7 +40,7 @@ namespace TestNode01
             //TestNodeFeature_OS_Example2();
             //TestNodeFeature_DNS_Example();
             //TestNodeFeature_Internationalization_Example();
-           // TestNodeFeature_Url_Example();
+            // TestNodeFeature_Url_Example();
 
             //TestSocketIO_ChatExample(); 
         }
@@ -59,7 +59,7 @@ namespace TestNode01
 
             NodeJsEngineHelper.Run(ss =>
             {
-                ss.SetExternalObj2("myBuffer", myBuffer);
+                ss.SetExternalObj("myBuffer", myBuffer);
                 return @"                     
                     const buf1 = Buffer.alloc(20);
 
@@ -77,27 +77,21 @@ namespace TestNode01
 
             string userInput = Console.ReadLine();
         }
-        class NodeBufferBridge : IReqContext
+        class NodeBufferBridge
         {
             JsObject _buffer;
-            JsContext _context;
+
             NodeJsBuffer _nodeJsBuffer;
             int _bufferLen;
             byte[] _memBuffer;
-
             public NodeBufferBridge()
             {
-            }
-            public void SetJsContext(JsContext context)
-            {
-                //TODO: clear this context 
-                _context = context;
             }
             public void SetBuffer(JsObject buffer)
             {
                 _buffer = buffer;
                 _nodeJsBuffer = new NodeJsBuffer(buffer);
-                _bufferLen = _nodeJsBuffer.GetBufferLen(_context);
+                _bufferLen = _nodeJsBuffer.GetBufferLen();
             }
             public void CopyBufferFromNodeJs()
             {
@@ -106,7 +100,7 @@ namespace TestNode01
                     _memBuffer = new byte[_bufferLen];
                     fixed (byte* ptr0 = &_memBuffer[0])
                     {
-                        _nodeJsBuffer.CopyBuffer(_context, (IntPtr)ptr0, _bufferLen);
+                        _nodeJsBuffer.CopyBuffer((IntPtr)ptr0, _bufferLen);
                     }
                 }
             }

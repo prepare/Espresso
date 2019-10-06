@@ -20,22 +20,9 @@ namespace Espresso
         public void SetExternalObj<T>(string name, T obj) where T : class
         {
             Context.SetVariableAutoWrap<T>(name, obj);
-        }
-        public void SetExternalObj2<T>(string name, T obj) where T : class
-        {
-            IReqContext reqContextObj = obj as IReqContext;
-            if (reqContextObj != null)
-            {
-                reqContextObj.SetJsContext(Context);
-            }
-
-            Context.SetVariableAutoWrap<T>(name, obj);
-        }
+        } 
     }
-    public interface IReqContext
-    {
-        void SetJsContext(JsContext ownerContext);
-    }
+     
     public static class NodeJsEngineHelper
     {
         const string LIB_ESPRESSO_CLASS = "LibEspressionClass";        

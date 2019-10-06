@@ -40,17 +40,17 @@ namespace Espresso
         {
             _jsobj = jsobj;
         }
-        public int GetBufferLen(JsContext context)
+        public int GetBufferLen()
         {
             JsValue value = new JsValue();
-            JsContext.jsvalue_buffer_get_len(context.NativeContextHandle, _jsobj.Handle, ref value);
+            JsContext.jsvalue_buffer_get_len(_jsobj.Context.NativeContextHandle, _jsobj.Handle, ref value);
             return value.I32;
         }
-        public int CopyBuffer(JsContext context, IntPtr dstmem, int len)
+        public int CopyBuffer( IntPtr dstmem, int len)
         {
             JsValue value = new JsValue();
             JsContext.jsvalue_buffer_copy_buffer_data(
-                context.NativeContextHandle,
+                _jsobj.Context.NativeContextHandle,
                 _jsobj.Handle,
                 dstmem,
                 len,
