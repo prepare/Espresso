@@ -84,9 +84,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>
-        ..\..\node-v11.12.0\deps\v8\include;
-        ..\..\node-v11.12.0\deps\v8\src\base;
-        ..\..\node-v11.12.0\deps\v8;
+        ..\..\node-v12.11.1\deps\v8\include;
+        ..\..\node-v12.11.1\deps\v8\src\base;
+        ..\..\node-v12.11.1\deps\v8;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
@@ -95,20 +95,18 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
-        ..\..\node-v11.12.0\Debug\lib\v8_base_0.lib;
-		..\..\node-v11.12.0\Debug\lib\v8_base_1.lib;
-		..\..\node-v11.12.0\Debug\lib\v8_base_2.lib;
-		..\..\node-v11.12.0\Debug\lib\v8_base_3.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_init.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_initializers.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libbase.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libplatform.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libsampler.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_nosnapshot.lib;
-        ..\..\node-v11.12.0\Debug\lib\icudata.lib;
-        ..\..\node-v11.12.0\Debug\lib\icuucx.lib;
-        ..\..\node-v11.12.0\Debug\lib\icui18n.lib;
-        ..\..\node-v11.12.0\Debug\lib\icutools.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_base_without_compiler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\compiler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_init.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_initializers.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libbase.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libplatform.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libsampler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_nosnapshot.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icudata.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icuucx.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icutools.lib;
         winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -120,9 +118,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>
-        ..\..\node-v11.12.0\deps\v8\include;
-        ..\..\node-v11.12.0\deps\v8\src\base;
-        ..\..\node-v11.12.0\deps\v8
+        ..\..\node-v12.11.1\deps\v8\include;
+        ..\..\node-v12.11.1\deps\v8\src\base;
+        ..\..\node-v12.11.1\deps\v8
       </AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -131,19 +129,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>
-        ..\..\node-v11.12.0\Release\lib\v8_base_0.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_1.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_2.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_3.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_init.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_initializers.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libbase.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libplatform.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libsampler.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_nosnapshot.lib;
-		..\..\node-v11.12.0\Release\lib\icudata.lib;
-        ..\..\node-v11.12.0\Release\lib\icuucx.lib;
-        ..\..\node-v11.12.0\Release\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_base_without_compiler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_compiler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_init.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_initializers.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libbase.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libplatform.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libsampler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_nosnapshot.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icudata.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icuucx.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icutools.lib;
         winmm.lib;ws2_32.lib;dbghelp.lib;shlwapi.lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>
@@ -154,9 +151,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>
-        ..\..\node-v11.12.0\deps\v8\include;
-        ..\..\node-v11.12.0\deps\v8\src\base;
-        ..\..\node-v11.12.0\deps\v8;
+        ..\..\node-v12.11.1\deps\v8\include;
+        ..\..\node-v12.11.1\deps\v8\src\base;
+        ..\..\node-v12.11.1\deps\v8;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
@@ -165,20 +162,18 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
-        ..\..\node-v11.12.0\Release\lib\v8_base_0.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_1.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_2.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_3.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_init.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_initializers.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libbase.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libplatform.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_libsampler.lib;
-        ..\..\node-v11.12.0\Debug\lib\v8_nosnapshot.lib;
-        ..\..\node-v11.12.0\Debug\lib\icudata.lib;
-        ..\..\node-v11.12.0\Debug\lib\icuucx.lib;
-        ..\..\node-v11.12.0\Debug\lib\icui18n.lib; 
-        ..\..\node-v11.12.0\Debug\lib\icutools.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_base_without_compiler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_compiler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_init.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_initializers.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libbase.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libplatform.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_libsampler.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\v8_nosnapshot.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icudata.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icuucx.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Debug\lib\icutools.lib;
         winmm.lib;ws2_32.lib;Advapi32.lib;dbghelp.lib;shlwapi.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -190,9 +185,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>
-        ..\..\node-v11.12.0\deps\v8\include;
-        ..\..\node-v11.12.0\deps\v8\src\base;
-        ..\..\node-v11.12.0\deps\v8
+        ..\..\node-v12.11.1\deps\v8\include;
+        ..\..\node-v12.11.1\deps\v8\src\base;
+        ..\..\node-v12.11.1\deps\v8
       </AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -201,19 +196,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>
-        ..\..\node-v11.12.0\Release\lib\v8_base_0.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_1.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_2.lib;
-		..\..\node-v11.12.0\Release\lib\v8_base_3.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_init.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_initializers.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libbase.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libplatform.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_libsampler.lib;
-        ..\..\node-v11.12.0\Release\lib\v8_nosnapshot.lib;
-		..\..\node-v11.12.0\Release\lib\icudata.lib;
-        ..\..\node-v11.12.0\Release\lib\icuucx.lib;
-        ..\..\node-v11.12.0\Release\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_base_without_compiler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_compiler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_init.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_initializers.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libbase.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libplatform.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_libsampler.lib;
+        ..\..\node-v12.11.1\out\Release\lib\v8_nosnapshot.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icudata.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icuucx.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icui18n.lib;
+        ..\..\node-v12.11.1\out\Release\lib\icutools.lib;
         winmm.lib;ws2_32.lib;dbghelp.lib;shlwapi.lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>

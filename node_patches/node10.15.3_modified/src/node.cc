@@ -131,9 +131,6 @@ typedef int mode_t;
 //#espresso ,#1
 #include "../src/libespresso/bridge2.h"
 void DoEngineSetupCallback(JsEngine* engine, JsContext* jsContext);
-void DoEngineClosingCallback(JsEngine* engine,
-                               JsContext* jsContext,
-                               int exitCode);
 //////////////////////////////////
 
 namespace node {
@@ -2907,11 +2904,6 @@ inline int Start(Isolate* isolate, IsolateData* isolate_data,
   env.set_trace_sync_io(false);
 
   const int exit_code = EmitExit(&env);
-
-  ////////////////////////////////
-  //#espresso ,#3
-  DoEngineClosingCallback(jsEngine, jscontext, exit_code);
-  ////////////////////////////////
 
   WaitForInspectorDisconnect(&env);
 

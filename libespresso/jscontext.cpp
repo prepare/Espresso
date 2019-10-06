@@ -23,7 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// MIT, 2015-2017, EngineKit, brezza92
+// MIT, 2015-2019, EngineKit, brezza92
 
 #include <iostream>
 #include <vector>
@@ -84,18 +84,19 @@ void JsContext::Execute(const uint16_t* str,
 
   TryCatch trycatch(isolate_);
 
-  Handle<String> source = String::NewFromTwoByte(isolate_, str);
-  Handle<Script> script;
+  v8::Local<v8::String> source = String::NewFromTwoByte(isolate_, str);
+  v8::Local<v8::Script> script;
 
   if (resourceName != NULL) {
-    Handle<String> name = String::NewFromTwoByte(isolate_, resourceName);
+    v8::Local<v8::String> name = String::NewFromTwoByte(isolate_, resourceName);
     ScriptOrigin scriptOrg(name);
+
     script = Script::Compile(isolate_->GetCurrentContext(), source, &scriptOrg)
-                 .FromMaybe(Handle<Script>());
+                 .ToLocalChecked();
 
   } else {
     script = Script::Compile(isolate_->GetCurrentContext(), source, nullptr)
-                 .FromMaybe(Handle<Script>());
+                 .ToLocalChecked();
   }
   ///
   if (!script.IsEmpty()) {
@@ -105,7 +106,7 @@ void JsContext::Execute(const uint16_t* str,
     if (result.IsEmpty()) {
       engine_->ErrorFromV8(trycatch, output);
     } else {
-      engine_->AnyFromV8(result, Handle<Object>(), output);
+      engine_->AnyFromV8(result, Local<Object>(), output);
     }
   } else {
     engine_->ErrorFromV8(trycatch, output);
@@ -124,13 +125,13 @@ void JsContext::Execute(JsScript* jsscript, jsvalue* output) {
   TryCatch trycatch(isolate_);
   Persistent<Script>* script = jsscript->GetScript();
   Local<Script> scriptHandle = Local<Script>::New(isolate_, *script);  // 0.12.x
-  if (!((*script).IsEmpty())) { 
+  if (!((*script).IsEmpty())) {
     Local<Value> result;
     scriptHandle->Run(isolate_->GetCurrentContext()).ToLocal(&result);
     if (result.IsEmpty())
       engine_->ErrorFromV8(trycatch, output);
     else
-      engine_->AnyFromV8(result, Handle<Object>(), output);
+      engine_->AnyFromV8(result, Local<Object>(), output);
   }
 
   ctx->Exit();
@@ -146,7 +147,7 @@ void JsContext::SetVariable(const uint16_t* name,
   Local<Context> ctx = Local<Context>::New(isolate_, *context_);
   ctx->Enter();
 
-  Handle<Value> v = engine_->AnyToV8(value, id_);
+  Local<Value> v = engine_->AnyToV8(value, id_);
 
   if (ctx->Global()->Set(String::NewFromTwoByte(isolate_, name), v) ==
       false) {  // 0.12.x
@@ -155,7 +156,7 @@ void JsContext::SetVariable(const uint16_t* name,
 
   ctx->Exit();
 
-  engine_->AnyFromV8(Null(isolate_), Handle<Object>(), output);
+  engine_->AnyFromV8(Null(isolate_), Local<Object>(), output);
 }
 void JsContext::GetGlobal(jsvalue* output) {
   Locker locker(isolate_);
@@ -169,7 +170,7 @@ void JsContext::GetGlobal(jsvalue* output) {
 
   Local<Value> value = ctx->Global();
   if (!value.IsEmpty()) {
-    engine_->AnyFromV8(value, Handle<Object>(), output);
+    engine_->AnyFromV8(value, Local<Object>(), output);
   } else {
     engine_->ErrorFromV8(trycatch, output);
   }
@@ -190,7 +191,7 @@ void JsContext::GetVariable(const uint16_t* name, jsvalue* output) {
   Local<Value> value =
       ctx->Global()->Get(String::NewFromTwoByte(isolate_, name));
   if (!value.IsEmpty()) {
-    engine_->AnyFromV8(value, Handle<Object>(), output);
+    engine_->AnyFromV8(value, Local<Object>(), output);
   } else {
     engine_->ErrorFromV8(trycatch, output);
   }
@@ -208,9 +209,9 @@ void JsContext::GetPropertyNames(Persistent<Object>* obj, jsvalue* output) {
   TryCatch trycatch(isolate_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  Local<Value> value = objLocal->GetPropertyNames();
+  Local<Value> value = objLocal->GetPropertyNames(ctx).ToLocalChecked();
   if (!value.IsEmpty()) {
-    engine_->AnyFromV8(value, Handle<Object>(), output);
+    engine_->AnyFromV8(value, Local<Object>(), output);
   } else {
     engine_->ErrorFromV8(trycatch, output);
   }
@@ -252,7 +253,7 @@ void JsContext::SetPropertyValue(Persistent<Object>* obj,
   Local<Context> ctx = Local<Context>::New(isolate_, *context_);
   ctx->Enter();
 
-  Handle<Value> v = engine_->AnyToV8(value, id_);
+  Local<Value> v = engine_->AnyToV8(value, id_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
   if (objLocal->Set(String::NewFromTwoByte(isolate_, name), v) == false) {
@@ -261,7 +262,7 @@ void JsContext::SetPropertyValue(Persistent<Object>* obj,
 
   ctx->Exit();
 
-  engine_->AnyFromV8(Null(isolate_), Handle<Object>(), output);
+  engine_->AnyFromV8(Null(isolate_), Local<Object>(), output);
 }
 void JsContext::InvokeFunction(Persistent<Function>* func,
                                Persistent<Object>* thisArg,
@@ -294,9 +295,9 @@ void JsContext::InvokeFunction(Persistent<Function>* func,
     // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)
     Local<Function> func = Local<Function>::Cast(prop);
     Local<Value> value =
-        func->Call(reciever, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, reciever, args->i32, &argv[0]).ToLocalChecked();
     if (!value.IsEmpty()) {
-      engine_->AnyFromV8(value, Handle<Object>(), output);
+      engine_->AnyFromV8(value, Local<Object>(), output);
     } else {
       engine_->ErrorFromV8(trycatch, output);
     }
@@ -331,9 +332,9 @@ void JsContext::InvokeProperty(Persistent<Object>* obj,
     Local<Function> func = Local<Function>::Cast(prop);
 
     Local<Value> value =
-        func->Call(objLocal, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, objLocal, args->i32, &argv[0]).ToLocalChecked();
     if (!value.IsEmpty()) {
-      engine_->AnyFromV8(value, Handle<Object>(), output);
+      engine_->AnyFromV8(value, Local<Object>(), output);
     } else {
       engine_->ErrorFromV8(trycatch, output);
     }
@@ -342,13 +343,13 @@ void JsContext::InvokeProperty(Persistent<Object>* obj,
   ctx->Exit();
 }
 
-void JsContext::ConvAnyFromV8(Handle<Value> value,
-                              Handle<Object> thisArg,
+void JsContext::ConvAnyFromV8(Local<Value> value,
+                              Local<Object> thisArg,
                               jsvalue* output) {
   this->engine_->AnyFromV8(value, thisArg, output);
 }
 
-Handle<Value> JsContext::AnyToV8(jsvalue* v) {
+Local<Value> JsContext::AnyToV8(jsvalue* v) {
   EscapableHandleScope h01(isolate_);
   return h01.Escape(
       Local<Value>::New(isolate_, this->engine_->AnyToV8(v, this->id_)));

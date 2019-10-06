@@ -1,4 +1,4 @@
-// MIT, 2015-2017, EngineKit, brezza92
+// MIT, 2015-2019, EngineKit, brezza92
 #define NODE7
 
 #include <string.h>
@@ -25,14 +25,10 @@ static void managed_prop_get(Local<Name> name,
 
   Local<Object> self = info.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  ManagedRef* ref = (ManagedRef*)wrap->Value(); 
-  info.GetReturnValue().Set(ref->GetPropertyValue(name->ToString()));
+  ManagedRef* ref = (ManagedRef*)wrap->Value();
+  info.GetReturnValue().Set(ref->GetPropertyValue(
+      name->ToString(isolate->GetCurrentContext()).ToLocalChecked()));
 }
-
-// typedef void (*GenericNamedPropertySetterCallback)(
-//    Local<Name> property,
-//    Local<Value> value,
-//    const PropertyCallbackInfo<Value>& info);
 
 static void managed_prop_set(Local<Name> name,
                              Local<Value> value,
@@ -51,7 +47,10 @@ static void managed_prop_set(Local<Name> name,
     info.GetReturnValue().Set(result);
   }
   info.GetReturnValue().Set(
-      Local<Value>::New(isolate, ref->SetPropertyValue(name->ToString(), value)));
+      ref->SetPropertyValue(name->ToString(isolate), value));
+
+  /* info.GetReturnValue()
+       isolate, ref->SetPropertyValue(name->ToString(isolate), value)));*/
 }
 
 static void managed_prop_delete(Local<Name> name,
@@ -65,8 +64,7 @@ static void managed_prop_delete(Local<Name> name,
   Local<Object> self = info.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   ManagedRef* ref = (ManagedRef*)wrap->Value();
-  info.GetReturnValue().Set(
-      Local<Boolean>::New(isolate, ref->DeleteProperty(name->ToString())));
+  info.GetReturnValue().Set(ref->DeleteProperty(name->ToString(isolate)));
 }
 
 static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info) {
@@ -83,8 +81,6 @@ static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info) {
       Local<Array>::New(isolate, ref->EnumerateProperties()));
 }
 
- 
-
 static void managed_call(const FunctionCallbackInfo<v8::Value>& args) {
 #ifdef DEBUG_TRACE_API
   std::cout << "managed_call" << std::endl;
@@ -95,8 +91,13 @@ static void managed_call(const FunctionCallbackInfo<v8::Value>& args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   ManagedRef* ref = (ManagedRef*)wrap->Value();
+ /* args.GetReturnValue().Set(
+      scope.EscapeMaybe(Local<Value>::New(isolate, ref->Invoke(args))));*/
+
   args.GetReturnValue().Set(
-      scope.Escape(Local<Value>::New(isolate, ref->Invoke(args))));
+      Local<Value>::New(isolate, ref->Invoke(args)));
+
+  // scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));
 }
 
 void managed_valueof(const FunctionCallbackInfo<Value>& args) {
@@ -150,8 +151,9 @@ JsEngine* JsEngine::NewFromExistingIsolate(v8::Isolate* isolate) {
   auto context_n = Context::New(engine->isolate_);
   // Setup the template we'll use for all managed object references.
   // FunctionCallback callback;
-  Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
-  Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
+  v8::Local<FunctionTemplate> fo =
+      FunctionTemplate::New(engine->isolate_, NULL);
+  v8::Local<ObjectTemplate> obj_template = fo->InstanceTemplate();
   obj_template->SetInternalFieldCount(1);
 
   /*NamedPropertyHandlerConfiguration namedPropHandlerConf(
@@ -211,30 +213,15 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1,
   params.array_buffer_allocator = array_buffer_allocator;
   engine->isolate_ = Isolate::New(params);  //
 
-  //-------------------------------------------------
-  // engine->isolate_->Enter();
-  ////if (max_young_space > 0 && max_old_space > 0) {
-  ////	v8::ResourceConstraints constraints;
-  ////	//constraints.set_max_young_space_size(max_young_space * Mega);//0.10.x
-  ////	constraints.set_max_semi_space_size(max_young_space * Mega);//0.12.x
-  ////	constraints.set_max_old_space_size(max_old_space * Mega);
-  ////
-  ////	//v8::SetResourceConstraints(&constraints); //0.10.x
-  //// 	//v8::SetResourceConstraints(engine->isolate_, &constraints); //0.12.x
-  ////
-  ////
-  ////}
-  // engine->isolate_->Exit();
-  //--------------------------------------------------
-
   Locker locker(engine->isolate_);
   Isolate::Scope isolate_scope(engine->isolate_);
   HandleScope scope(engine->isolate_);
   auto context_n = Context::New(engine->isolate_);
   // Setup the template we'll use for all managed object references.
 
-  Handle<FunctionTemplate> fo = FunctionTemplate::New(engine->isolate_, NULL);
-  Handle<ObjectTemplate> obj_template = fo->InstanceTemplate();
+  v8::Local<FunctionTemplate> fo =
+      FunctionTemplate::New(engine->isolate_, NULL);
+  v8::Local<ObjectTemplate> obj_template = fo->InstanceTemplate();
   obj_template->SetInternalFieldCount(1);
 
   obj_template->SetHandler(
@@ -278,17 +265,17 @@ Persistent<Script>* JsEngine::CompileScript(const uint16_t* str,
 
   ((Context*)global_context_)->Enter();
 
-  Handle<String> source = String::NewFromTwoByte(isolate_, str);
-  Handle<Script> script;
+  v8::Local<String> source = String::NewFromTwoByte(isolate_, str);
+  v8::Local<Script> script;
 
   if (resourceName != NULL) {
-    Handle<String> name = String::NewFromTwoByte(isolate_, resourceName);
+    v8::Local<String> name = String::NewFromTwoByte(isolate_, resourceName);
     ScriptOrigin scOrg(name);
     script = Script::Compile(isolate_->GetCurrentContext(), source, &scOrg)
-                 .FromMaybe(Handle<Script>());
+                 .FromMaybe(v8::Local<Script>());
   } else {
     script = Script::Compile(isolate_->GetCurrentContext(), source, nullptr)
-                 .FromMaybe(Handle<Script>());
+                 .FromMaybe(v8::Local<Script>());
   }
 
   if (script.IsEmpty()) {
@@ -394,7 +381,7 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output) {
 
   Local<Message> message = trycatch.Message();
 
-  auto thisHandle = Handle<Object>();
+  auto thisHandle = v8::Local<Object>();
   if (!message.IsEmpty()) {
     error->line =
         message->GetLineNumber(isolate_->GetCurrentContext()).FromMaybe(0);
@@ -419,25 +406,25 @@ void JsEngine::ErrorFromV8(TryCatch& trycatch, jsvalue* output) {
   output->ptr = error;  // point to native js error
 }
 
-void JsEngine::StringFromV8(Handle<Value> value, jsvalue* output) {
+void JsEngine::StringFromV8(Local<Value> value, jsvalue* output) {
   // create string output from v8 value
   // and send back to jsvalue
 
   // TODO: review how to alloc string again
 
-  Local<String> s = value->ToString();
+  Local<String> s = value->ToString(isolate_);
   int string_len = s->Length();
   output->i32 = string_len;  // i32 as strign len
   uint16_t* str_buffer =
       new uint16_t[string_len + 1];  // null terminated string on HEAP
   if (str_buffer != NULL) {
-    s->Write(str_buffer);
+    s->Write(isolate_, str_buffer);
     output->type = JSVALUE_TYPE_STRING;
     output->ptr = str_buffer;
   }
 }
 
-void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output) {
+void JsEngine::WrappedFromV8(Local<Object> obj, jsvalue* output) {
   output->type = JSVALUE_TYPE_WRAPPED;
   output->i32 = 0;
   // A Persistent<Object> is exactly the size of an IntPtr, right?
@@ -447,26 +434,10 @@ void JsEngine::WrappedFromV8(Handle<Object> obj, jsvalue* output) {
   // v.value.ptr = new Persistent<Object>(Persistent<Object>::New(obj));
   Persistent<Object>* persistent = new Persistent<Object>();
   persistent->Reset(isolate_, Persistent<Object>(isolate_, obj));
-  output->ptr =
-      persistent;  // new Persistent<Object>(Persistent<Object>(isolate_, obj));
-
-  //-------------------------------------------------------------------------
-  /*v.type = JSVALUE_TYPE_DICT;
-  Local<Array> names = obj->GetOwnPropertyNames();
-  v.length = names->Length();
-  jsvalue* values = new jsvalue[v.length * 2];
-  if (values != NULL) {
-          for(int i = 0; i < v.length; i++) {
-                  int indx = (i * 2);
-                  Local<Value> key = names->Get(i);
-                  values[indx] = AnyFromV8(key);
-                  values[indx+1] = AnyFromV8(obj->Get(key));
-          }
-          v.value.arr = values;
-  }*/
+  output->ptr = persistent;
 }
 
-void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output) {
+void JsEngine::ManagedFromV8(v8::Local<Object> obj, jsvalue* output) {
   Local<External> wrap = Local<External>::Cast(obj->GetInternalField(0));
   ManagedRef* ref = (ManagedRef*)wrap->Value();
   output->type =
@@ -475,8 +446,8 @@ void JsEngine::ManagedFromV8(Handle<Object> obj, jsvalue* output) {
   output->ptr = nullptr;
 }
 
-void JsEngine::AnyFromV8(Handle<Value> value,
-                         Handle<Object> thisArg,
+void JsEngine::AnyFromV8(v8::Local<Value> value,
+                         v8::Local<Object> thisArg,
                          jsvalue* output) {
   // Initialize to a generic error.
   output->type = JSVALUE_TYPE_UNKNOWN_ERROR;
@@ -487,30 +458,43 @@ void JsEngine::AnyFromV8(Handle<Value> value,
     output->type = JSVALUE_TYPE_NULL;
   } else if (value->IsBoolean()) {
     output->type = JSVALUE_TYPE_BOOLEAN;
-    output->i32 = value->BooleanValue() ? 1 : 0;
+
+    bool outValue;
+    value->BooleanValue(isolate_->GetCurrentContext()).To(&outValue);
+    output->i32 = outValue ? 1 : 0;
+
   } else if (value->IsInt32()) {
     output->type = JSVALUE_TYPE_INTEGER;
-    output->i32 = value->Int32Value();
+    value->Int32Value(isolate_->GetCurrentContext()).To(&output->i32);
+
   } else if (value->IsUint32()) {
-    output->type = JSVALUE_TYPE_INDEX;
-    output->i64 = value->Uint32Value();
+    output->type = JSVALUE_TYPE_INDEX;  // TODO: ????
+
+    uint32_t outValue;
+    value->Uint32Value(isolate_->GetCurrentContext()).To(&outValue);
+    output->i64 = outValue;
+
   } else if (value->IsNumber()) {
     output->type = JSVALUE_TYPE_NUMBER;
-    output->num = value->NumberValue();
+    value->NumberValue(isolate_->GetCurrentContext()).To(&output->num);
+
   } else if (value->IsString()) {
     StringFromV8(value, output);
   } else if (value->IsDate()) {
     output->type = JSVALUE_TYPE_DATE;
     // v.value.num = value->NumberValue();
-    output->i64 = value->IntegerValue();
+    int64_t outValue;
+    value->IntegerValue(isolate_->GetCurrentContext()).To(&outValue);
+    output->i64 = outValue;
+
   } else if (value->IsArray()) {
-    Handle<Array> object = Handle<Array>::Cast(value->ToObject());
+    Local<Array> object = Local<Array>::Cast(value->ToObject(isolate_));
     int arrLen = object->Length();
     // ON HEAP
     jsvalue* arr = (jsvalue*)calloc(arrLen, sizeof(jsvalue));
     if (arr != NULL) {
       output->i32 = arrLen;  // i32 as array len
-      auto handle_object = Handle<Object>();
+      auto handle_object = Local<Object>();
       for (int i = 0; i < arrLen; i++) {
         AnyFromV8(object->Get(i), handle_object, (arr + i));
       }
@@ -518,7 +502,7 @@ void JsEngine::AnyFromV8(Handle<Value> value,
       output->ptr = arr;
     }
   } else if (value->IsFunction()) {
-    Handle<Function> function = Handle<Function>::Cast(value);
+    v8::Local<Function> function = v8::Local<Function>::Cast(value);
     // ON HEAP
     jsvalue* arr = (jsvalue*)calloc(2, sizeof(jsvalue));
     if (arr != NULL) {
@@ -548,7 +532,7 @@ void JsEngine::AnyFromV8(Handle<Value> value,
       output->ptr = arr;
     }
   } else if (value->IsObject()) {
-    Handle<Object> obj = Handle<Object>::Cast(value);
+    v8::Local<Object> obj = Local<Object>::Cast(value);
     if (obj->InternalFieldCount() == 1)
       ManagedFromV8(obj, output);
     else
@@ -580,14 +564,6 @@ static void managed_destroy(
   void* internalField = data.GetInternalField(0);
   ManagedRef* ref = (ManagedRef*)internalField;
   delete ref;
-
-  // Local<Object> selfHandle1 = Local<Object>::New(isolate,
-  // data.GetInternalField(0));//0.12.x Persistent<Object> self;// =
-  // Persistent<Object>(isolate, data.GetValue());//0.12.x self.Reset(isolate,
-  // data); Local<Object> selfHandle = Local<Object>::New(isolate,
-  // self);//0.12.x Local<External> wrap =
-  // Local<External>::Cast(selfHandle->GetInternalField(0));//0.12.x ManagedRef*
-  // ref = (ManagedRef*)wrap->Value(); delete ref;
 }
 #else
 
@@ -622,11 +598,11 @@ static void managed_destroy(
 }
 #endif
 
-Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
+v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
   // convert to v8 value from a given jsvalue
   switch (v->type) {
     case JSVALUE_TYPE_EMPTY:
-      return Handle<Value>();
+      return Local<Value>();
     case JSVALUE_TYPE_NULL:
       return Null(isolate_);
     case JSVALUE_TYPE_BOOLEAN:
@@ -639,7 +615,9 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       return String::NewFromTwoByte(isolate_,
                                     (uint16_t*)v->ptr);  //::New(v.value.str);
     case JSVALUE_TYPE_DATE:
-      return Date::New(isolate_, v->num);
+
+      return Date::New(isolate_->GetCurrentContext(), v->num).ToLocalChecked();
+
     case JSVALUE_TYPE_JSTYPEDEF: {
       ManagedRef* ext = (ManagedRef*)v->ptr;
       Local<Object> obj = Local<Object>::New(isolate_, ext->v8InstanceHandler);
@@ -668,7 +646,9 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
           this, contextId, v->i32, false);  // i32 as managed refence slot id
       Local<Object> object = ((FunctionTemplate*)managed_template_)
                                  ->InstanceTemplate()
-                                 ->NewInstance();
+                                 ->NewInstance(isolate_->GetCurrentContext())
+                                 .ToLocalChecked();
+
       if (object.IsEmpty()) {
         return Null(isolate_);
       }
@@ -689,7 +669,7 @@ Handle<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
 }
 int32_t JsEngine::ArrayToV8Args(jsvalue* value,
                                 int32_t contextId,
-                                Handle<Value> preallocatedArgs[]) {
+                                Local<Value> preallocatedArgs[]) {
   if (value->type != JSVALUE_TYPE_ARRAY) return -1;
 
   int arrLen = value->i32;  // arr len
