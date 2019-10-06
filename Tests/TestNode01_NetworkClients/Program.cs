@@ -20,17 +20,17 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = "libespr.dll";
 
-            ////string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
-            //if (File.Exists(libEspr))
-            //{
-            //    //delete the old one
-            //    File.Delete(libEspr);
-            //}
-            //File.Copy(
-            //   @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
-            //   libEspr);
+
+            string libEspr = @"../../../node-v12.11.1/out/Release/libespr.dll";
+            if (File.Exists(libEspr))
+            {
+                //delete the old one
+                File.Delete(libEspr);
+            }
+            File.Copy(
+               @"../../../node-v12.11.1/out/Release/node.dll",
+               libEspr);
 
             //-----------------------------------
             //2. load libespr.dll (node.dll)
@@ -41,18 +41,27 @@ namespace TestNode01
             int libesprVer = JsBridge.LibVersion;
 #if DEBUG
             JsBridge.dbugTestCallbacks();
-#endif  
+#endif
             //------------
             //http2 client
+
+            //http2 client
+            HttpResp httpResp = new HttpResp();
+
             NodeJsEngineHelper.Run(
-                ss => @"const http2 = require('http2');
+                ss =>
+                {
+                    ss.SetExternalObj("my_resp", httpResp);
+
+                    return @"const http2 = require('http2');
                         const fs = require('fs');
                         const client = http2.connect('https://localhost:8443', {
                           ca: fs.readFileSync('localhost-cert.pem')
                         });
                         client.on('error', (err) => console.error(err));
 
-                        const req = client.request({ ':path': '/' });
+                        //const req = client.request({ ':path': '/' });
+                        const req = client.request({ ':path': '/' ,'body':'123456789'});
 
                         req.on('response', (headers, flags) => {
                           for (const name in headers) {
@@ -64,23 +73,24 @@ namespace TestNode01
                         let data = '';
                         req.on('data', (chunk) => { data += chunk; });
                         req.on('end', () => {
-                          console.log(`\n${data}`);
+                          //console.log(`\n${data}`);
+                          my_resp.Data=data;
                           client.close();
                         });
                         req.end();
-                    ");
+                    ";
+               });
+
             string userInput = Console.ReadLine();
+            if (httpResp.Data != null)
+            {
+                Console.WriteLine(httpResp.Data);
+            }
         }
-        private static void Proc_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
+        class HttpResp
         {
-
+            public string Data { get; set; }
         }
-
-        private static void Proc_ErrorDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
-        {
-
-        }
-
 
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]

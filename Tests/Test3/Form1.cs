@@ -112,7 +112,7 @@ namespace Test3
             [JsMethod]
             public void AttachEvent(string eventName, AboutMeEventHandler evHandler)
             {
-                this._mousedownEventHandler = evHandler;
+                _mousedownEventHandler = evHandler;
             }
             [JsMethod]
             public void FireEventMouseDown(object eventArg)

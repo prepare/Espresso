@@ -309,7 +309,7 @@ namespace Espresso
 				Console.WriteLine("Calling jsEngine dispose: " + _engine.Handle.ToInt64());
 #endif
 
-            if (!this._nativeSideWasDisposed)
+            if (!_engineFromNativePtr && !_nativeSideWasDisposed)
             {
                 jsengine_dispose(_engine);
             }

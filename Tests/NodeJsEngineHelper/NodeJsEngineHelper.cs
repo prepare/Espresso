@@ -10,18 +10,19 @@ namespace Espresso
     public class NodeJsExecSession
     {
         readonly JsEngine Engine;
-        readonly JsContext Context;
+        
         internal NodeJsExecSession(JsEngine engine, JsContext ctx)
         {
             Engine = engine;
             Context = ctx;
         }
+        public JsContext Context { get; private set; }
         public void SetExternalObj<T>(string name, T obj) where T : class
         {
             Context.SetVariableAutoWrap<T>(name, obj);
-        }
+        } 
     }
-
+     
     public static class NodeJsEngineHelper
     {
         const string LIB_ESPRESSO_CLASS = "LibEspressionClass";        
