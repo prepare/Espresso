@@ -43,8 +43,12 @@ JsContext* JsContext::New(int id, JsEngine* engine) {
     Locker locker(context->isolate_);
     Isolate::Scope isolate_scope(context->isolate_);
     HandleScope scope(context->isolate_);
+
+	auto current = Context::New(context->isolate_);
+	current->Global()->Set(current, String::NewFromUtf8(context->isolate_, "global"), current->Global());
+
     context->context_ = new Persistent<Context>(
-        context->isolate_, Context::New(context->isolate_));
+        context->isolate_, current);
   }
   return context;
 }

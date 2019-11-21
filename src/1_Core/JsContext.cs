@@ -46,8 +46,9 @@ namespace Espresso
         readonly HandleRef _context; //native js context
         readonly Action<int> _notifyDispose;
 
-        List<JsMethodDefinition> _registerMethods = new List<JsMethodDefinition>();
-        List<JsPropertyDefinition> _registerProperties = new List<JsPropertyDefinition>();
+		static List<JsMethodDefinition> _registerMethods;
+        static List<JsPropertyDefinition> _registerProperties;
+		static JsContext instance;
 
         Dictionary<Type, JsTypeDefinition> _mappingJsTypeDefinition = new Dictionary<Type, JsTypeDefinition>();
         Dictionary<Type, DelegateTemplate> _cachedDelSamples = new Dictionary<Type, DelegateTemplate>();
@@ -86,10 +87,13 @@ namespace Espresso
             _convert = new JsConvert(this);
 
             _jsTypeDefBuilder = jsTypeDefBuilder;
+			instance = this;
 
-            _engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
+			_engineMethodCallbackDel = new ManagedMethodCallDel(EngineListener_MethodCall);
             NativeV8JsInterOp.CtxRegisterManagedMethodCall(this, _engineMethodCallbackDel);
-            _registerMethods.Add(null);//first is null
+			_registerMethods = new List<JsMethodDefinition>();
+			_registerMethods.Add(null);//first is null
+			_registerProperties = new List<JsPropertyDefinition>();
             _registerProperties.Add(null); //first is null 
             _proxyStore = new NativeObjectProxyStore(this);
         }
@@ -122,7 +126,8 @@ namespace Espresso
 
         }
 
-        void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
+		[MonoPInvokeCallback(typeof(ManagedMethodCallDel))]
+        static void EngineListener_MethodCall(int mIndex, int methodKind, IntPtr metArgs)
         {
             switch (methodKind)
             {
@@ -135,7 +140,7 @@ namespace Espresso
 
                         if (getterMethod != null)
                         {
-                            getterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
+                            getterMethod.InvokeMethod(new ManagedMethodArgs(instance, metArgs));
                         }
 
                     }
@@ -148,7 +153,7 @@ namespace Espresso
                         JsMethodDefinition setterMethod = _registerProperties[mIndex].SetterMethod;
                         if (setterMethod != null)
                         {
-                            setterMethod.InvokeMethod(new ManagedMethodArgs(this, metArgs));
+                            setterMethod.InvokeMethod(new ManagedMethodArgs(instance, metArgs));
                         }
                     }
                     break;
@@ -158,7 +163,7 @@ namespace Espresso
                         JsMethodDefinition foundMet = _registerMethods[mIndex];
                         if (foundMet != null)
                         {
-                            foundMet.InvokeMethod(new ManagedMethodArgs(this, metArgs));
+                            foundMet.InvokeMethod(new ManagedMethodArgs(instance, metArgs));
                         }
                     }
                     break;
