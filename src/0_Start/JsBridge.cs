@@ -9,7 +9,7 @@ namespace Espresso
 
     public static partial class JsBridge
     {
-        public const string LIB_NAME = "node";
+       
         static JsBridge()
         {
 
