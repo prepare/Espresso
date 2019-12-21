@@ -46,11 +46,12 @@ static void managed_prop_set(Local<Name> name,
     Local<Value> result;
     info.GetReturnValue().Set(result);
   }
-  info.GetReturnValue().Set(
-      ref->SetPropertyValue(name->ToString(isolate), value));
 
-  /* info.GetReturnValue()
-       isolate, ref->SetPropertyValue(name->ToString(isolate), value)));*/
+  auto context = isolate->GetCurrentContext();
+  v8::Local<String> propName;
+  if (name->ToString(context).ToLocal(&propName)) {
+    info.GetReturnValue().Set(ref->SetPropertyValue(propName, value));
+  }
 }
 
 static void managed_prop_delete(Local<Name> name,
@@ -64,7 +65,14 @@ static void managed_prop_delete(Local<Name> name,
   Local<Object> self = info.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   ManagedRef* ref = (ManagedRef*)wrap->Value();
-  info.GetReturnValue().Set(ref->DeleteProperty(name->ToString(isolate)));
+
+  auto context = isolate->GetCurrentContext();
+  v8::Local<String> propName;
+  if (name->ToString(context).ToLocal(&propName)) {
+    info.GetReturnValue().Set(ref->DeleteProperty(propName));
+  }
+
+  // info.GetReturnValue().Set(ref->DeleteProperty(name->ToString(isolate)));
 }
 
 static void managed_prop_enumerate(const PropertyCallbackInfo<Array>& info) {
@@ -91,11 +99,10 @@ static void managed_call(const FunctionCallbackInfo<v8::Value>& args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   ManagedRef* ref = (ManagedRef*)wrap->Value();
- /* args.GetReturnValue().Set(
-      scope.EscapeMaybe(Local<Value>::New(isolate, ref->Invoke(args))));*/
+  /* args.GetReturnValue().Set(
+       scope.EscapeMaybe(Local<Value>::New(isolate, ref->Invoke(args))));*/
 
-  args.GetReturnValue().Set(
-      Local<Value>::New(isolate, ref->Invoke(args)));
+  args.GetReturnValue().Set(Local<Value>::New(isolate, ref->Invoke(args)));
 
   // scope.Escape(Local<Value>::New(isolate, ref->Invoke(args)));
 }
@@ -190,11 +197,13 @@ JsEngine* JsEngine::NewFromExistingIsolate(v8::Isolate* isolate) {
 
   engine->global_context_ =
       new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
+
   Local<Context> ctx =
       Local<Context>::New(engine->isolate_, *engine->global_context_);
   ctx->Enter();
-  fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"),
-                               ff);
+
+  fo->PrototypeTemplate()->Set(engine->isolate_, "valueOf", ff);
+
   ctx->Exit();
 
   return engine;
@@ -244,11 +253,14 @@ JsEngine* JsEngine::New(int32_t max_young_space = -1,
 
   engine->global_context_ =
       new Persistent<Context>(engine->isolate_, Context::New(engine->isolate_));
+
   Local<Context> ctx =
       Local<Context>::New(engine->isolate_, *engine->global_context_);
+
   ctx->Enter();
-  fo->PrototypeTemplate()->Set(String::NewFromUtf8(engine->isolate_, "valueOf"),
-                               ff);
+
+  fo->PrototypeTemplate()->Set(engine->isolate_, "valueOf", ff);
+
   ctx->Exit();
 
   return engine;
@@ -265,11 +277,13 @@ Persistent<Script>* JsEngine::CompileScript(const uint16_t* str,
 
   ((Context*)global_context_)->Enter();
 
-  v8::Local<String> source = String::NewFromTwoByte(isolate_, str);
+  v8::Local<String> source;
+  String::NewFromTwoByte(isolate_, str).ToLocal(&source);
   v8::Local<Script> script;
 
   if (resourceName != NULL) {
-    v8::Local<String> name = String::NewFromTwoByte(isolate_, resourceName);
+    v8::Local<String> name;
+    String::NewFromTwoByte(isolate_, resourceName).ToLocal(&name);
     ScriptOrigin scOrg(name);
     script = Script::Compile(isolate_->GetCurrentContext(), source, &scOrg)
                  .FromMaybe(v8::Local<Script>());
@@ -412,9 +426,12 @@ void JsEngine::StringFromV8(Local<Value> value, jsvalue* output) {
 
   // TODO: review how to alloc string again
 
-  Local<String> s = value->ToString(isolate_);
+  Local<String> s;
+  value->ToString(isolate_->GetCurrentContext()).ToLocal(&s);
+
   int string_len = s->Length();
   output->i32 = string_len;  // i32 as strign len
+
   uint16_t* str_buffer =
       new uint16_t[string_len + 1];  // null terminated string on HEAP
   if (str_buffer != NULL) {
@@ -459,8 +476,7 @@ void JsEngine::AnyFromV8(v8::Local<Value> value,
   } else if (value->IsBoolean()) {
     output->type = JSVALUE_TYPE_BOOLEAN;
 
-    bool outValue;
-    value->BooleanValue(isolate_->GetCurrentContext()).To(&outValue);
+    bool outValue = value->BooleanValue(isolate_);
     output->i32 = outValue ? 1 : 0;
 
   } else if (value->IsInt32()) {
@@ -488,16 +504,25 @@ void JsEngine::AnyFromV8(v8::Local<Value> value,
     output->i64 = outValue;
 
   } else if (value->IsArray()) {
-    Local<Array> object = Local<Array>::Cast(value->ToObject(isolate_));
+    Local<Object> value_inside;
+    auto ctx = isolate_->GetCurrentContext();
+    value->ToObject(ctx).ToLocal(&value_inside);
+    Local<Array> object = Local<Array>::Cast(value_inside);
+
     int arrLen = object->Length();
     // ON HEAP
     jsvalue* arr = (jsvalue*)calloc(arrLen, sizeof(jsvalue));
     if (arr != NULL) {
       output->i32 = arrLen;  // i32 as array len
       auto handle_object = Local<Object>();
+
       for (int i = 0; i < arrLen; i++) {
-        AnyFromV8(object->Get(i), handle_object, (arr + i));
+        
+            Local<Value> elem;
+            object->Get(ctx, i).ToLocal(&elem);
+            AnyFromV8(elem, handle_object, (arr + i));
       }
+
       output->type = JSVALUE_TYPE_ARRAY;
       output->ptr = arr;
     }
@@ -611,9 +636,12 @@ v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       return Int32::New(isolate_, v->i32);
     case JSVALUE_TYPE_NUMBER:
       return Number::New(isolate_, v->num);
-    case JSVALUE_TYPE_STRING:
-      return String::NewFromTwoByte(isolate_,
-                                    (uint16_t*)v->ptr);  //::New(v.value.str);
+    case JSVALUE_TYPE_STRING: {
+      v8::Local<v8::String> value1;
+      String::NewFromTwoByte(isolate_, (uint16_t*)v->ptr).ToLocal(&value1);
+      return value1;
+    }
+
     case JSVALUE_TYPE_DATE:
 
       return Date::New(isolate_->GetCurrentContext(), v->num).ToLocalChecked();
@@ -629,8 +657,9 @@ v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       int arrLen = v->i32;
       jsvalue* arr = (jsvalue*)v->ptr;
       Local<Array> a = Array::New(isolate_, arrLen);  // i32 as length
+      auto ctx = isolate_->GetCurrentContext();
       for (int i = 0; i < arrLen; i++) {
-        a->Set(i, AnyToV8((arr + i), contextId));
+        a->Set(ctx, i, AnyToV8((arr + i), contextId));
       }
       return a;
     }

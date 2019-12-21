@@ -141,7 +141,7 @@ void DoGetterProperty(Local<String> propertyName,
   v8::Local<External> external =
       v8::Local<External>::Cast(info.Holder()->GetInternalField(0));
 
-  ManagedRef* extHandler = (ManagedRef*)external->Value(); 
+  ManagedRef* extHandler = (ManagedRef*)external->Value();
 
   MetCallingArgs callingArgs;
   memset(&callingArgs, 0, sizeof(MetCallingArgs));
@@ -234,13 +234,17 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,
     CallingContext* callingContext = new CallingContext();
     callingContext->ctx = this;
     callingContext->mIndex = methodId;
+
     auto wrap = v8::External::New(isolate_, callingContext);
 
     Local<FunctionTemplate> funcTemplate =
         FunctionTemplate::New(isolate_, DoMethodCall, wrap);
-    objTemplate->Set(
-        String::NewFromTwoByte(isolate_, (uint16_t*)(metName.c_str())),
-        funcTemplate);
+
+    Local<String> met_name;
+    String::NewFromTwoByte(isolate_, (uint16_t*)(metName.c_str()))
+        .ToLocal(&met_name);
+
+    objTemplate->Set(met_name, funcTemplate);     
   }
 
   // 7. properties and indexer
@@ -257,11 +261,14 @@ ExternalTypeDefinition* JsContext::RegisterTypeDefinition(int mIndex,
     callingContext->mIndex = property_id;
     auto wrap = v8::External::New(isolate_, callingContext);
 
-    objTemplate->SetAccessor(
-        String::NewFromTwoByte(isolate_, (uint16_t*)(propName.c_str())),
-        DoGetterProperty,
-        (AccessorSetterCallback)DoSetterProperty,
-        wrap);
+    v8::Local<v8::String> acc_name;
+    String::NewFromTwoByte(isolate_, (uint16_t*)(propName.c_str()))
+        .ToLocal(&acc_name);
+
+    objTemplate->SetAccessor(acc_name,
+                             DoGetterProperty,
+                             (AccessorSetterCallback)DoSetterProperty,
+                             wrap);
   }
   externalTypeDef->handlerToJsObjectTemplate.Reset(isolate_, objTemplate);
   ctx->Exit();
@@ -351,7 +358,7 @@ int ArgCount(MetCallingArgs* args) {
 static v8::Platform* default_platform;
 void V8Init() {
   const int thread_pool_size = 4;
-  
+
   default_platform = v8::platform::NewDefaultPlatform(thread_pool_size).get();
   V8::InitializePlatform(default_platform);
   V8::Initialize();
