@@ -28,7 +28,7 @@ using NUnit.Framework;
 
 namespace Espresso.Tests
 {
-    [TestFixture]
+   [TestFixture]
     public class Exceptions
     {
         JsEngine jsEngine;

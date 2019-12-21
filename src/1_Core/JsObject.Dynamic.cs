@@ -80,6 +80,7 @@ namespace Espresso
             _handle = ptr;
         }
         public IntPtr Handle => _handle;
+        public JsContext Context => _context;
 
         public virtual bool TryInvokeMember(string name, object[] args, out object result)
         {

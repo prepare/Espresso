@@ -20,33 +20,93 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
-            string libEspr = @"../../../node-v11.12.0/Release/libespr.dll"; //previous version 8.4.0
-            if (File.Exists(libEspr))
-            {
-                //delete the old one
-                File.Delete(libEspr);
-            }
-            File.Copy(
-               @"../../../node-v11.12.0/Release/node.dll", // //previous version 8.4.0
-               libEspr);
+            string libEspr = @"../../../node-v12.11.1/out/Release/node.dll";
+            //if (File.Exists(libEspr))
+            //{
+            //    //delete the old one
+            //    File.Delete(libEspr);
+            //}
+            //File.Copy(
+            //   @"../../../node-v12.11.1/out/Release/node.dll",
+            //   libEspr);
 
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
 
-             
+            TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
             //TestNodeFeature_OS_Example2();
             //TestNodeFeature_DNS_Example();
             //TestNodeFeature_Internationalization_Example();
-            TestNodeFeature_Url_Example();
+            // TestNodeFeature_Url_Example();
 
             //TestSocketIO_ChatExample(); 
         }
-       
 
 
+        static void TestNodeJs_Buffer()
+        {
+            //https://nodejs.org/api/buffer.html
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+            //------------ 
+
+            ////example2: get value from node js              
+            NodeBufferBridge myBuffer = new NodeBufferBridge();
+
+            NodeJsEngineHelper.Run(ss =>
+            {
+                ss.SetExternalObj("myBuffer", myBuffer);
+                return @"                     
+                    const buf1 = Buffer.alloc(20);
+
+                    buf1.writeUInt8(0, 0);
+                    buf1.writeUInt8(1, 1);
+                    buf1.writeUInt8(2, 2);
+
+                    //-----------
+                    myBuffer.SetBuffer(buf1);
+                    myBuffer.CopyBufferFromNodeJs();
+                    console.log(buf1);    
+                    ";
+            });
+            int buffLen = myBuffer.Length;
+
+            string userInput = Console.ReadLine();
+        }
+        class NodeBufferBridge
+        {
+            JsObject _buffer;
+
+            NodeJsBuffer _nodeJsBuffer;
+            int _bufferLen;
+            byte[] _memBuffer;
+            public NodeBufferBridge()
+            {
+            }
+            public void SetBuffer(JsObject buffer)
+            {
+                _buffer = buffer;
+                _nodeJsBuffer = new NodeJsBuffer(buffer);
+                _bufferLen = _nodeJsBuffer.GetBufferLen();
+            }
+            public void CopyBufferFromNodeJs()
+            {
+                unsafe
+                {
+                    _memBuffer = new byte[_bufferLen];
+                    fixed (byte* ptr0 = &_memBuffer[0])
+                    {
+                        _nodeJsBuffer.CopyBuffer((IntPtr)ptr0, _bufferLen);
+                    }
+                }
+            }
+            public int Length => _bufferLen;
+            public byte[] CopyMem() => _memBuffer;
+        }
         static void TestNodeVM_Example()
         {
 

@@ -19,8 +19,9 @@ namespace TestNode01
             //we will get node.dll
             //then just copy it to another name 'libespr'   
             string currentdir = System.IO.Directory.GetCurrentDirectory();
+         
 
-            string libEspr = @"../../../node-v12.11.1/out/Release/libespr.dll"; 
+            string libEspr = @"../../../node-v12.11.1/out/Release/libespr.dll";
             if (File.Exists(libEspr))
             {
                 //delete the old one
@@ -39,12 +40,17 @@ namespace TestNode01
             int libesprVer = JsBridge.LibVersion;
 #if DEBUG
             JsBridge.dbugTestCallbacks();
-#endif  
+#endif
             //------------
+            MyApp myApp = new MyApp();
             NodeJsEngineHelper.Run(new string[] { "--inspect", "hello.espr" },
-                ss => @" const http2 = require('http2');
-                    const fs = require('fs');
+               ss =>
+               {
+                   ss.SetExternalObj("myApp", myApp);
 
+                   return @" const http2 = require('http2');
+                    const fs = require('fs');
+                    
                     const server = http2.createSecureServer({
                       key: fs.readFileSync('localhost-privkey.pem'),
                       cert: fs.readFileSync('localhost-cert.pem')
@@ -54,18 +60,42 @@ namespace TestNode01
 
                     server.on('stream', (stream, headers) => {
                       // stream is a Duplex
-                      stream.respond({
-                        'content-type': 'text/html',
-                        ':status': 200
-                      });
-                      stream.end('<h1>Hello World, EspressoND, node 12.11.1</h1>');
+                      //const method = headers[':method'];
+                      //const path = headers[':path'];  
+                       
+                      //let result=  myApp.HandleRequest(method,path);
+                      
+                      //stream.respond({
+                      //  'content-type': 'text/html',
+                      //  ':status': 200
+                      //});
+                      stream.end('<h1>Hello World, EspressoND, node 12.11.1</h1>'+ myApp.GetMyName());
+                      //stream.end(result);
                     });
 
                     server.listen(8443);
-                    ");
+                    console.log('hello!');
+                    ";
+               });
             string userInput = Console.ReadLine();
         }
-         
+
+        class MyApp
+        {
+            public string GetMyName()
+            {
+                return "OKOKO1";
+            }
+            public byte[] HandleRequest(string method, string path)
+            {
+                switch (path)
+                {
+                    case "/version": return System.Text.Encoding.UTF8.GetBytes("1.0");
+                    default: return System.Text.Encoding.UTF8.GetBytes("??");
+                }
+            }
+        }
+       
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);
