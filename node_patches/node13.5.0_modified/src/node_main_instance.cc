@@ -122,10 +122,8 @@ int NodeMainInstance::Run() {
   Context::Scope context_scope(env->context());
 
   if (exit_code == 0) {
-    {
-		
-		
-	 ////////////////////////////////
+
+    ////////////////////////////////
     //#espresso ,#2
     JsEngine* jsEngine = JsEngine::NewFromExistingIsolate(isolate_);
     v8::Persistent<Context>* pcontext =
@@ -134,7 +132,8 @@ int NodeMainInstance::Run() {
         JsContext::NewFromExistingContext(0, jsEngine, pcontext);
     DoEngineSetupCallback(jsEngine, jscontext);
     ////////////////////////////////	
-		
+
+    { 	
       InternalCallbackScope callback_scope(
           env.get(),
           Local<Object>(),
