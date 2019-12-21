@@ -84,11 +84,15 @@ void JsContext::Execute(const uint16_t* str,
 
   TryCatch trycatch(isolate_);
 
-  v8::Local<v8::String> source = String::NewFromTwoByte(isolate_, str);
+  v8::Local<v8::String> source;
+
+  String::NewFromTwoByte(isolate_, str).ToLocal(&source);
   v8::Local<v8::Script> script;
 
   if (resourceName != NULL) {
-    v8::Local<v8::String> name = String::NewFromTwoByte(isolate_, resourceName);
+    v8::Local<v8::String> name;
+    String::NewFromTwoByte(isolate_, resourceName).ToLocal(&name);
+
     ScriptOrigin scriptOrg(name);
 
     script = Script::Compile(isolate_->GetCurrentContext(), source, &scriptOrg)
@@ -148,11 +152,14 @@ void JsContext::SetVariable(const uint16_t* name,
   ctx->Enter();
 
   Local<Value> v = engine_->AnyToV8(value, id_);
+  Local<v8::String> var_name;
+  String::NewFromTwoByte(isolate_, name).ToLocal(&var_name);
+  ctx->Global()->Set(ctx, var_name, v);
 
-  if (ctx->Global()->Set(String::NewFromTwoByte(isolate_, name), v) ==
-      false) {  // 0.12.x
-    // TODO: Return an error if set failed.
-  }
+  // if (ctx->Global()->Set(String::NewFromTwoByte(isolate_, name), v) ==
+  //    false) {  // 0.12.x
+  //  // TODO: Return an error if set failed.
+  //}
 
   ctx->Exit();
 
@@ -188,13 +195,16 @@ void JsContext::GetVariable(const uint16_t* name, jsvalue* output) {
 
   TryCatch trycatch(isolate_);
 
-  Local<Value> value =
-      ctx->Global()->Get(String::NewFromTwoByte(isolate_, name));
-  if (!value.IsEmpty()) {
+  Local<String> key;
+  String::NewFromTwoByte(isolate_, name).ToLocal(&key);
+
+  Local<Value> value;
+  if (ctx->Global()->Get(ctx, key).ToLocal(&value) && !value.IsEmpty()) {
     engine_->AnyFromV8(value, Local<Object>(), output);
   } else {
     engine_->ErrorFromV8(trycatch, output);
   }
+
   ctx->Exit();
 }
 
@@ -231,14 +241,27 @@ void JsContext::GetPropertyValue(Persistent<Object>* obj,
   TryCatch trycatch(isolate_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  Local<Value> value = objLocal->Get(String::NewFromTwoByte(isolate_, name));
-  if (!value.IsEmpty()) {
-    // TODO-> review here
+  Local<v8::String> key;
+  String::NewFromTwoByte(isolate_, name).ToLocal(&key);
+  Local<Value> value;
+
+  if (objLocal->Get(ctx, key).ToLocal(&value) && !value.IsEmpty()) {
     Local<v8::Object> obj_handle = Local<v8::Object>::New(isolate_, *obj);
     engine_->AnyFromV8(value, obj_handle, output);
   } else {
     engine_->ErrorFromV8(trycatch, output);
   }
+  //                     // Local<Value> value = objLocal->Get(ctx,
+  //                     // String::NewFromTwoByte(isolate_, name));
+
+  //                     if (!value.IsEmpty()) {
+  //  // TODO-> review here
+  //  Local<v8::Object> obj_handle = Local<v8::Object>::New(isolate_, *obj);
+  //  engine_->AnyFromV8(value, obj_handle, output);
+  //}
+  // else {
+  //  engine_->ErrorFromV8(trycatch, output);
+  //}
   ctx->Exit();
 }
 
@@ -256,9 +279,14 @@ void JsContext::SetPropertyValue(Persistent<Object>* obj,
   Local<Value> v = engine_->AnyToV8(value, id_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  if (objLocal->Set(String::NewFromTwoByte(isolate_, name), v) == false) {
-    // TODO: Return an error if set failed.
-  }
+
+  Local<String> prop_name;
+  String::NewFromTwoByte(isolate_, name).ToLocal(&prop_name);
+  objLocal->Set(ctx, prop_name, v);
+
+  //if (objLocal->Set(String::NewFromTwoByte(isolate_, name), v) == false) {
+  //  // TODO: Return an error if set failed.
+  //}
 
   ctx->Exit();
 
@@ -279,8 +307,10 @@ void JsContext::InvokeFunction(Persistent<Function>* func,
 
   Local<Function> prop = Local<Function>::New(isolate_, *func);
   if (prop.IsEmpty() || !prop->IsFunction()) {
-    engine_->StringFromV8(String::NewFromUtf8(isolate_, "isn't a function"),
-                          output);
+    v8::Local<v8::String> str_value;
+    String::NewFromUtf8(isolate_, "isn't a function").ToLocal(&str_value);
+    engine_->StringFromV8(str_value, output);
+
     output->type = JSVALUE_TYPE_STRING_ERROR;
     return;  //?
   }
@@ -319,11 +349,18 @@ void JsContext::InvokeProperty(Persistent<Object>* obj,
   TryCatch trycatch(isolate_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  Local<Value> prop = objLocal->Get(String::NewFromTwoByte(isolate_, name));
-  if (prop.IsEmpty() || !prop->IsFunction()) {
-    engine_->StringFromV8(
-        String::NewFromUtf8(isolate_, "property not found or isn't a function"),
-        output);
+
+  Local<v8::String> key;
+  String::NewFromTwoByte(isolate_, name).ToLocal(&key);
+
+  Local<Value> prop;
+  if (!objLocal->Get(ctx, key).ToLocal(&prop) || !prop.IsEmpty() ||
+      !prop->IsFunction()) {
+    std::string err_msg1 = "property not found or isn't a function";
+    v8::Local<v8::String> err_msg;
+    String::NewFromUtf8(isolate_, err_msg1.c_str()).ToLocal(&err_msg);
+
+    engine_->StringFromV8(err_msg, output);
     output->type = JSVALUE_TYPE_STRING_ERROR;
   } else {
     std::vector<Local<Value> > argv(args->i32);  // i32 as length
