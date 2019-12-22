@@ -25,7 +25,7 @@ typedef void(CALLINGCONVENTION* del_engineClosingCb)(JsEngine* jsEngine, JsConte
 extern "C" {
 
 	EXPORT int TestCallBack();
-	EXPORT void V8Init();
+	EXPORT void V8Init(char* location);
 	//---------------------------------------------------------------------
 	//for managed code to register its callback method
 	EXPORT void RegisterManagedCallback(void* callback, int callBackKind);

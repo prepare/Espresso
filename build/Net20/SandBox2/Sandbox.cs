@@ -32,9 +32,9 @@ namespace Sandbox
 
     public class debugtest
     {
-        public int TestProp { get; set; }
+        public static int TestProp { get; set; }
 
-        public static bool BoolTest(int a, int b)
+        public bool BoolTest(int a, int b)
         {
             return a == b;
         }
@@ -64,15 +64,17 @@ namespace Sandbox
     {
         public static void Main(string[] args)
         {
-            // string lodash = File.ReadAllText(@"c:\lodash.js");
-            using (JsEngine engine = new JsEngine())
+			// string lodash = File.ReadAllText(@"c:\lodash.js");
+			Espresso.JsBridge.V8Init(Environment.CurrentDirectory + "\\");
+			using (JsEngine engine = new JsEngine())
             {
                 //Stopwatch watch = new Stopwatch();
                 //	watch.Start();
                 JsScript script = engine.CompileScript("3+3", "<unnamed>");
                 using (JsContext ctx = engine.CreateContext())
                 {
-                    ctx.Execute(script);
+					object result = ctx.Execute(script);
+					Console.WriteLine(result);
                 }
             }
 
@@ -88,12 +90,12 @@ namespace Sandbox
                 {
                     using (JsContext context = js.CreateContext())
                     {
-                        //context.SetVariable("dbg", dbg);
+                        context.SetVariableFromAny("dbg", dbg);
                         //object result = context.Execute("dbg.Write(dbg.valueOf());");
                         context.SetVariableFromAny("Debug", typeof(debugtest));
 
-                        object result = context.Execute("Debug.BoolTest(3,4);");
-
+                        object result = context.Execute("Debug.TestProp;");
+						Console.WriteLine(result);
                     }
                     GC.Collect();
                     js.DumpHeapStats();

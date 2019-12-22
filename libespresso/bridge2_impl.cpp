@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
+
+#include "espresso.h"
 #include "bridge2.h"
 
 del02 managedListner; //for debug 
@@ -100,7 +102,8 @@ ManagedRef* JsContext::CreateWrapperForManagedObject(int mIndex, ExternalTypeDef
 	{
 
 		Local<ObjectTemplate> objTemplate = Local<ObjectTemplate>::New(isolate_, externalTypeDef->handlerToJsObjectTemplate);
-		Local<Object> instance = objTemplate->NewInstance();
+		Local<Object> instance;
+		objTemplate->NewInstance(ctx).ToLocal(&instance);
 		handler->v8InstanceHandler.Reset(isolate_, instance);
 		Local<Object> hd = Local<v8::Object>::New(isolate_, handler->v8InstanceHandler);
 		hd->SetInternalField(0, External::New(isolate_, handler));
@@ -384,11 +387,17 @@ int ArgCount(MetCallingArgs* args)
 //======================================================  
 
 static v8::Platform* default_platform;
-void V8Init()
+static bool Initialized = false;
+
+void V8Init(char* location)
 {
+	if (Initialized) return;
 	const int thread_pool_size = 4;
 	/*auto p = V8::*/
-	default_platform = v8::platform::CreateDefaultPlatform(thread_pool_size);
+	v8::V8::InitializeICUDefaultLocation(location);
+	v8::V8::InitializeExternalStartupData(location);
+	default_platform = v8::platform::NewDefaultPlatform(thread_pool_size).release();
 	V8::InitializePlatform(default_platform);
 	V8::Initialize();
+	Initialized = true;
 }

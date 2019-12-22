@@ -43,8 +43,12 @@ JsContext* JsContext::New(int id, JsEngine* engine) {
     Locker locker(context->isolate_);
     Isolate::Scope isolate_scope(context->isolate_);
     HandleScope scope(context->isolate_);
+
+	auto current = Context::New(context->isolate_);
+	current->Global()->Set(current, String::NewFromUtf8(context->isolate_, "global"), current->Global());
+
     context->context_ = new Persistent<Context>(
-        context->isolate_, Context::New(context->isolate_));
+        context->isolate_, current);
   }
   return context;
 }
@@ -151,7 +155,8 @@ void JsContext::SetVariable(const uint16_t* name,
   if (ctx->Global()->Set(String::NewFromTwoByte(isolate_, name), v) ==
       false) {  // 0.12.x
     // TODO: Return an error if set failed.
-  }
+	  ctx->Exit();
+  } else
 
   ctx->Exit();
 
@@ -208,7 +213,7 @@ void JsContext::GetPropertyNames(Persistent<Object>* obj, jsvalue* output) {
   TryCatch trycatch(isolate_);
 
   Local<Object> objLocal = Local<Object>::New(isolate_, *obj);
-  Local<Value> value = objLocal->GetPropertyNames();
+  Local<Value> value = objLocal->GetPropertyNames(ctx).ToLocalChecked();
   if (!value.IsEmpty()) {
     engine_->AnyFromV8(value, Handle<Object>(), output);
   } else {
@@ -294,7 +299,7 @@ void JsContext::InvokeFunction(Persistent<Function>* func,
     // TODO: Check ArrayToV8Args return value (but right now can't fail, right?)
     Local<Function> func = Local<Function>::Cast(prop);
     Local<Value> value =
-        func->Call(reciever, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, reciever, args->i32, &argv[0]).ToLocalChecked();  // i32 as length
     if (!value.IsEmpty()) {
       engine_->AnyFromV8(value, Handle<Object>(), output);
     } else {
@@ -331,7 +336,7 @@ void JsContext::InvokeProperty(Persistent<Object>* obj,
     Local<Function> func = Local<Function>::Cast(prop);
 
     Local<Value> value =
-        func->Call(objLocal, args->i32, &argv[0]);  // i32 as length
+        func->Call(ctx, objLocal, args->i32, &argv[0]).ToLocalChecked();  // i32 as length
     if (!value.IsEmpty()) {
       engine_->AnyFromV8(value, Handle<Object>(), output);
     } else {

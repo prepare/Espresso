@@ -8,8 +8,7 @@ using System.Runtime.InteropServices;
 namespace Espresso
 {
 
-
-    partial class JsEngine : IDisposable
+	partial class JsEngine : IDisposable
     {
 
         delegate void KeepaliveRemoveDelegate(int context, int slot);

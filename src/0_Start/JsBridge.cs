@@ -14,9 +14,9 @@ namespace Espresso
         {
 
         }
-        public static void V8Init()
+        public static void V8Init(string location)
         {
-            NativeV8JsInterOp.V8Init();
+            NativeV8JsInterOp.V8Init(location);
         }
 
         public static int LibVersion => getVersion(); 

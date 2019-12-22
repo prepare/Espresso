@@ -43,6 +43,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NodeJsEngineHelper", "Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNode01_NetworkClients", "Tests\TestNode01_NetworkClients\TestNode01_NetworkClients.csproj", "{3D1E03EB-863D-4B02-9021-C69805C73F7C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libespr", "libespresso\libespresso.vcxproj", "{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{25c800d8-d92c-4ee9-9512-3fe928e2b6c4}*SharedItemsImports = 13
@@ -346,6 +348,24 @@ Global
 		{3D1E03EB-863D-4B02-9021-C69805C73F7C}.Release|x64.Build.0 = Release|Any CPU
 		{3D1E03EB-863D-4B02-9021-C69805C73F7C}.Release|x86.ActiveCfg = Release|Any CPU
 		{3D1E03EB-863D-4B02-9021-C69805C73F7C}.Release|x86.Build.0 = Release|Any CPU
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|Win32.Build.0 = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x64.ActiveCfg = Debug|x64
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x64.Build.0 = Debug|x64
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x86.ActiveCfg = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Debug|x86.Build.0 = Debug|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|Any CPU.ActiveCfg = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|Win32.ActiveCfg = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|Win32.Build.0 = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|x64.ActiveCfg = Release|x64
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|x64.Build.0 = Release|x64
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|x86.ActiveCfg = Release|Win32
+		{880EF82B-4FAD-42B1-98A6-09B5835F5FE6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

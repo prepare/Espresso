@@ -4,13 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading;
 
-namespace Espresso
-{
-    public partial class JsEngine : IDisposable
-    {
+namespace Espresso {
+	public class MonoPInvokeCallbackAttribute : Attribute {
+		private Type type;
+		public MonoPInvokeCallbackAttribute(Type t) { type = t; }
+	}
 
+	public partial class JsEngine : IDisposable
+    {
         readonly KeepaliveRemoveDelegate _keepalive_remove;
         readonly KeepAliveGetPropertyValueDelegate _keepalive_get_property_value;
         readonly KeepAliveSetPropertyValueDelegate _keepalive_set_property_value;
@@ -19,8 +23,8 @@ namespace Espresso
         readonly KeepAliveDeletePropertyDelegate _keepalive_delete_property;
         readonly KeepAliveEnumeratePropertiesDelegate _keepalive_enumerate_properties;
 
-        readonly Dictionary<int, JsContext> _aliveContexts = new Dictionary<int, JsContext>();
-        readonly Dictionary<int, JsScript> _aliveScripts = new Dictionary<int, JsScript>();
+		static readonly Dictionary<int, JsContext> _aliveContexts = new Dictionary<int, JsContext>();
+		static readonly Dictionary<int, JsScript> _aliveScripts = new Dictionary<int, JsScript>();
 
         int _currentContextId = 0;
         int _currentScriptId = 0;
@@ -125,7 +129,8 @@ namespace Espresso
                 jsengine_dispose_object(_engine, ptr);
         }
 
-        void KeepAliveValueOf(int contextId, int slot, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveValueOfDelegate))]
+		static void KeepAliveValueOf(int contextId, int slot, ref JsValue output)
         {
 
             if (!_aliveContexts.TryGetValue(contextId, out JsContext context))
@@ -135,8 +140,8 @@ namespace Espresso
             }
             context.KeepAliveGetValueOf(slot, ref output);
         }
-
-        void KeepAliveInvoke(int contextId, int slot, ref JsValue args, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveInvokeDelegate))]
+		static void KeepAliveInvoke(int contextId, int slot, ref JsValue args, ref JsValue output)
         {
 
             if (!_aliveContexts.TryGetValue(contextId, out JsContext context))
@@ -145,7 +150,8 @@ namespace Espresso
             }
             context.KeepAliveInvoke(slot, ref args, ref output);
         }
-        void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsValue value, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveSetPropertyValueDelegate))]
+		static void KeepAliveSetPropertyValue(int contextId, int slot, string name, ref JsValue value, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("set prop " + contextId + " " + slot);
@@ -157,7 +163,8 @@ namespace Espresso
             }
             context.KeepAliveSetPropertyValue(slot, name, ref value, ref output);
         }
-        void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveGetPropertyValueDelegate))]
+		static void KeepAliveGetPropertyValue(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("get prop " + contextId + " " + slot);
@@ -169,7 +176,8 @@ namespace Espresso
             }
             context.KeepAliveGetPropertyValue(slot, name, ref output);
         }
-        void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveDeletePropertyDelegate))]
+		static void KeepAliveDeleteProperty(int contextId, int slot, string name, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("delete prop " + contextId + " " + slot);
@@ -180,8 +188,8 @@ namespace Espresso
             }
             context.KeepAliveDeleteProperty(slot, name, ref output);
         }
-
-        void KeepAliveEnumerateProperties(int contextId, int slot, ref JsValue output)
+		[MonoPInvokeCallback(typeof(KeepAliveEnumeratePropertiesDelegate))]
+		static void KeepAliveEnumerateProperties(int contextId, int slot, ref JsValue output)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("enumerate props " + contextId + " " + slot);
@@ -193,7 +201,8 @@ namespace Espresso
             }
             context.KeepAliveEnumerateProperties(slot, ref output);
         }
-        void KeepAliveRemove(int contextId, int slot)
+		[MonoPInvokeCallback(typeof(KeepaliveRemoveDelegate))]
+		static void KeepAliveRemove(int contextId, int slot)
         {
 #if DEBUG_TRACE_API
 			Console.WriteLine("Keep alive remove for " + contextId + " " + slot);
@@ -295,7 +304,7 @@ namespace Espresso
                 }
                 _aliveContexts.Clear();
                 //
-                foreach (JsScript script in _aliveScripts.Values)
+                foreach (JsScript script in _aliveScripts.Values.ToArray())
                 {
                     script.Dispose();
                 }
