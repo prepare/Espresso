@@ -47,50 +47,102 @@ namespace TestNode01
             //------------ 
 
             ////example2: get value from node js              
-            NodeBufferBridge myBuffer = new NodeBufferBridge();
+            MyBufferBridge myBuffer = new MyBufferBridge();
+
+            //NodeJsEngineHelper.Run(ss =>
+            //{
+            //    //for node js
+            //    ss.SetExternalObj("myBuffer", myBuffer);
+            //    return @"                     
+            //        const buf1 = Buffer.alloc(20); 
+            //        buf1.writeUInt8(0, 0);
+            //        buf1.writeUInt8(1, 1);
+            //        buf1.writeUInt8(2, 2);
+            //        //-----------
+            //        myBuffer.SetBuffer(buf1);
+            //        console.log('before:');
+            //        console.log(buf1);
+
+            //        if(myBuffer.HaveSomeNewUpdate()){
+            //            myBuffer.UpdateBufferFromDotNetSide();
+            //            console.log('after:');
+            //            console.log(buf1);    
+            //        }else{
+            //            console.log('no data');
+            //        }                    
+            //    ";
+            //});
 
             NodeJsEngineHelper.Run(ss =>
             {
+                //for general v8
+                //see more https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint8
+
                 ss.SetExternalObj("myBuffer", myBuffer);
                 return @"                     
-                    const buf1 = Buffer.alloc(20);
-
-                    buf1.writeUInt8(0, 0);
-                    buf1.writeUInt8(1, 1);
-                    buf1.writeUInt8(2, 2);
-
+                    const buf1 = new ArrayBuffer(20);
+                    const view = new DataView(buf1);
+                    view.setUint8(0, 0); 
+                    view.setUint8(1, 1);
+                    view.setUint8(2, 2);
                     //-----------
                     myBuffer.SetBuffer(buf1);
                     console.log('before:');
                     console.log(buf1);
 
-                    myBuffer.CopyBufferFromNodeJs();
-                    console.log('after:');
-                    console.log(buf1);    
-                    ";
+                    if(myBuffer.HaveSomeNewUpdate()){
+                        myBuffer.UpdateBufferFromDotNetSide();
+                        console.log('after:');
+                        console.log(buf1);    
+                    }else{
+                        console.log('no data');
+                    }                    
+                ";
             });
             int buffLen = myBuffer.Length;
 
             string userInput = Console.ReadLine();
         }
 
-        class NodeBufferBridge
+        class MyBufferBridge
         {
             JsObject _buffer;
-
             JsBuffer _nodeJsBuffer;
             int _bufferLen;
             byte[] _memBuffer;
-            public NodeBufferBridge()
+
+            public MyBufferBridge()
             {
             }
             public void SetBuffer(JsObject buffer)
-            {
+            {                
                 _buffer = buffer;
                 _nodeJsBuffer = new JsBuffer(buffer);
                 _bufferLen = _nodeJsBuffer.GetBufferLen();
             }
-
+            public bool HaveSomeNewUpdate()
+            {
+                //TEST ONLY
+                //return false;
+                return true;
+            }
+            public void UpdateBufferFromDotNetSide()
+            {
+                //test write data back
+                byte[] newOutputData = new byte[100];
+                for (int i = 0; i < _bufferLen; ++i)
+                {
+                    newOutputData[i] = 100;
+                }
+                unsafe
+                {
+                    fixed (byte* ptr0 = &newOutputData[0])
+                    {
+                        //_nodeJsBuffer.SetBuffer((IntPtr)ptr0, 10);//write data start at   offset 0 on dest
+                        _nodeJsBuffer.SetBuffer((IntPtr)ptr0, 2, 10); //write data start at 0 offset 2 on dest
+                    }
+                }
+            }
             public void CopyBufferFromNodeJs()
             {
                 unsafe
@@ -101,22 +153,7 @@ namespace TestNode01
                         _nodeJsBuffer.CopyBuffer((IntPtr)ptr0, _bufferLen);
                     }
                 }
-                //
-                {
-                    //test write data back
-                    for (int i = 0; i < _bufferLen; ++i)
-                    {
-                        _memBuffer[i] = 100;
-                    }
 
-                    unsafe
-                    {  
-                        fixed (byte* ptr0 = &_memBuffer[0])
-                        {
-                            _nodeJsBuffer.SetBuffer((IntPtr)ptr0, 10);
-                        }
-                    }
-                }
             }
             public int Length => _bufferLen;
             public byte[] CopyMem() => _memBuffer;

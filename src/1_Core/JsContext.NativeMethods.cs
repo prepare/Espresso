@@ -64,18 +64,23 @@ namespace Espresso
             JsValue* output);
 
 
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void jsvalue_buffer_get_info(HandleRef contextPtr, IntPtr jsNativeBuffer,
+            ref JsValue output_bufferKind,
+            ref JsValue output_buffer_len);
+
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void jsvalue_buffer_get_len(HandleRef contextPtr, IntPtr jsNativeBuffer, ref JsValue output);
+        internal static extern void jsvalue_buffer_get_len(HandleRef contextPtr, IntPtr jsNativeBuffer, int bufferKind, ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void jsvalue_buffer_copy_buffer_data(HandleRef contextPtr, IntPtr jsNativeBuffer,
+        internal static extern void jsvalue_buffer_copy_buffer_data(HandleRef contextPtr, IntPtr jsNativeBuffer, int bufferKind,
             IntPtr dstMem,
             int len, ref JsValue output);
 
         [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void jsvalue_buffer_write_buffer_data(HandleRef contextPtr,
-            IntPtr jsNativeBuffer, int dstIndex, IntPtr src, int srcLen, ref JsValue output);
+        internal static extern void jsvalue_buffer_write_buffer_data(HandleRef contextPtr, IntPtr jsNativeBuffer, int bufferKind,
+            int dstIndex, IntPtr src, int srcLen, ref JsValue output);
 
         //---------------------------------------------
 

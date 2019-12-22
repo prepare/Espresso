@@ -35,17 +35,25 @@ namespace Espresso
 {
     public class JsBuffer
     {
-        JsObject _jsobj;
+        readonly JsObject _jsobj;
+        readonly int _buffer_kind;
+        readonly int _buffer_len;
+
         public JsBuffer(JsObject jsobj)
         {
             _jsobj = jsobj;
+
+            JsValue buff_kind = new JsValue();
+            JsValue buff_len = new JsValue();
+
+            JsContext.jsvalue_buffer_get_info(
+                _jsobj.Context.NativeContextHandle, _jsobj.Handle, ref buff_kind, ref buff_len);
+
+            _buffer_kind = buff_kind.I32;
+            _buffer_len = buff_len.I32;
         }
-        public int GetBufferLen()
-        {
-            JsValue value = new JsValue();
-            JsContext.jsvalue_buffer_get_len(_jsobj.Context.NativeContextHandle, _jsobj.Handle, ref value);
-            return value.I32;
-        }
+        public int GetBufferLen() => _buffer_len;
+
         /// <summary>
         /// copy data from nodejs side to .net side
         /// </summary>
@@ -58,6 +66,7 @@ namespace Espresso
             JsContext.jsvalue_buffer_copy_buffer_data(
                 _jsobj.Context.NativeContextHandle,
                 _jsobj.Handle,
+                _buffer_kind,
                 dstMem,
                 len,
                 ref value);
@@ -70,6 +79,7 @@ namespace Espresso
             JsContext.jsvalue_buffer_write_buffer_data(
                 _jsobj.Context.NativeContextHandle,
                 _jsobj.Handle,
+                 _buffer_kind,
                  0,
                 srcMem,
                 copyLen,
@@ -81,6 +91,7 @@ namespace Espresso
             JsContext.jsvalue_buffer_write_buffer_data(
                 _jsobj.Context.NativeContextHandle,
                 _jsobj.Handle,
+                 _buffer_kind,
                 srcOffset,
                 srcMem,
                 copyLen,
