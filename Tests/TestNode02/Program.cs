@@ -49,6 +49,7 @@ namespace TestNode01
             ////example2: get value from node js              
             MyBufferBridge myBuffer = new MyBufferBridge();
 
+            //for nodejs's Buffer
             //NodeJsEngineHelper.Run(ss =>
             //{
             //    //for node js
@@ -73,6 +74,7 @@ namespace TestNode01
             //    ";
             //});
 
+            //for v8
             NodeJsEngineHelper.Run(ss =>
             {
                 //for general v8
