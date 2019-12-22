@@ -25,15 +25,20 @@
 
 // MIT, 2015-2019, EngineKit, brezza92
 
+#include <js_native_api.h>
 #include <iostream>
 #include "espresso.h"
- 
+
+#include "env-inl.h"
+#include "env.h"
+#include "js_native_api_v8.h"
+#include "node_api.h"
 
 using namespace v8;
 
 extern "C" {
 EXPORT int getVersion() {
-  return 121101;
+  return 130500;
 }
 
 EXPORT JsEngine* CALLCONV
@@ -278,32 +283,19 @@ EXPORT void CALLCONV jsscript_compile(JsScript* script,
   return script->Compile(str, resourceName, output);
 }
 
-/*   [DllImport(JsBridge.LIB_NAME,
-           CallingConvention =
-               CallingConvention.Cdecl)] internal static extern IntPtr
-jsvalue_buffer_get_len(HandleRef contextPtr,
-                       IntPtr jsNativeBuffer,
-                       ref JsValue output);
-
-[DllImport(JsBridge.LIB_NAME,
-           CallingConvention =
-               CallingConvention.Cdecl)] internal static extern IntPtr
-jsvalue_buffer_copy_buffer_data(HandleRef contextPtr,
-                                IntPtr jsNativeBuffer,
-                                IntPtr dstMem,
-                                int len,
-                                ref JsValue output);*/
-
 EXPORT void CALLCONV jsvalue_buffer_get_len(JsContext* contextPtr,
                                             Persistent<Object>* jsBuff,
                                             jsvalue* output) {
+  // from https://nodejs.org/dist/latest-v12.x/docs/api/buffer.html
+  // Buffer instances are also Uint8Array instances.
+  // However, there are subtle incompatibilities with TypedArray
 
- //from https://nodejs.org/dist/latest-v12.x/docs/api/buffer.html
- //Buffer instances are also Uint8Array instances.  However, there are subtle incompatibilities with TypedArray
- 
-  Local<Uint8Array> arrBuff = Local<Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_)); 
+  // https://stackoverflow.com/questions/51511307/nodejs-conversion-from-buffer-data-to-byte-array
+
+  Local<Uint8Array> arrBuff =
+      Local<Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_));
   output->type = JSVALUE_TYPE_INTEGER;
-  output->i32 = arrBuff->ByteLength();   
+  output->i32 = arrBuff->ByteLength();
 }
 
 EXPORT void CALLCONV jsvalue_buffer_copy_buffer_data(JsContext* contextPtr,
@@ -311,9 +303,39 @@ EXPORT void CALLCONV jsvalue_buffer_copy_buffer_data(JsContext* contextPtr,
                                                      void* dstMem,
                                                      int len,
                                                      jsvalue* output) {
-  Local<Uint8Array> arrBuff =  Local<Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_));
+  // copy data from js-side to dstMem (other native side)
+  Local<Uint8Array> arrBuff =
+      Local<Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_));
   arrBuff->CopyContents(dstMem, len);
-  output->type = JSVALUE_TYPE_EMPTY;//void
+  output->type = JSVALUE_TYPE_EMPTY;  // void
+}
+
+EXPORT void CALLCONV
+jsvalue_buffer_write_buffer_data(JsContext* contextPtr,
+                                 Persistent<Object>* jsBuff,
+                                 int dstIndex,
+                                 void* src,
+                                 int copyLen,
+                                 jsvalue* output) {
+  // copy data from other native side and write to js buffer start specific
+  // index
+  v8::Local<v8::Uint8Array> arrBuff =
+      Local<v8::Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_));
+
+  v8::Local<v8::ArrayBuffer> underlyingBuff= arrBuff->Buffer();
+
+  void* underlying_data1= underlyingBuff->GetBackingStore()->Data();
+  
+  int buff_len = arrBuff->ByteLength();
+  if (dstIndex > -1) {
+    if (dstIndex + copyLen <= buff_len) {
+        //check in range
+      char* dst1 = ((char*)underlying_data1) + dstIndex;     
+      memcpy_s((void*)dst1, buff_len, src, copyLen);
+    }
+  } 
+
+  output->type = JSVALUE_TYPE_EMPTY;  // void
 }
 
 EXPORT void CALLCONV jsvalue_alloc_string(const uint16_t* str,
