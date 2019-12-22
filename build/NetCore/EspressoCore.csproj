@@ -20,6 +20,7 @@
     <Compile Include="..\..\src\0_Start\ScriptInterfaces.cs" Link="0_Start\ScriptInterfaces.cs" />
     <Compile Include="..\..\src\1_Core\BoundWeakDelegate.cs" Link="1_Core\BoundWeakDelegate.cs" />
     <Compile Include="..\..\src\1_Core\IKeepAliveStore.cs" Link="1_Core\IKeepAliveStore.cs" />
+    <Compile Include="..\..\src\1_Core\JsBuffer.cs" Link="1_Core\JsBuffer.cs" />
     <Compile Include="..\..\src\1_Core\JsContext.cs" Link="1_Core\JsContext.cs" />
     <Compile Include="..\..\src\1_Core\JsContext.Dynamic.cs" Link="1_Core\JsContext.Dynamic.cs" />
     <Compile Include="..\..\src\1_Core\JsContext.NativeMethods.cs" Link="1_Core\JsContext.NativeMethods.cs" />

@@ -68,6 +68,9 @@
     <Compile Include="..\..\..\src\1_Core\IKeepAliveStore.cs">
       <Link>1_Core\IKeepAliveStore.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\src\1_Core\JsBuffer.cs">
+      <Link>1_Core\JsBuffer.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\src\1_Core\JsContext.cs">
       <Link>1_Core\JsContext.cs</Link>
     </Compile>

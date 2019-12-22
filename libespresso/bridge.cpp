@@ -276,30 +276,16 @@ EXPORT void CALLCONV jsscript_compile(JsScript* script,
   std::wcout << "jsscript_compile" << std::endl;
 #endif
   return script->Compile(str, resourceName, output);
-}
-
-/*   [DllImport(JsBridge.LIB_NAME,
-           CallingConvention =
-               CallingConvention.Cdecl)] internal static extern IntPtr
-jsvalue_buffer_get_len(HandleRef contextPtr,
-                       IntPtr jsNativeBuffer,
-                       ref JsValue output);
-
-[DllImport(JsBridge.LIB_NAME,
-           CallingConvention =
-               CallingConvention.Cdecl)] internal static extern IntPtr
-jsvalue_buffer_copy_buffer_data(HandleRef contextPtr,
-                                IntPtr jsNativeBuffer,
-                                IntPtr dstMem,
-                                int len,
-                                ref JsValue output);*/
+} 
+ 
 
 EXPORT void CALLCONV jsvalue_buffer_get_len(JsContext* contextPtr,
                                             Persistent<Object>* jsBuff,
                                             jsvalue* output) {
 
  //from https://nodejs.org/dist/latest-v12.x/docs/api/buffer.html
- //Buffer instances are also Uint8Array instances.  However, there are subtle incompatibilities with TypedArray
+ //Buffer instances are also Uint8Array instances. 
+ //However, there are subtle incompatibilities with TypedArray
  
   Local<Uint8Array> arrBuff = Local<Uint8Array>::Cast(jsBuff->Get(contextPtr->isolate_)); 
   output->type = JSVALUE_TYPE_INTEGER;
