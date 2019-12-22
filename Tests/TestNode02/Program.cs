@@ -18,14 +18,14 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"../../../node-v13.5.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v13.5.0/out/Debug/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
- 
+
             TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
@@ -61,7 +61,11 @@ namespace TestNode01
 
                     //-----------
                     myBuffer.SetBuffer(buf1);
+                    console.log('before:');
+                    console.log(buf1);
+
                     myBuffer.CopyBufferFromNodeJs();
+                    console.log('after:');
                     console.log(buf1);    
                     ";
             });
@@ -69,11 +73,12 @@ namespace TestNode01
 
             string userInput = Console.ReadLine();
         }
+
         class NodeBufferBridge
         {
             JsObject _buffer;
 
-            NodeJsBuffer _nodeJsBuffer;
+            JsBuffer _nodeJsBuffer;
             int _bufferLen;
             byte[] _memBuffer;
             public NodeBufferBridge()
@@ -82,9 +87,10 @@ namespace TestNode01
             public void SetBuffer(JsObject buffer)
             {
                 _buffer = buffer;
-                _nodeJsBuffer = new NodeJsBuffer(buffer);
+                _nodeJsBuffer = new JsBuffer(buffer);
                 _bufferLen = _nodeJsBuffer.GetBufferLen();
             }
+
             public void CopyBufferFromNodeJs()
             {
                 unsafe
@@ -93,6 +99,22 @@ namespace TestNode01
                     fixed (byte* ptr0 = &_memBuffer[0])
                     {
                         _nodeJsBuffer.CopyBuffer((IntPtr)ptr0, _bufferLen);
+                    }
+                }
+                //
+                {
+                    //test write data back
+                    for (int i = 0; i < _bufferLen; ++i)
+                    {
+                        _memBuffer[i] = 100;
+                    }
+
+                    unsafe
+                    {  
+                        fixed (byte* ptr0 = &_memBuffer[0])
+                        {
+                            _nodeJsBuffer.SetBuffer((IntPtr)ptr0, 10);
+                        }
                     }
                 }
             }
