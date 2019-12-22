@@ -46,7 +46,13 @@ namespace Espresso
             JsContext.jsvalue_buffer_get_len(_jsobj.Context.NativeContextHandle, _jsobj.Handle, ref value);
             return value.I32;
         }
-        public int CopyBuffer( IntPtr dstmem, int len)
+        /// <summary>
+        /// copy data from nodejs side to .net side
+        /// </summary>
+        /// <param name="dstmem"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public int CopyBuffer(IntPtr dstmem, int len)
         {
             JsValue value = new JsValue();
             JsContext.jsvalue_buffer_copy_buffer_data(
@@ -594,8 +600,8 @@ namespace Espresso
             {
                 type = innerTypeOfNullable;
             }
-            
-            
+
+
             if (type == typeof(Boolean))
             {
                 output->Type = JsValueType.Boolean;
