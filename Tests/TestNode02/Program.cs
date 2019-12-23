@@ -44,8 +44,8 @@ namespace TestNode01
 #if DEBUG
             JsBridge.dbugTestCallbacks();
 #endif
-             
-            var test_instance = new MyNodeJsApiBridgeTestInstance(); 
+
+            var test_instance = new MyNodeJsApiBridgeTestInstance();
             NodeJsEngineHelper.Run(ss =>
             {
                 //for general v8
@@ -74,7 +74,8 @@ namespace TestNode01
             public NodeJsArray CreateArrayFromDotnetSide()
             {
                 //return "hello!";
-                NodeJsArray arr = _env.CreateArray();
+                //NodeJsArray arr = _env.CreateArray();
+                NodeJsArray arr = _env.CreateArray(2);
                 return arr;
             }
 

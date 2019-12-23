@@ -1178,9 +1178,34 @@ namespace Espresso
 
         public NodeJsArray CreateArray()
         {
+            //TODO: check return status
             napi_status status = napi_create_array(_napi_env, out IntPtr nativeNodeJsArr);
-            return new NodeJsArray(nativeNodeJsArr);
+            if (status == napi_status.napi_ok)
+            {
+                return new NodeJsArray(nativeNodeJsArr);
+            }
+            else
+            {
+                //
+                return null;
+            }
         }
+        public NodeJsArray CreateArray(int len)
+        {
+            //TODO: check return status
+            napi_status status = napi_create_array_with_length(_napi_env, len, out IntPtr nativeNodeJsArr);
+            if (status == napi_status.napi_ok)
+            {
+                return new NodeJsArray(nativeNodeJsArr);
+            }
+            else
+            {
+                //
+                return null;
+            }
+        }
+
+
 
         //see https://nodejs.org/api/n-api.html#n_api_napi_create_array
         //"Working with JavaScript Values"
@@ -1189,6 +1214,9 @@ namespace Espresso
         //napi_status napi_create_array(napi_env env, napi_value* result)
         [DllImport(JsBridge.LIB_NAME)]
         static extern napi_status napi_create_array(IntPtr env, out IntPtr result);
+
+        [DllImport(JsBridge.LIB_NAME)]
+        static extern napi_status napi_create_array_with_length(IntPtr env, int length, out IntPtr result);
     }
 
     public class NodeJsArray : IJsObject
