@@ -14,8 +14,5 @@ namespace Espresso
     {
         IntPtr UnmanagedTypeDefinitionPtr { get; }
     }
-    public interface IJsObject
-    {
-        IntPtr UnmanagedPtr { get; }
-    }
+   
 }

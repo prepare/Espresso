@@ -393,7 +393,7 @@ namespace Espresso
                 output.Ptr = nativeRef1.UnmanagedPtr;
                 return;
             }
-            else if (obj is IJsObject jsobject)
+            else if (obj is NodeJsApi.INapiValue jsobject)
             {
                 //TODO: review here again
                 //extension

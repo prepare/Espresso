@@ -36,6 +36,10 @@ namespace Espresso.NodeJsApi
         napi_detachable_arraybuffer_expected,
     }
 
+
+
+    public delegate void napi_finalize(IntPtr env, IntPtr finalize_data, IntPtr finalize_hint);
+
     static class NodeJsApiNativeMethods
     {
 
@@ -127,7 +131,146 @@ namespace Espresso.NodeJsApi
         internal static extern napi_status napi_create_date(IntPtr env,
            double time,
            out IntPtr result);
-         
+
+
+
+        //-------------------
+        //External ...
+        //https://nodejs.org/api/n-api.html#n_api_napi_create_external
+        /// <summary>
+        /// This API allocates a JavaScript value with external data attached to it. This is used to pass external data through JavaScript code, so it can be retrieved later by native code using napi_get_value_external.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="nativeMemPtr">Raw pointer to the external data</param>
+        /// <param name="finalize_cb">Optional callback to call when the external value is being collected</param>
+        /// <param name="finalize_hint"> Optional hint to pass to the finalize callback during collection.</param>
+        /// <param name="result"> A napi_value representing an external value</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_external(IntPtr env,
+           IntPtr nativeMemPtr,
+           napi_finalize finalize_cb,
+           IntPtr finalize_hint,
+           out IntPtr result);
+        //        The API adds a napi_finalize callback which will be called when the JavaScript object just created is ready for garbage collection. It is similar to napi_wrap() except that:
+
+        //    the native data cannot be retrieved later using napi_unwrap(),
+        //    nor can it be removed later using napi_remove_wrap(), and
+        //    the object created by the API can be used with napi_wrap().
+        //The created value is not an object, and therefore does not support additional properties. It is considered a distinct value type: calling napi_typeof() with an external value yields napi_external.
+
+
+
+        /// <summary>
+        /// https://nodejs.org/api/n-api.html#n_api_napi_create_external_arraybuffer
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="nativeMemPtr_external_data"> Pointer to the underlying byte buffer of the ArrayBuffer</param>
+        /// <param name="byte_length"> The length in bytes of the underlying buffer.</param>
+        /// <param name="finalize_cb">Optional callback to call when the ArrayBuffer is being collected.</param>
+        /// <param name="finalize_hint"> Optional hint to pass to the finalize callback during collection.</param>
+        /// <param name="result"> A napi_value representing a JavaScript ArrayBuffer</param>
+        /// <returns>Returns napi_ok if the API succeeded.</returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_external_arraybuffer(IntPtr env,
+            IntPtr nativeMemPtr_external_data,
+            int byte_length,
+            napi_finalize finalize_cb,
+            IntPtr finalize_hint,
+            out IntPtr result);
+
+        //This API returns an N-API value corresponding to a JavaScript ArrayBuffer. The underlying byte buffer of the ArrayBuffer is externally allocated and managed. The caller must ensure that the byte buffer remains valid until the finalize callback is called.
+        //The API adds a napi_finalize callback which will be called when the JavaScript object just created is ready for garbage collection. It is similar to napi_wrap() except that:
+        //    the native data cannot be retrieved later using napi_unwrap(),
+        //    nor can it be removed later using napi_remove_wrap(), and
+        //    the object created by the API can be used with napi_wrap().
+        //JavaScript ArrayBuffers are described in Section 24.1 of the ECMAScript Language Specification.
+
+
+        //https://nodejs.org/api/n-api.html#n_api_napi_create_external_buffer
+        /// <summary>
+        /// This API allocates a node::Buffer object and initializes it with data backed by the passed in buffer. While this is still a fully-supported data structure, in most cases using a TypedArray will suffice.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="length">Size in bytes of the input buffer (should be the same as the size of the new buffer)</param>
+        /// <param name="nativeMemPtr_external_data">Raw pointer to the underlying buffer to copy from</param>
+        /// <param name="finalize_cb">Optional callback to call when the ArrayBuffer is being collected.</param>
+        /// <param name="finalize_hint"> Optional hint to pass to the finalize callback during collection.</param>
+        /// <param name="result">A napi_value representing a node::Buffer</param>
+        /// <returns>Returns napi_ok if the API succeeded.</returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_external_buffer(IntPtr env,
+           int length,
+           IntPtr nativeMemPtr_external_data,
+           napi_finalize finalize_cb,
+           IntPtr finalize_hint,
+           out IntPtr result);
+        // This API allocates a node::Buffer object and initializes it with data backed by the passed in buffer. While this is still a fully-supported data structure, in most cases using a TypedArray will suffice.
+
+        //The API adds a napi_finalize callback which will be called when the JavaScript object just created is ready for garbage collection. It is similar to napi_wrap() except that:
+
+        //    the native data cannot be retrieved later using napi_unwrap(),
+        //    nor can it be removed later using napi_remove_wrap(), and
+        //    the object created by the API can be used with napi_wrap().
+
+        //For Node.js >=4 Buffers are Uint8Arrays. //***
+
+        //-------------------
+        //https://nodejs.org/api/n-api.html#n_api_napi_create_string_utf16
+        /// <summary>
+        /// This API creates a JavaScript String object from a UTF16-LE-encoded C string. The native string is copied.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="str">Character buffer representing a UTF16-LE-encoded string.</param>
+        /// <param name="size">The length of the string in two-byte code units, or NAPI_AUTO_LENGTH if it is null-terminated.</param>
+        /// <param name="result">A napi_value representing a JavaScript String</param>
+        /// <returns>Returns napi_ok if the API succeeded.</returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_string_utf16(IntPtr env,
+           IntPtr str,
+           int size,
+           out IntPtr result);
+        //The JavaScript String type is described in Section 6.1.4 of the ECMAScript Language Specification.
+
+
+        //https://nodejs.org/api/n-api.html#n_api_napi_create_string_utf8
+        /// <summary>
+        /// This API creates a JavaScript String object from a UTF8-encoded C string. The native string is copied.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="str">Character buffer representing a UTF8-encoded string</param>
+        /// <param name="size">The length of the string in bytes, or NAPI_AUTO_LENGTH if it is null-terminated.</param>
+        /// <param name="result">A napi_value representing a JavaScript String.</param>
+        /// <returns>napi_ok if the API succeeded.</returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_string_utf8(IntPtr env,
+          IntPtr str,
+          int size,
+          out IntPtr result);
+        //The JavaScript String type is described in Section 6.1.4 of the ECMAScript Language Specification.
+
+
+
+        //.. TODO.... add more...
+
+
+        //Script execution
+        //https://nodejs.org/api/n-api.html#n_api_napi_run_script
+        /// <summary> 
+        ///  This function executes a string of JavaScript code and returns its result with the following caveats:
+        /// Unlike eval, this function does not allow the script to access the current lexical scope, and therefore also does not allow to access the module scope, meaning that pseudo-globals such as require will not be available.
+        /// The script can access the global scope.Function and var declarations in the script will be added to the global object. Variable declarations made using let and const will be visible globally, but will not be added to the global object.
+        /// The value of this is global within the script.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="script"> A JavaScript string containing the script to execute.</param>
+        /// <param name="result">The value resulting from having executed the script.</param>
+        /// <returns></returns>
+        // 
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_run_script(IntPtr env,
+          IntPtr script,
+          out IntPtr result);
 
     }
 }

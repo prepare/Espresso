@@ -57,6 +57,9 @@ namespace TestNode01
                 return @"                     
                     var arr= test_instance.CreateArrayFromDotnetSide();
                     console.log(arr);
+
+                    var str= test_instance.CreateString('user_a001_test');
+                    console.log(str);
                 ";
             });
 
@@ -76,10 +79,18 @@ namespace TestNode01
             {
                 //return "hello!";
                 //NodeJsArray arr = _env.CreateArray();
-                NodeJsArray arr = _env.CreateArray(2);
-                return arr;
+                return _env.CreateArray(2);
             }
-
+            //public NodeJsArray CreateExternalData()
+            //{
+            //    //return "hello!";
+            //    //NodeJsArray arr = _env.CreateArray();
+            //    
+            //}
+            public NodeJsString CreateString(string user_input)
+            {
+                return _env.CreateString("hello! " + user_input + " , from .net side");
+            }
         }
 
 

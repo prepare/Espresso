@@ -1253,27 +1253,9 @@ namespace Espresso
 
 
     }
-
-
-
-
+     
 
    
-
-   
-
-    public class NodeJsArray : IJsObject
-    {
-        IntPtr _nativePtr;
-        internal NodeJsArray(IntPtr ptr)
-        {
-            _nativePtr = ptr;
-        }
-
-        public IntPtr UnmanagedPtr => _nativePtr;
-    }
-
-
    
     class Timer
     {
