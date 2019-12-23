@@ -9,6 +9,8 @@
     <Import_RootNamespace>Espresso_SH</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)4_NAPI\NapiEnv.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)4_NAPI\NapiNativeMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HandleRef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IScriptable.cs" />
@@ -16,7 +18,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\IKeepAliveStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsBuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsContext.Dynamic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsContext.NativeMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsConvert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)1_Core\JsEngine.cs" />

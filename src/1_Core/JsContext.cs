@@ -1133,6 +1133,122 @@ namespace Espresso
         }
 
 
+        public IEnumerable<string> GetMemberNames(JsObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+
+            CheckDisposed();
+
+            if (obj.Handle == IntPtr.Zero)
+                throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+
+
+            JsValue v = new JsValue();
+            jscontext_get_property_names(_context, obj.Handle, ref v);
+            object res = _convert.FromJsValue(ref v);
+
+            v.Dispose();
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+
+            object[] arr = (object[])res;
+            string[] strArr = new string[arr.Length];
+            for (int i = arr.Length - 1; i >= 0; --i)
+            {
+                strArr[i] = arr[i].ToString();
+            }
+            return strArr;
+        }
+
+
+        public object GetPropertyValue(JsObject obj, string name)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            if (obj.Handle == IntPtr.Zero)
+                throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+
+            JsValue output = new JsValue();
+            jscontext_get_property_value(_context, obj.Handle, name, ref output);
+            //
+            object res = _convert.FromJsValue(ref output);
+            //TODO: review here
+            //we should dispose only type that contains native data***
+
+            output.Dispose();
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+        }
+
+        public void SetPropertyValue(JsObject obj, string name, object value)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            if (obj.Handle == IntPtr.Zero)
+                throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+
+            JsValue a = new JsValue();
+            JsValue output = new JsValue();
+
+            _convert.AnyToJsValue(value, ref a);
+            jscontext_set_property_value(_context, obj.Handle, name, ref a, ref output);
+
+            //TODO: review exceptio here
+            //not need to convert all the time if we not have error
+            object res = _convert.FromJsValue(ref output);
+
+            output.Dispose();
+            a.Dispose();
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+        }
+
+        public object InvokeProperty(JsObject obj, string name, object[] args)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            if (name == null)
+                throw new ArgumentNullException("name");
+
+            CheckDisposed();
+
+            if (obj.Handle == IntPtr.Zero)
+                throw new JsInteropException("wrapped V8 object is empty (IntPtr is Zero)");
+
+
+            JsValue a = new JsValue(); // Null value unless we're given args.
+            a.Type = JsValueType.Null;
+            if (args != null)
+            {
+                _convert.AnyToJsValue(args, ref a);
+            }
+
+            JsValue v = new JsValue();
+            jscontext_invoke_property(_context, obj.Handle, name, ref a, ref v);
+            object res = _convert.FromJsValue(ref v);
+            v.Dispose();
+            a.Dispose();
+
+            Exception e = res as JsException;
+            if (e != null)
+                throw e;
+            return res;
+        }
 
 
 
@@ -1142,82 +1258,9 @@ namespace Espresso
 
 
 
-    partial class JsContext
-    {
+   
 
-        NodeJsNapiEnv _nodeJsNapiEnv;
-        public NodeJsNapiEnv GetJsNodeNapiEnv()
-        {
-            if (_nodeJsNapiEnv != null) return _nodeJsNapiEnv;
-
-            JsValue nativeContext = new JsValue();
-            js_new_napi_env(this.NativeContextHandle, ref nativeContext);
-            if (nativeContext.Type == JsValueType.Wrapped)
-            {
-                //OK
-                return _nodeJsNapiEnv = new NodeJsNapiEnv(nativeContext.Ptr);
-            }
-            else
-            {
-                return null;
-            }
-        }
-    }
-
-
-
-    //------
-    //for nodejs
-    public class NodeJsNapiEnv
-    {
-        readonly IntPtr _napi_env;
-        internal NodeJsNapiEnv(IntPtr napi_env)
-        {
-            _napi_env = napi_env;
-        }
-
-        public NodeJsArray CreateArray()
-        {
-            //TODO: check return status
-            napi_status status = napi_create_array(_napi_env, out IntPtr nativeNodeJsArr);
-            if (status == napi_status.napi_ok)
-            {
-                return new NodeJsArray(nativeNodeJsArr);
-            }
-            else
-            {
-                //
-                return null;
-            }
-        }
-        public NodeJsArray CreateArray(int len)
-        {
-            //TODO: check return status
-            napi_status status = napi_create_array_with_length(_napi_env, len, out IntPtr nativeNodeJsArr);
-            if (status == napi_status.napi_ok)
-            {
-                return new NodeJsArray(nativeNodeJsArr);
-            }
-            else
-            {
-                //
-                return null;
-            }
-        }
-
-
-
-        //see https://nodejs.org/api/n-api.html#n_api_napi_create_array
-        //"Working with JavaScript Values"
-
-
-        //napi_status napi_create_array(napi_env env, napi_value* result)
-        [DllImport(JsBridge.LIB_NAME)]
-        static extern napi_status napi_create_array(IntPtr env, out IntPtr result);
-
-        [DllImport(JsBridge.LIB_NAME)]
-        static extern napi_status napi_create_array_with_length(IntPtr env, int length, out IntPtr result);
-    }
+   
 
     public class NodeJsArray : IJsObject
     {
@@ -1231,32 +1274,7 @@ namespace Espresso
     }
 
 
-    enum napi_status
-    {
-        napi_ok,
-        napi_invalid_arg,
-        napi_object_expected,
-        napi_string_expected,
-        napi_name_expected,
-        napi_function_expected,
-        napi_number_expected,
-        napi_boolean_expected,
-        napi_array_expected,
-        napi_generic_failure,
-        napi_pending_exception,
-        napi_cancelled,
-        napi_escape_called_twice,
-        napi_handle_scope_mismatch,
-        napi_callback_scope_mismatch,
-        napi_queue_full,
-        napi_closing,
-        napi_bigint_expected,
-        napi_date_expected,
-        napi_arraybuffer_expected,
-        napi_detachable_arraybuffer_expected,
-    }
-
-
+   
     class Timer
     {
         //dummy timer

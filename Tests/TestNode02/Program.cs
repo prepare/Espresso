@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using Espresso;
+using Espresso.NodeJsApi;
 
 namespace TestNode01
 {
@@ -65,7 +66,7 @@ namespace TestNode01
         class MyNodeJsApiBridgeTestInstance
         {
             JsContext _context;
-            NodeJsNapiEnv _env;
+            NapiEnv _env;
             public void SetJsContext(JsContext context)
             {
                 _context = context;
