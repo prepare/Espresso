@@ -37,7 +37,7 @@ namespace Espresso.NodeJsApi
     }
 
 
-
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void napi_finalize(IntPtr env, IntPtr finalize_data, IntPtr finalize_hint);
 
     static class NodeJsApiNativeMethods
@@ -149,7 +149,7 @@ namespace Espresso.NodeJsApi
         [DllImport(JsBridge.LIB_NAME)]
         internal static extern napi_status napi_create_external(IntPtr env,
            IntPtr nativeMemPtr,
-           napi_finalize finalize_cb,
+           IntPtr finalize_cb,
            IntPtr finalize_hint,
            out IntPtr result);
         //        The API adds a napi_finalize callback which will be called when the JavaScript object just created is ready for garbage collection. It is similar to napi_wrap() except that:
@@ -175,7 +175,7 @@ namespace Espresso.NodeJsApi
         internal static extern napi_status napi_create_external_arraybuffer(IntPtr env,
             IntPtr nativeMemPtr_external_data,
             int byte_length,
-            napi_finalize finalize_cb,
+            IntPtr finalize_cb,
             IntPtr finalize_hint,
             out IntPtr result);
 
@@ -202,7 +202,7 @@ namespace Espresso.NodeJsApi
         internal static extern napi_status napi_create_external_buffer(IntPtr env,
            int length,
            IntPtr nativeMemPtr_external_data,
-           napi_finalize finalize_cb,
+           IntPtr finalize_cb,
            IntPtr finalize_hint,
            out IntPtr result);
         // This API allocates a node::Buffer object and initializes it with data backed by the passed in buffer. While this is still a fully-supported data structure, in most cases using a TypedArray will suffice.

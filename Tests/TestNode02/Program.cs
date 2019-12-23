@@ -54,12 +54,18 @@ namespace TestNode01
 
                 test_instance.SetJsContext(ss.Context);
                 ss.SetExternalObj("test_instance", test_instance);
-                return @"                     
+                return @"                  
+                   
                     var arr= test_instance.CreateArrayFromDotnetSide();
                     console.log(arr);
 
                     var str= test_instance.CreateString('user_a001_test');
                     console.log(str);
+
+                    var externalMem = test_instance.CreateExternalBuffer();
+                    console.log(externalMem);
+                    externalMem=null;
+                    
                 ";
             });
 
@@ -70,6 +76,7 @@ namespace TestNode01
         {
             JsContext _context;
             NapiEnv _env;
+
             public void SetJsContext(JsContext context)
             {
                 _context = context;
@@ -80,6 +87,12 @@ namespace TestNode01
                 //return "hello!";
                 //NodeJsArray arr = _env.CreateArray();
                 return _env.CreateArray(2);
+            }
+            public NodeJsExternalBuffer CreateExternalBuffer()
+            {   
+                //TODO: implement dispose
+                MyNativeMemBuffer myNativeMemBuffer = MyNativeMemBuffer.AllocNativeMem(100);
+                return _env.CreateExternalBuffer(myNativeMemBuffer);
             }
             //public NodeJsArray CreateExternalData()
             //{
