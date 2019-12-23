@@ -110,7 +110,7 @@ namespace Espresso
     {
         static MethodInfo s_invokeMethodInfo = Helper.GetInvokeMethod<ActionDelegateHolder>();
 
-        public void Invoke() => _jsFunc.Invoke(new object[0]);
+        public void Invoke() => _jsFunc.Invoke();
 
         public override DelegateHolder New() => new ActionDelegateHolder();
 

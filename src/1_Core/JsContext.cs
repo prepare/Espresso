@@ -34,6 +34,8 @@ using Espresso.Extension;
 
 namespace Espresso
 {
+
+
     /// <summary>
     /// js execution context
     /// </summary>
@@ -93,6 +95,9 @@ namespace Espresso
             _registerProperties.Add(null); //first is null 
             _proxyStore = new NativeObjectProxyStore(this);
         }
+
+
+
         internal bool IsFromNativeContext { get; set; }
 
         internal INativeRef GetObjectProxy(int index) => _proxyStore.GetProxyObject(index);
@@ -380,11 +385,11 @@ namespace Espresso
 
             _disposed = true;
 
-            if(!IsFromNativeContext)
+            if (!IsFromNativeContext)
             {
                 jscontext_dispose(_context);
             }
-            
+
 
             if (disposing)
             {
@@ -513,10 +518,15 @@ namespace Espresso
             }
 
 
+            //
+            //TODO: since we know return type of property or field
+            //so we can optimize this => AnyToJsValue() to more specific overload
+
             //try public property
             PropertyInfo pi = type.ExtGetProperty(obj, name);
             if (pi != null)
             {
+
                 result = pi.GetValue(obj, null);
                 _convert.AnyToJsValue(result, ref value);
                 return true;
@@ -1121,7 +1131,103 @@ namespace Espresso
             context._nativeSideWasDisposed = true;
             context.Dispose();
         }
+
+
+
+
+
     }
+
+
+
+
+
+    partial class JsContext
+    {
+
+        NodeJsNapiEnv _nodeJsNapiEnv;
+        public NodeJsNapiEnv GetJsNodeNapiEnv()
+        {
+            if (_nodeJsNapiEnv != null) return _nodeJsNapiEnv;
+
+            JsValue nativeContext = new JsValue();
+            js_new_napi_env(this.NativeContextHandle, ref nativeContext);
+            if (nativeContext.Type == JsValueType.Wrapped)
+            {
+                //OK
+                return _nodeJsNapiEnv = new NodeJsNapiEnv(nativeContext.Ptr);
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+
+
+    //------
+    //for nodejs
+    public class NodeJsNapiEnv
+    {
+        readonly IntPtr _napi_env;
+        internal NodeJsNapiEnv(IntPtr napi_env)
+        {
+            _napi_env = napi_env;
+        }
+
+        public NodeJsArray CreateArray()
+        {
+            napi_status status = napi_create_array(_napi_env, out IntPtr nativeNodeJsArr);
+            return new NodeJsArray(nativeNodeJsArr);
+        }
+
+        //see https://nodejs.org/api/n-api.html#n_api_napi_create_array
+        //"Working with JavaScript Values"
+
+
+        //napi_status napi_create_array(napi_env env, napi_value* result)
+        [DllImport(JsBridge.LIB_NAME)]
+        static extern napi_status napi_create_array(IntPtr env, out IntPtr result);
+    }
+
+    public class NodeJsArray : IJsObject
+    {
+        IntPtr _nativePtr;
+        internal NodeJsArray(IntPtr ptr)
+        {
+            _nativePtr = ptr;
+        }
+
+        public IntPtr UnmanagedPtr => _nativePtr;
+    }
+
+
+    enum napi_status
+    {
+        napi_ok,
+        napi_invalid_arg,
+        napi_object_expected,
+        napi_string_expected,
+        napi_name_expected,
+        napi_function_expected,
+        napi_number_expected,
+        napi_boolean_expected,
+        napi_array_expected,
+        napi_generic_failure,
+        napi_pending_exception,
+        napi_cancelled,
+        napi_escape_called_twice,
+        napi_handle_scope_mismatch,
+        napi_callback_scope_mismatch,
+        napi_queue_full,
+        napi_closing,
+        napi_bigint_expected,
+        napi_date_expected,
+        napi_arraybuffer_expected,
+        napi_detachable_arraybuffer_expected,
+    }
+
 
     class Timer
     {

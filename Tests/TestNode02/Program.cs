@@ -26,7 +26,9 @@ namespace TestNode01
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
 
-            TestNodeJs_Buffer();
+
+            TestNodeJs_NApi(); //
+            //TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
             //TestNodeFeature_OS_Example2();
@@ -36,6 +38,48 @@ namespace TestNode01
 
             //TestSocketIO_ChatExample(); 
         }
+
+        static void TestNodeJs_NApi()
+        {
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+             
+            var test_instance = new MyNodeJsApiBridgeTestInstance(); 
+            NodeJsEngineHelper.Run(ss =>
+            {
+                //for general v8
+                //see more https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint8
+
+                test_instance.SetJsContext(ss.Context);
+                ss.SetExternalObj("test_instance", test_instance);
+                return @"                     
+                    var arr= test_instance.CreateArrayFromDotnetSide();
+                    console.log(arr);
+                ";
+            });
+
+            string userInput = Console.ReadLine();
+        }
+
+        class MyNodeJsApiBridgeTestInstance
+        {
+            JsContext _context;
+            NodeJsNapiEnv _env;
+            public void SetJsContext(JsContext context)
+            {
+                _context = context;
+                _env = _context.GetJsNodeNapiEnv();
+            }
+            public NodeJsArray CreateArrayFromDotnetSide()
+            {
+                //return "hello!";
+                NodeJsArray arr = _env.CreateArray();
+                return arr;
+            }
+
+        }
+
 
 
         static void TestNodeJs_Buffer()
@@ -106,6 +150,7 @@ namespace TestNode01
             string userInput = Console.ReadLine();
         }
 
+
         class MyBufferBridge
         {
             JsObject _buffer;
@@ -117,7 +162,7 @@ namespace TestNode01
             {
             }
             public void SetBuffer(JsObject buffer)
-            {                
+            {
                 _buffer = buffer;
                 _nodeJsBuffer = new JsBuffer(buffer);
                 _bufferLen = _nodeJsBuffer.GetBufferLen();
@@ -383,7 +428,13 @@ namespace TestNode01
         }
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);
+
+        [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
+        static extern IntPtr GetProcAddress(IntPtr libHandle, string funcName);
+
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern int GetLastError();
+
+
     }
 }

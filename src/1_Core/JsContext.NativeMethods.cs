@@ -117,5 +117,13 @@ namespace Espresso
             ref JsValue args,
             ref JsValue output);
 
+
+
+        //---------------------------------------------
+        //for NodeJS's NAPI
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        static extern void js_new_napi_env(HandleRef contextPtr, ref JsValue output);
+
+       
     }
 }

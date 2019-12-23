@@ -9,12 +9,13 @@
 #include "js_native_api_v8.h"
 
 using namespace v8;
+ 
 
 extern "C" {
 
 
 //---------------
-//COPY from nodejs project
+//COPY from nodejs project's node_api.cc
 // node_napi impl
 struct node_napi_env__ : public napi_env__ {
   explicit node_napi_env__(v8::Local<v8::Context> context)
@@ -61,19 +62,11 @@ static inline napi_env NewEnv(v8::Local<v8::Context> context) {
 //---------------
 
 EXPORT void CALLCONV
-js_test_napi(JsContext* contextPtr,
-                                 Persistent<Object>* jsBuff,
-                                 int dstIndex,
-                                 void* src,
-                                 int copyLen,
-                                 jsvalue* output) {
-  // copy data from other native side and write to js buffer start specific
-  // index
+js_new_napi_env(JsContext* contextPtr, jsvalue* output) {
+  
   auto ctx = contextPtr->isolate_->GetCurrentContext();
-  napi_env env = NewEnv(ctx);
-  void* temp_mem = malloc(30);
-  napi_value result;
-  napi_create_arraybuffer(env, 10, (void**)temp_mem, &result); 
-  output->type = JSVALUE_TYPE_EMPTY;  // void
+  napi_env env = NewEnv(ctx);      
+  output->ptr = env;
+  output->type = JSVALUE_TYPE_WRAPPED;
 }
 }

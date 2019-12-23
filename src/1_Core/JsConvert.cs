@@ -33,7 +33,7 @@ using Espresso.Extension;
 
 namespace Espresso
 {
-    
+
     class JsConvert
     {
         static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -368,6 +368,9 @@ namespace Espresso
         {
             output.Type = JsValueType.Null;
         }
+
+
+
         /// <summary>
         /// convert any object to jsvalue
         /// </summary>
@@ -382,18 +385,25 @@ namespace Espresso
             }
             //-----
 
-            if (obj is INativeRef)
+            if (obj is INativeRef nativeRef1)
             {
-                //extension
-                INativeRef prox = (INativeRef)obj;
+                //extension              
                 output.I32 = _context.KeepAliveAdd(obj);
                 output.Type = JsValueType.JsTypeWrap;
-                output.Ptr = prox.UnmanagedPtr;
+                output.Ptr = nativeRef1.UnmanagedPtr;
                 return;
             }
+            else if (obj is IJsObject jsobject)
+            {
+                //TODO: review here again
+                //extension
+                output.Type = JsValueType.Wrapped;
+                output.Ptr = jsobject.UnmanagedPtr;
+                return;
+            }
+
             //-----
             Type type = obj.GetType();
-
             // Check for nullable types (we will cast the value out of the box later).
 
 
