@@ -16,41 +16,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\0_Start\JsBridge.cs" Link="0_Start\JsBridge.cs" />
-    <Compile Include="..\..\src\0_Start\ScriptInterfaces.cs" Link="0_Start\ScriptInterfaces.cs" />
-    <Compile Include="..\..\src\1_Core\BoundWeakDelegate.cs" Link="1_Core\BoundWeakDelegate.cs" />
-    <Compile Include="..\..\src\1_Core\IKeepAliveStore.cs" Link="1_Core\IKeepAliveStore.cs" />
-    <Compile Include="..\..\src\1_Core\JsBuffer.cs" Link="1_Core\JsBuffer.cs" />
-    <Compile Include="..\..\src\1_Core\JsContext.cs" Link="1_Core\JsContext.cs" />
-    <Compile Include="..\..\src\1_Core\JsContext.Dynamic.cs" Link="1_Core\JsContext.Dynamic.cs" />
-    <Compile Include="..\..\src\1_Core\JsContext.NativeMethods.cs" Link="1_Core\JsContext.NativeMethods.cs" />
-    <Compile Include="..\..\src\1_Core\JsConvert.cs" Link="1_Core\JsConvert.cs" />
-    <Compile Include="..\..\src\1_Core\JsEngine.cs" Link="1_Core\JsEngine.cs" />
-    <Compile Include="..\..\src\1_Core\JsEngine.NativeMethods.cs" Link="1_Core\JsEngine.NativeMethods.cs" />
-    <Compile Include="..\..\src\1_Core\JsEngineStats.cs" Link="1_Core\JsEngineStats.cs" />
-    <Compile Include="..\..\src\1_Core\JsError.cs" Link="1_Core\JsError.cs" />
-    <Compile Include="..\..\src\1_Core\JsException.cs" Link="1_Core\JsException.cs" />
-    <Compile Include="..\..\src\1_Core\JsExecutionTimedOutException.cs" Link="1_Core\JsExecutionTimedOutException.cs" />
-    <Compile Include="..\..\src\1_Core\JsFunction.cs" Link="1_Core\JsFunction.cs" />
-    <Compile Include="..\..\src\1_Core\JsInteropException.cs" Link="1_Core\JsInteropException.cs" />
-    <Compile Include="..\..\src\1_Core\JsObject.Dynamic.cs" Link="1_Core\JsObject.Dynamic.cs" />
-    <Compile Include="..\..\src\1_Core\JsScript.cs" Link="1_Core\JsScript.cs" />
-    <Compile Include="..\..\src\1_Core\JsValue.cs" Link="1_Core\JsValue.cs" />
-    <Compile Include="..\..\src\1_Core\KeepAliveDictionaryStore.cs" Link="1_Core\KeepAliveDictionaryStore.cs" />
-    <Compile Include="..\..\src\1_Core\WeakDelegate.cs" Link="1_Core\WeakDelegate.cs" />
-    <Compile Include="..\..\src\3_MiniBridge\DelegateHolders.cs" Link="3_MiniBridge\DelegateHolders.cs" />
-    <Compile Include="..\..\src\3_MiniBridge\JsTypeDefinitionBuilder.cs" Link="3_MiniBridge\JsTypeDefinitionBuilder.cs" />
-    <Compile Include="..\..\src\3_MiniBridge\NativeV8JsInterOp.cs" Link="3_MiniBridge\NativeV8JsInterOp.cs" />
-    <Compile Include="..\..\src\Extension.cs" Link="Extension.cs" />
-    <Compile Include="..\..\src\HandleRef.cs" Link="HandleRef.cs" />
-    <Compile Include="..\..\src\IScriptable.cs" Link="IScriptable.cs" />
+    <Compile Remove="0_Start\**" />
+    <Compile Remove="1_Core\**" />
+    <Compile Remove="3_MiniBridge\**" />
+    <EmbeddedResource Remove="0_Start\**" />
+    <EmbeddedResource Remove="1_Core\**" />
+    <EmbeddedResource Remove="3_MiniBridge\**" />
+    <None Remove="0_Start\**" />
+    <None Remove="1_Core\**" />
+    <None Remove="3_MiniBridge\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="0_Start\" />
-    <Folder Include="1_Core\" />
-    <Folder Include="3_MiniBridge\" />
     <Folder Include="Properties\" />
   </ItemGroup>
+
+  <Import Project="..\..\src\Espresso_SH.projitems" Label="Shared" />
 
 </Project>
