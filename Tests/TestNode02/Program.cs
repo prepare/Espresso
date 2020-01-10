@@ -65,7 +65,8 @@ namespace TestNode01
                     var externalMem = test_instance.CreateExternalBuffer();
                     console.log(externalMem);
                     externalMem=null;
-                    
+                     
+                    test_instance.TestRunScript();
                 ";
             });
 
@@ -89,23 +90,26 @@ namespace TestNode01
                 return _env.CreateArray(2);
             }
             public NodeJsExternalBuffer CreateExternalBuffer()
-            {   
+            {
+                //this method will be called from nodejs side
+                //we alloc memory from .net side and set this unmanged mem to node js side
+
                 //TODO: implement dispose
+                //this is an example 
                 MyNativeMemBuffer myNativeMemBuffer = MyNativeMemBuffer.AllocNativeMem(100);
                 return _env.CreateExternalBuffer(myNativeMemBuffer);
             }
-            //public NodeJsArray CreateExternalData()
-            //{
-            //    //return "hello!";
-            //    //NodeJsArray arr = _env.CreateArray();
-            //    
-            //}
             public NodeJsString CreateString(string user_input)
             {
                 return _env.CreateString("hello! " + user_input + " , from .net side");
             }
-        }
+            public void TestRunScript()
+            {
+                NodeJsValue result = _env.RunScript("(function(){return 1+1;})()");
+                _env.Typeof(result.UnmanagedPtr);
 
+            }
+        }
 
 
         static void TestNodeJs_Buffer()

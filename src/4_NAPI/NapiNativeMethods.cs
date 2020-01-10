@@ -269,8 +269,115 @@ namespace Espresso.NodeJsApi
         // 
         [DllImport(JsBridge.LIB_NAME)]
         internal static extern napi_status napi_run_script(IntPtr env,
-          IntPtr script,
-          out IntPtr result);
+            IntPtr script,
+            out IntPtr result);
+
+
+        //-----------
+        /// <summary>
+        /// This API represents behavior similar to invoking the typeof Operator on the object as defined in 
+        /// Section 12.5.5 of the ECMAScript Language Specification.
+        /// However, it has support for detecting an External value.
+        /// If value has a type that is invalid, an error is returned.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value"> The JavaScript value whose type to query.</param>
+        /// <param name="result">The type of the JavaScript value</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_typeof(IntPtr env,
+            IntPtr value,
+            out napi_valuetype result);
+
+
+
+        /// <summary>
+        /// This API represents invoking the IsArray operation on the object as defined in 
+        /// Section 7.2.2 of the ECMAScript Language Specification.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value">The JavaScript value to check</param>
+        /// <param name="result">Whether the given object is an array.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_array(IntPtr env,
+          IntPtr value,
+          out bool result);
+
+
+        /// <summary>
+        /// This API checks if the Object passed in is an array buffer.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value">The JavaScript value to check</param>
+        /// <param name="result">Whether the given object is an ArrayBuffer</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_arraybuffer(IntPtr env,
+            IntPtr value,
+            out bool result);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value">The JavaScript value to check</param>
+        /// <param name="result"> Whether the given napi_value represents a node::Buffer object.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_buffer(IntPtr env,
+           IntPtr value,
+           out bool result);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value"></param>
+        /// <param name="result">Whether the given napi_value represents a JavaScript Date object.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_date(IntPtr env,
+          IntPtr value,
+          out bool result);
+
+        /// <summary>
+        /// This API checks if the Object passed in is an Error.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value"></param>
+        /// <param name="result">Whether the given napi_value represents an Error object</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_error(IntPtr env,
+              IntPtr value,
+              out bool result);
+
+        /// <summary>
+        /// This API checks if the Object passed in is a typed array.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value"></param>
+        /// <param name="result">Whether the given napi_value represents a TypedArray</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_typedarray(IntPtr env,
+           IntPtr value,
+           out bool result);
+
+        /// <summary>
+        /// This API checks if the Object passed in is a DataView.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="value"></param>
+        /// <param name="result"> Whether the given napi_value represents a DataView.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_is_dataview(IntPtr env,
+          IntPtr value,
+          out bool result);
+        //-----------
 
     }
 }

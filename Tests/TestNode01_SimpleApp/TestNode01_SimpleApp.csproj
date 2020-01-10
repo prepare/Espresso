@@ -41,9 +41,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\build\Net20\Espresso.Interfaces\Espresso.Interfaces.csproj">
       <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
       <Name>Espresso.Interfaces</Name>

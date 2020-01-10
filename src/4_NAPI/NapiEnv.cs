@@ -40,6 +40,17 @@ namespace Espresso.NodeJsApi
         IntPtr UnmanagedPtr { get; }
     }
 
+    public class NodeJsValue : INapiValue
+    {
+        IntPtr _nativePtr;
+        public NodeJsValue(IntPtr ptr)
+        {
+            _nativePtr = ptr;
+        }
+        public IntPtr UnmanagedPtr => _nativePtr;
+
+    }
+
     public class NodeJsArray : INapiValue
     {
         IntPtr _nativePtr;
@@ -140,7 +151,20 @@ namespace Espresso.NodeJsApi
         }
     }
 
-
+    public enum napi_valuetype
+    {
+        // ES6 types (corresponds to typeof)
+        napi_undefined,
+        napi_null,
+        napi_boolean,
+        napi_number,
+        napi_string,
+        napi_symbol,
+        napi_object,
+        napi_function,
+        napi_external,
+        napi_bigint,
+    }
     public class NapiEnv
     {
         readonly IntPtr _napi_env;
@@ -232,10 +256,34 @@ namespace Espresso.NodeJsApi
                         return null;
                     }
                 }
-
             }
         }
+
+        public NodeJsValue RunScript(string script)
+        {
+            unsafe
+            {
+
+                NodeJsString script_nodejs_string = CreateString(script);
+                if (script_nodejs_string != null)
+                {
+                    napi_status status = napi_run_script(_napi_env,
+                       script_nodejs_string.UnmanagedPtr,
+                        out IntPtr result
+                    );
+
+                    if (status == napi_status.napi_ok)
+                    {
+                        return new NodeJsValue(result);
+                    }
+                }
+                return null;
+            }
+        }
+        public napi_valuetype Typeof(IntPtr value)
+        {
+            napi_typeof(_napi_env, value, out napi_valuetype value_type);
+            return value_type;
+        }
     }
-
-
 }
