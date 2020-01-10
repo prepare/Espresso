@@ -33,10 +33,10 @@ using Espresso.Extension;
 
 namespace Espresso
 {
-    public class JsBuffer
+    public struct JsBuffer
     {
         readonly JsObject _jsobj;
-        readonly int _buffer_kind;
+        readonly byte _buffer_kind;
         readonly int _buffer_len;
 
         public JsBuffer(JsObject jsobj)
@@ -49,7 +49,7 @@ namespace Espresso
             JsContext.jsvalue_buffer_get_info(
                 _jsobj.Context.NativeContextHandle, _jsobj.Handle, ref buff_kind, ref buff_len);
 
-            _buffer_kind = buff_kind.I32;
+            _buffer_kind = (byte)buff_kind.I32;
             _buffer_len = buff_len.I32;
         }
         public int GetBufferLen() => _buffer_len;
@@ -98,5 +98,42 @@ namespace Espresso
                 ref value);
         }
     }
+
+    public static class JsBufferExtensions
+    {
+        public static void ReadBufferAndWriteTo(this JsBuffer jsBuffer, System.IO.MemoryStream ms)
+        {
+            //write to mem-stream
+            int buff_len = jsBuffer.GetBufferLen();
+            byte[] buff = new byte[buff_len];
+            unsafe
+            {
+                fixed (byte* buff_ptr = &buff[0])
+                {
+                    jsBuffer.CopyBuffer((IntPtr)buff_ptr, buff_len);
+                }
+            }
+
+        }
+        public static string ReadBufferAsString(this JsBuffer jsBuffer, System.Text.Encoding enc = null)
+        {
+            int buff_len = jsBuffer.GetBufferLen();
+            byte[] buff = new byte[buff_len];
+            unsafe
+            {
+                fixed (byte* buff_ptr = &buff[0])
+                {
+                    jsBuffer.CopyBuffer((IntPtr)buff_ptr, buff_len);
+                }
+            }
+
+            if (enc == null)
+            {
+                enc = System.Text.Encoding.UTF8;
+            }
+            return enc.GetString(buff);
+        }
+    }
+
 
 }

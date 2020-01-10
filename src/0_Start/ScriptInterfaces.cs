@@ -287,11 +287,10 @@ namespace Espresso
                 {
                     object arg = args.GetArgAsObject(i);
                     //if type not match then covert it
-                    if (arg is JsFunction)
+                    if (arg is JsFunction func)
                     {
                         //convert to deledate
-                        //check if the target need delegate
-                        var func = (JsFunction)arg;
+                        //check if the target need delegate                         
                         //create delegate for a specific target type***
                         parameters[i] = func.MakeDelegate(_parameterInfoList[i].ParameterType);
                     }

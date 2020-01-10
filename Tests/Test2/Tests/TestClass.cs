@@ -27,37 +27,9 @@ namespace Espresso.Tests
 {
     public class TestClass
     {
-        int intProp;
-        string strProp;
-        bool boolProp;
-
-        public int Int32Property
-        {
-            get
-            {
-                return this.intProp;
-            }
-            set
-            {
-                this.intProp = value;
-            }
-        }
-        public string StringProperty
-        {
-            get { return this.strProp; }
-            set
-            {
-                this.strProp = value;
-            }
-        }
-        public bool BoolProperty
-        {
-            get { return this.boolProp; }
-            set
-            {
-                this.boolProp = value;
-            }
-        }
+        public int Int32Property { get; set; }
+        public string StringProperty { get; set; }
+        public bool BoolProperty { get; set; }
 
         public TestClass NestedObject { get; set; }
 

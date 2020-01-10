@@ -59,12 +59,6 @@
     <Compile Include="JsBridgeForNet20.cs" />
     <Compile Include="JsBridgeLibName.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Espresso.Interfaces\Espresso.Interfaces.csproj">
-      <Project>{81692f45-7266-4d82-a864-9d7dd839c290}</Project>
-      <Name>Espresso.Interfaces</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="..\..\..\src\Espresso_SH.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
