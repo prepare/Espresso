@@ -379,5 +379,54 @@ namespace Espresso.NodeJsApi
           out bool result);
         //-----------
 
+
+
+        //-----------
+        //Simple Asynchronous Operations
+        //(see https://nodejs.org/api/n-api.html#n_api_simple_asynchronous_operations)
+        //-----------
+        /// <summary>
+        /// This API allocates a work object that is used to execute logic asynchronously.
+        /// It should be freed using napi_delete_async_work once the work is no longer required.        
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="async_resource">An optional object associated with the async work that will be passed to possible async_hooks init hooks.</param>
+        /// <param name="async_resource_name"> Identifier for the kind of resource that is being provided 
+        ///                 for diagnostic information exposed by the async_hooks API.(async_resource_name should be a null-terminated, UTF-8-encoded string.)</param>
+        /// <param name="execute">The native function which should be called to execute the logic asynchronously. 
+        ///             The given function is called from a worker pool thread and can execute in parallel with the main event loop thread.</param>
+        /// <param name="complete">The native function which will be called when the asynchronous logic is completed or is cancelled. The given function is called from the main event loop thread</param>
+        /// <param name="data">User-provided data context. This will be passed back into the execute and complete functions.</param>
+        /// <param name="result"> which is the handle to the newly created async work</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_async_work(IntPtr env,
+            /*napi_value*/  IntPtr async_resource,
+            /*napi_value*/  IntPtr async_resource_name,
+            /*napi_async_execute_callback*/ IntPtr execute,
+            /*napi_async_execute_callback*/ IntPtr complete,
+            /* void* data*/IntPtr data,
+            out IntPtr result);
+        //The async_resource_name identifier is provided by the user and should be representative of the type of async work being performed. It is also recommended to apply namespacing to the identifier,
+        //e.g. by including the module name. See the async_hooks documentation for more information.
+
+        /// <summary>
+        /// This API frees a previously allocated work object.
+        ///This API can be called even if there is a pending JavaScript exception.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="async_worker"></param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_delete_async_work(IntPtr env, IntPtr async_worker);
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_queue_async_work(IntPtr env, IntPtr async_worker);
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_cancel_async_work(IntPtr env, IntPtr async_worker);
+
+
+
     }
+    delegate void napi_async_execute_callback(IntPtr env, IntPtr data/* void* */);
+    delegate void napi_async_complete_callback(IntPtr env, napi_status status, IntPtr data/* void* */);
 }
