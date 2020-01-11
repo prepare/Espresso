@@ -107,6 +107,13 @@ namespace TestNode01
             {
                 NodeJsValue result = _env.RunScript("(function(){return 1+1;})()");
                 _env.Typeof(result.UnmanagedPtr);
+                //test other api(s)
+                _env.GetNodeVersion(out uint major, out uint minor, out uint patch, out string release);
+                _env.GetVersion(out uint max_api);
+                IntPtr uvEventLoop = _env.GetUVEventLoop();
+            }
+            public void TestSimpleAsync()
+            {
 
             }
         }

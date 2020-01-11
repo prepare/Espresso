@@ -424,9 +424,228 @@ namespace Espresso.NodeJsApi
         [DllImport(JsBridge.LIB_NAME)]
         internal static extern napi_status napi_cancel_async_work(IntPtr env, IntPtr async_worker);
 
+        //-----------
+        //Custom Asynchronous Operations
+        //(see https://nodejs.org/dist/latest-v13.x/docs/api/n-api.html#n_api_custom_asynchronous_operations)
+        //-----------
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="async_resource">An optional object associated with the async work that will be passed to possible async_hooks init hooks</param>
+        /// <param name="async_resource_name">Identifier for the kind of resource that is being provided for diagnostic information exposed by the async_hooks API.</param>
+        /// <param name="result">he initialized async context.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_async_work(IntPtr env,
+            IntPtr  /*napi_value*/async_resource,
+            IntPtr  /*napi_value*/async_resource_name,
+            out IntPtr  /*napi_async_context* */result
+            );
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="async_resource"></param>
+        /// <param name="async_resource_name"></param>
+        /// <param name="result"></param>         
+        /// <returns></returns>
+        /// <remarks>This API can be called even if there is a pending JavaScript exception.</remarks>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_async_destroy(IntPtr env,
+           IntPtr  /*napi_async_context*/async_context);
 
+
+        /// <summary>
+        ///This method allows a JavaScript function object to be called from a native add-on. This API is similar to napi_call_function. However, it is used to call from native code back into JavaScript after returning from an async operation (when there is no other script on the stack). 
+        ///It is a fairly simple wrapper around node::MakeCallback. 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="async_context">Context for the async operation that is invoking the callback. This should normally be a value previously obtained from napi_async_init.
+        /// However NULL is also allowed, which indicates the current async context (if any) is to be used for the callback.</param>
+        /// <param name="recv">The this object passed to the called function</param>
+        /// <param name="func">representing the JavaScript function to be invoked</param>
+        /// <param name="argc">The count of elements in the argv array.</param>
+        /// <param name="argv">Array of JavaScript values as napi_value representing the arguments to the function</param>
+        /// <param name="result">napi_value representing the JavaScript object returned.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_async_destroy(IntPtr env,
+            IntPtr /*napi_async_context*/async_context,
+            IntPtr /*napi_value*/recv,
+            IntPtr /*napi_value*/func,
+            int argc,
+            IntPtr[] argv,
+            out IntPtr result);
+        //Note it is not necessary to use napi_make_callback from within a napi_async_complete_callback;
+        //in that situation the callback's async context has already been set up,
+        //so a direct call to napi_call_function is sufficient and appropriate. 
+        //Use of the napi_make_callback function may be required when implementing custom async behavior
+        //that does not use napi_create_async_work.
+
+
+        /// <summary>
+        /// There are cases (for example, resolving promises) where it is necessary to have the equivalent of the scope associated with a callback in 
+        /// place when making certain N-API calls. 
+        /// If there is no other script on the stack the napi_open_callback_scope and 
+        /// napi_close_callback_scope functions can be used to open/close the required scope.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="resource_object"> An object associated with the async work that will be passed to possible async_hooks init hooks.</param>
+        /// <param name="context">Context for the async operation that is invoking the callback. This should be a value previously obtained from napi_async_init.</param>
+        /// <param name="result">The newly created scope.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_open_callback_scope(IntPtr env,
+            IntPtr /*napi_value*/resource_object,
+            IntPtr /*napi_async_context*/context,
+            out IntPtr /*napi_callback_scope* */ result
+            );
+
+        /// <summary>
+        /// This API can be called even if there is a pending JavaScript exception.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="scope">The scope to be closed.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_close_callback_scope(IntPtr env,
+           IntPtr /*napi_callback_scope*/scope);
+        //-----------
+
+
+        //-----------
+        //Promises
+        //-----------
+
+        //https://nodejs.org/dist/latest-v13.x/docs/api/n-api.html#n_api_napi_create_promise
+        /// <summary>
+        /// This API creates a deferred object and a JavaScript promise.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="deferred"> A newly created deferred object which can later be passed to napi_resolve_deferred() or napi_reject_deferred() to resolve resp. reject the associated promise.</param>
+        /// <param name="promise">The JavaScript promise associated with the deferred object</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_create_promise(IntPtr env,
+            out IntPtr deferred,
+            out IntPtr promise);
+
+
+        /// <summary>
+        /// This API resolves a JavaScript promise by way of the deferred object with which it is associated.Thus, it can only be used to resolve JavaScript promises for which the corresponding deferred object is available.This effectively means that the promise must have been created using napi_create_promise() and the deferred object returned from that call must have been retained in order to be passed to this API.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="deferred">The deferred object whose associated promise to resolve.</param>
+        /// <param name="resolution">The value with which to resolve the promise.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_resolve_deferred(IntPtr env,
+           IntPtr deferred,
+           IntPtr resolution);
+        //The deferred object is freed upon successful completion.
+
+
+        /// <summary>
+        ///  This API rejects a JavaScript promise by way of the deferred object with which it is associated.
+        ///  Thus, it can only be used to reject JavaScript promises for which the corresponding deferred object is available.
+        ///  This effectively means that the promise must have been created using napi_create_promise() and 
+        ///  the deferred object returned from that call must have been retained in order to be passed to this API.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="deferred"> The deferred object whose associated promise to resolve.</param>
+        /// <param name="rejection">The value with which to reject the promise.</param>
+        /// <returns></returns> 
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_reject_deferred(IntPtr env,
+            IntPtr deferred,
+            IntPtr rejection);
+        //The deferred object is freed upon successful completion.
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="promise">The promise to examine</param>
+        /// <param name="result">is_promise: Flag indicating whether promise is a native promise object (that is, a promise object created by the underlying engine)</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_reject_deferred(IntPtr env,
+            IntPtr promise,
+            out bool result);
+
+
+
+
+        //-----------
+        //https://nodejs.org/dist/latest-v13.x/docs/api/n-api.html#n_api_napi_get_node_version
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="version">A pointer to version information for Node.js itself.</param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_get_node_version(IntPtr env,
+           out IntPtr version);
+        //typedef struct {
+        //  uint32_t major;
+        //        uint32_t minor;
+        //        uint32_t patch;
+        //        const char* release;
+        //    }
+        //    napi_node_version; 
+        //napi_status napi_get_node_version(napi_env env,
+        //                                  const napi_node_version** version);
+
+
+        //https://nodejs.org/dist/latest-v13.x/docs/api/n-api.html#n_api_napi_get_version
+        /// <summary>
+        ///  This API returns the highest N-API version supported by the Node.js runtime.
+        ///  N-API is planned to be additive such that newer releases of Node.js may support additional API functions. 
+        ///  In order to allow an addon to use a newer function when running with versions of Node.js that support it, 
+        ///  while providing fallback behavior when running with Node.js versions that don't support it:
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_get_version(IntPtr env,
+            out uint result);
+
+        //Call napi_get_version() to determine if the API is available.
+        //If available, dynamically load a pointer to the function using uv_dlsym().
+        //Use the dynamically loaded pointer to invoke the function.
+        //If the function is not available, provide an alternate implementation that does not use the function.
+
+
+
+        //--------------------------------------------
+        //libuv event loop
+        //The current libuv loop instance.
+        //https://nodejs.org/dist/latest-v13.x/docs/api/n-api.html#n_api_libuv_event_loop
+        /// <summary>
+        /// N-API provides a function for getting the current event loop associated with a specific napi_env.
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="loop"></param>
+        /// <returns></returns>
+        [DllImport(JsBridge.LIB_NAME)]
+        internal static extern napi_status napi_get_uv_event_loop(IntPtr env,
+            out IntPtr loop);
 
     }
     delegate void napi_async_execute_callback(IntPtr env, IntPtr data/* void* */);
     delegate void napi_async_complete_callback(IntPtr env, napi_status status, IntPtr data/* void* */);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct napi_node_version
+    {
+        public uint major;
+        public uint minor;
+        public uint patch;
+        public string release;
+    }
 }

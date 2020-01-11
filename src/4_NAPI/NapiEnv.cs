@@ -285,5 +285,28 @@ namespace Espresso.NodeJsApi
             napi_typeof(_napi_env, value, out napi_valuetype value_type);
             return value_type;
         }
+
+        public void GetNodeVersion(out uint major, out uint minor, out uint patch, out string release)
+        {
+            napi_get_node_version(_napi_env, out IntPtr version_ptr);
+            napi_node_version v3 = (napi_node_version)Marshal.PtrToStructure(version_ptr, typeof(napi_node_version));
+            major = v3.major;
+            minor = v3.minor;
+            patch = v3.patch;
+            release = v3.release;
+        }
+        public void GetVersion(out uint max_api_version)
+        {
+            napi_get_version(_napi_env, out max_api_version);
+        }
+        public IntPtr GetUVEventLoop()
+        {
+            napi_get_uv_event_loop(_napi_env, out IntPtr loop);
+            return loop;
+        }
+
+
+
+
     }
 }
