@@ -28,7 +28,11 @@ namespace TestNode01
             int libesprVer = JsBridge.LibVersion;
 
 
-            TestNodeJs_NApi(); //
+
+
+
+
+            //TestNodeJs_NApi(); //
             //TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
@@ -38,7 +42,13 @@ namespace TestNode01
             // TestNodeFeature_Url_Example();
 
             //TestSocketIO_ChatExample(); 
+
+
+            //since node has libuv inside,            
+            TestApp01.TestLibUV.Test1();
         }
+         
+        
 
         static void TestNodeJs_NApi()
         {
