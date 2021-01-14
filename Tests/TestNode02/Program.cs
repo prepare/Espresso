@@ -19,7 +19,7 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"../../../node-v15.5.1/out/Debug/node.dll";
+            string libEspr = @"../../../node-v15.5.1/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
@@ -29,10 +29,7 @@ namespace TestNode01
 
 
 
-
-
-
-            //TestNodeJs_NApi(); //
+            TestNodeJs_NApi(); //
             //TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
@@ -47,8 +44,8 @@ namespace TestNode01
             //since node has libuv inside,            
             TestApp01.TestLibUV.Test1();
         }
-         
-        
+
+
 
         static void TestNodeJs_NApi()
         {

@@ -25,9 +25,7 @@
 
 // MIT, 2015-2019, EngineKit, brezza92
 
-#if !ESPR_VE;
 #include <js_native_api.h>
-#endif
 #include <iostream>
 #include "espresso.h"
 
@@ -35,7 +33,7 @@ using namespace v8;
 
 extern "C" {
 EXPORT int getVersion() {
-  return 130500;
+  return 150501;
 }
 
 EXPORT JsEngine* CALLCONV
