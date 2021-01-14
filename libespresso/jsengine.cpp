@@ -4,9 +4,9 @@
 #include <iostream>
 #include "espresso.h"
 
-
+#if !ESPR_VE;
 #include "js_native_api_v8.h" //for nodejs version
-
+#endif
 
 
 long js_mem_debug_engine_count;
@@ -610,10 +610,12 @@ v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       String::NewFromTwoByte(isolate_, (uint16_t*)v->ptr).ToLocal(&value1);
       return value1;
     }
+#if !ESPR_VE
     case JSVALUE_TYPE_WRAPPED: {
       
       return v8impl::V8LocalValueFromJsValue((napi_value)v->ptr);
     }
+#endif
     case JSVALUE_TYPE_DATE:
       return Date::New(isolate_->GetCurrentContext(), v->num).ToLocalChecked();
     case JSVALUE_TYPE_JSTYPEDEF: {

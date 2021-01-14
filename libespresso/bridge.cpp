@@ -25,7 +25,9 @@
 
 // MIT, 2015-2019, EngineKit, brezza92
 
+#if !ESPR_VE;
 #include <js_native_api.h>
+#endif
 #include <iostream>
 #include "espresso.h"
 
