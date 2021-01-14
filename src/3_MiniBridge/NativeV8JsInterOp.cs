@@ -80,8 +80,8 @@ namespace Espresso
         }
         public NativeJsInstanceProxy CreateProxyForObject(object o, JsTypeDefinition jsTypeDefinition)
         {
-            NativeJsInstanceProxy found;
-            if (_createdWrappers.TryGetValue(o, out found))
+
+            if (_createdWrappers.TryGetValue(o, out NativeJsInstanceProxy found))
             {
                 return found;
             }

@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using Espresso;
+using Espresso.NodeJsApi;
 
 namespace TestNode01
 {
@@ -18,15 +19,21 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"../../../node-v13.5.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v15.5.1/out/Debug/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
- 
-            TestNodeJs_Buffer();
+
+
+
+
+
+
+            //TestNodeJs_NApi(); //
+            //TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
             //TestNodeFeature_OS_Example2();
@@ -35,6 +42,90 @@ namespace TestNode01
             // TestNodeFeature_Url_Example();
 
             //TestSocketIO_ChatExample(); 
+
+
+            //since node has libuv inside,            
+            TestApp01.TestLibUV.Test1();
+        }
+         
+        
+
+        static void TestNodeJs_NApi()
+        {
+#if DEBUG
+            JsBridge.dbugTestCallbacks();
+#endif
+
+            var test_instance = new MyNodeJsApiBridgeTestInstance();
+            NodeJsEngineHelper.Run(ss =>
+            {
+                //for general v8
+                //see more https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint8
+
+                test_instance.SetJsContext(ss.Context);
+                ss.SetExternalObj("test_instance", test_instance);
+                return @"                  
+                   
+                    var arr= test_instance.CreateArrayFromDotnetSide();
+                    console.log(arr);
+
+                    var str= test_instance.CreateString('user_a001_test');
+                    console.log(str);
+
+                    var externalMem = test_instance.CreateExternalBuffer();
+                    console.log(externalMem);
+                    externalMem=null;
+                     
+                    test_instance.TestRunScript();
+                ";
+            });
+
+            string userInput = Console.ReadLine();
+        }
+
+        class MyNodeJsApiBridgeTestInstance
+        {
+            JsContext _context;
+            NapiEnv _env;
+
+            public void SetJsContext(JsContext context)
+            {
+                _context = context;
+                _env = _context.GetJsNodeNapiEnv();
+            }
+            public NodeJsArray CreateArrayFromDotnetSide()
+            {
+                //return "hello!";
+                //NodeJsArray arr = _env.CreateArray();
+                return _env.CreateArray(2);
+            }
+            public NodeJsExternalBuffer CreateExternalBuffer()
+            {
+                //this method will be called from nodejs side
+                //we alloc memory from .net side and set this unmanged mem to node js side
+
+                //TODO: implement dispose
+                //this is an example 
+                MyNativeMemBuffer myNativeMemBuffer = MyNativeMemBuffer.AllocNativeMem(100);
+                return _env.CreateExternalBuffer(myNativeMemBuffer);
+            }
+            public NodeJsString CreateString(string user_input)
+            {
+                return _env.CreateString("hello! " + user_input + " , from .net side");
+            }
+            public void TestRunScript()
+            {
+                NodeJsValue result = _env.RunScript("(function(){return 1+1;})()");
+                _env.Typeof(result.UnmanagedPtr);
+                //test other api(s)
+                _env.GetNodeVersion(out uint major, out uint minor, out uint patch, out string release);
+                _env.GetVersion(out uint max_api);
+                IntPtr uvEventLoop = _env.GetUVEventLoop();
+            }
+            public void TestSimpleAsync()
+            {
+
+            }
         }
 
 
@@ -47,43 +138,104 @@ namespace TestNode01
             //------------ 
 
             ////example2: get value from node js              
-            NodeBufferBridge myBuffer = new NodeBufferBridge();
+            MyBufferBridge myBuffer = new MyBufferBridge();
 
+            //for nodejs's Buffer
+            //NodeJsEngineHelper.Run(ss =>
+            //{
+            //    //for node js
+            //    ss.SetExternalObj("myBuffer", myBuffer);
+            //    return @"                     
+            //        const buf1 = Buffer.alloc(20); 
+            //        buf1.writeUInt8(0, 0);
+            //        buf1.writeUInt8(1, 1);
+            //        buf1.writeUInt8(2, 2);
+            //        //-----------
+            //        myBuffer.SetBuffer(buf1);
+            //        console.log('before:');
+            //        console.log(buf1);
+
+            //        if(myBuffer.HaveSomeNewUpdate()){
+            //            myBuffer.UpdateBufferFromDotNetSide();
+            //            console.log('after:');
+            //            console.log(buf1);    
+            //        }else{
+            //            console.log('no data');
+            //        }                    
+            //    ";
+            //});
+
+            //for v8
             NodeJsEngineHelper.Run(ss =>
             {
+                //for general v8
+                //see more https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint8
+
                 ss.SetExternalObj("myBuffer", myBuffer);
                 return @"                     
-                    const buf1 = Buffer.alloc(20);
-
-                    buf1.writeUInt8(0, 0);
-                    buf1.writeUInt8(1, 1);
-                    buf1.writeUInt8(2, 2);
-
+                    const buf1 = new ArrayBuffer(20);
+                    const view = new DataView(buf1);
+                    view.setUint8(0, 0); 
+                    view.setUint8(1, 1);
+                    view.setUint8(2, 2);
                     //-----------
                     myBuffer.SetBuffer(buf1);
-                    myBuffer.CopyBufferFromNodeJs();
-                    console.log(buf1);    
-                    ";
+                    console.log('before:');
+                    console.log(buf1);
+
+                    if(myBuffer.HaveSomeNewUpdate()){
+                        myBuffer.UpdateBufferFromDotNetSide();
+                        console.log('after:');
+                        console.log(buf1);    
+                    }else{
+                        console.log('no data');
+                    }                    
+                ";
             });
             int buffLen = myBuffer.Length;
 
             string userInput = Console.ReadLine();
         }
-        class NodeBufferBridge
+
+
+        class MyBufferBridge
         {
             JsObject _buffer;
-
-            NodeJsBuffer _nodeJsBuffer;
+            JsBuffer _nodeJsBuffer;
             int _bufferLen;
             byte[] _memBuffer;
-            public NodeBufferBridge()
+
+            public MyBufferBridge()
             {
             }
             public void SetBuffer(JsObject buffer)
             {
                 _buffer = buffer;
-                _nodeJsBuffer = new NodeJsBuffer(buffer);
+                _nodeJsBuffer = new JsBuffer(buffer);
                 _bufferLen = _nodeJsBuffer.GetBufferLen();
+            }
+            public bool HaveSomeNewUpdate()
+            {
+                //TEST ONLY
+                //return false;
+                return true;
+            }
+            public void UpdateBufferFromDotNetSide()
+            {
+                //test write data back
+                byte[] newOutputData = new byte[100];
+                for (int i = 0; i < _bufferLen; ++i)
+                {
+                    newOutputData[i] = 100;
+                }
+                unsafe
+                {
+                    fixed (byte* ptr0 = &newOutputData[0])
+                    {
+                        //_nodeJsBuffer.SetBuffer((IntPtr)ptr0, 10);//write data start at   offset 0 on dest
+                        _nodeJsBuffer.SetBuffer((IntPtr)ptr0, 2, 10); //write data start at 0 offset 2 on dest
+                    }
+                }
             }
             public void CopyBufferFromNodeJs()
             {
@@ -95,6 +247,7 @@ namespace TestNode01
                         _nodeJsBuffer.CopyBuffer((IntPtr)ptr0, _bufferLen);
                     }
                 }
+
             }
             public int Length => _bufferLen;
             public byte[] CopyMem() => _memBuffer;
@@ -322,7 +475,13 @@ namespace TestNode01
         }
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);
+
+        [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
+        static extern IntPtr GetProcAddress(IntPtr libHandle, string funcName);
+
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern int GetLastError();
+
+
     }
 }

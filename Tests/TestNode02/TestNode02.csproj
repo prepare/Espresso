@@ -36,8 +36,20 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Libuv_Interop\Ext\NativeBufferPool.cs" />
+    <Compile Include="Libuv_Interop\Ext\Span.cs" />
+    <Compile Include="Libuv_Interop\UV\Buffer.cs" />
+    <Compile Include="Libuv_Interop\UV\Error.cs" />
+    <Compile Include="Libuv_Interop\UV\Handle.cs" />
+    <Compile Include="Libuv_Interop\UV\Interop.cs" />
+    <Compile Include="Libuv_Interop\UV\Listener.cs" />
+    <Compile Include="Libuv_Interop\UV\Loop.cs" />
+    <Compile Include="Libuv_Interop\UV\Request.cs" />
+    <Compile Include="Libuv_Interop\UV\Stream.cs" />
+    <Compile Include="Libuv_Interop\UV\Tcp.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestLibUV.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\build\Net20\Espresso.Interfaces\Espresso.Interfaces.csproj">

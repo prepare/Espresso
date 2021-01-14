@@ -1,9 +1,13 @@
 // MIT, 2015-2019, EngineKit, brezza92
-#define NODE7
-
+ 
 #include <string.h>
 #include <iostream>
 #include "espresso.h"
+
+#if !ESPR_VE;
+#include "js_native_api_v8.h" //for nodejs version
+#endif
+
 
 long js_mem_debug_engine_count;
 
@@ -11,9 +15,6 @@ extern "C" void CALLCONV jsvalue_alloc_array(const int32_t length,
                                              jsvalue* output);
 
 static const int Mega = 1024 * 1024;
-
-// typedef void (*GenericNamedPropertyGetterCallback)(
-//    Local<Name> property, const PropertyCallbackInfo<Value>& info);
 
 static void managed_prop_get(Local<Name> name,
                              const PropertyCallbackInfo<Value>& info) {
@@ -517,10 +518,9 @@ void JsEngine::AnyFromV8(v8::Local<Value> value,
       auto handle_object = Local<Object>();
 
       for (int i = 0; i < arrLen; i++) {
-        
-            Local<Value> elem;
-            object->Get(ctx, i).ToLocal(&elem);
-            AnyFromV8(elem, handle_object, (arr + i));
+        Local<Value> elem;
+        object->Get(ctx, i).ToLocal(&elem);
+        AnyFromV8(elem, handle_object, (arr + i));
       }
 
       output->type = JSVALUE_TYPE_ARRAY;
@@ -577,7 +577,7 @@ void JsEngine::ArrayFromArguments(const FunctionCallbackInfo<Value>& args,
   }
 }
 
-#ifdef NODE7
+ 
 static void managed_destroy(
     const v8::WeakCallbackInfo<v8::Local<v8::Object>>& data) {
 #ifdef DEBUG_TRACE_API
@@ -590,38 +590,7 @@ static void managed_destroy(
   ManagedRef* ref = (ManagedRef*)internalField;
   delete ref;
 }
-#else
-
-static void managed_destroy(
-    const v8::WeakCallbackData<v8::Object, v8::Local<v8::Object>>& data) {
-#ifdef DEBUG_TRACE_API
-  std::cout << "managed_destroy" << std::endl;
-#endif
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
-
-  Persistent<Object>
-      self;  // = Persistent<Object>(isolate, data.GetValue());//0.12.x
-  self.Reset(isolate, data.GetValue());
-  Local<Object> selfHandle = Local<Object>::New(isolate, self);  // 0.12.x
-  Local<External> wrap =
-      Local<External>::Cast(selfHandle->GetInternalField(0));  // 0.12.x
-  ManagedRef* ref = (ManagedRef*)wrap->Value();
-  delete ref;
-  // puts(NULL);//TODO
-  // object.Reset();
-  // puts(*data.GetParameter());
-  // Isolate* isolate = Isolate::GetCurrent();
-  //   HandleScope scope(isolate);
-  //
-  //   Persistent<Object> self = Persistent<Object>::Cast(object);
-
-  //   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  // ManagedRef* ref = (ManagedRef*)wrap->Value();
-  //   delete ref;
-  // object.Reset();
-}
-#endif
+ 
 
 v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
   // convert to v8 value from a given jsvalue
@@ -641,11 +610,14 @@ v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       String::NewFromTwoByte(isolate_, (uint16_t*)v->ptr).ToLocal(&value1);
       return value1;
     }
-
+#if !ESPR_VE
+    case JSVALUE_TYPE_WRAPPED: {
+      
+      return v8impl::V8LocalValueFromJsValue((napi_value)v->ptr);
+    }
+#endif
     case JSVALUE_TYPE_DATE:
-
       return Date::New(isolate_->GetCurrentContext(), v->num).ToLocalChecked();
-
     case JSVALUE_TYPE_JSTYPEDEF: {
       ManagedRef* ext = (ManagedRef*)v->ptr;
       Local<Object> obj = Local<Object>::New(isolate_, ext->v8InstanceHandler);
@@ -683,13 +655,10 @@ v8::Local<Value> JsEngine::AnyToV8(jsvalue* v, int32_t contextId) {
       }
       object->SetInternalField(0, External::New(isolate_, ref));
       Persistent<Object> persistent(isolate_, object);
-#ifdef NODE7
-      // persistent.SetWeak(&object, managed_destroy);
+  
       persistent.SetWeak(
           &object, managed_destroy, v8::WeakCallbackType::kFinalizer);
-#else
-      persistent.SetWeak(&object, managed_destroy);
-#endif
+ 
       Local<Object> handle = Local<Object>::New(isolate_, persistent);
       return handle;
     }

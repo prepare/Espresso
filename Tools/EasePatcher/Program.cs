@@ -15,10 +15,10 @@ namespace EasePatcher
 
 
 
-        static string current_node_version = "node-v13.5.0";
-        static string patch_subdir = "node_patches/node13.5.0_modified";
+        static string current_node_version = "node-v15.5.1";
+        static string patch_subdir = "node_patches/node15.5.1_modified";
         //
-        static string original_node_srcdir = @"../../../../../../node-v13.5.0";
+        static string original_node_srcdir = @"../../../../../../node-v15.5.1";
         static string espresso_srcdir = "../../../../../../Espresso";
         static string config_pars = "";
 
@@ -51,7 +51,7 @@ namespace EasePatcher
             {
                 case PatcherOS.Windows:
                     //x64
-                    config_pars = "x86 release nobuild full-icu"; //default build .
+                    config_pars = "release nobuild full-icu"; //default build .
                     //x86                     
                     break;
                 case PatcherOS.Mac:

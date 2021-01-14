@@ -14,5 +14,5 @@ namespace Espresso
     {
         IntPtr UnmanagedTypeDefinitionPtr { get; }
     }
-
+   
 }

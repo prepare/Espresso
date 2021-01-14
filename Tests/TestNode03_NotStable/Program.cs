@@ -193,16 +193,8 @@ MainLoop();");
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string currentdir = System.IO.Directory.GetCurrentDirectory();
-            string libEspr = @"../../../node-v12.11.1/out/Release/node.dll";
-            //if (File.Exists(libEspr))
-            //{
-            //    //delete the old one
-            //    File.Delete(libEspr);
-            //}
-            //File.Copy(
-            //   @"../../../node-v8.4.0/Release/node.dll", //from
-            //   libEspr);
+            
+            string libEspr = @"../../../node-v15.5.1/out/Release/node.dll"; 
             //-----------------------------------
             //2. load libespr.dll (node.dll)
             //-----------------------------------  
@@ -330,7 +322,7 @@ MainLoop();");
 
         void InitializeJsGlobals()
         {
-            string libEspr = @"../../../node-v13.5.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v15.5.1/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
