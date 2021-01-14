@@ -19,7 +19,7 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"../../../node-v13.5.0/out/Debug/node.dll";
+            string libEspr = @"../../../node-v15.5.1/out/Debug/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
