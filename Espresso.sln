@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.960
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net20", "Net20", "{2BCA1F6E-6818-4967-A21A-BB3166FFF999}"
 EndProject
@@ -51,6 +51,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{0cc52d07-104e-45ce-9c37-6480f1a55edf}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{25c800d8-d92c-4ee9-9512-3fe928e2b6c4}*SharedItemsImports = 13
+		src\Espresso_SH.projitems*{269d404d-c287-45d8-80a4-18242b2d2ec9}*SharedItemsImports = 5
 		src\Espresso_SH.projitems*{2dc5eb46-6421-4aa9-b086-ddec9ba7296b}*SharedItemsImports = 13
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3ae55809-8020-4b59-b969-44ed49111c14}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3d1e03eb-863d-4b02-9021-c69805c73f7c}*SharedItemsImports = 4
