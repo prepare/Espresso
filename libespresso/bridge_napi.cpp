@@ -20,7 +20,7 @@ extern "C" {
 struct node_napi_env__ : public napi_env__ {
   explicit node_napi_env__(v8::Local<v8::Context> context)
       : napi_env__(context) {
-    // CHECK_NOT_NULL(node_env());
+    CHECK_NOT_NULL(node_env());
   }
 
   inline node::Environment* node_env() const {
@@ -33,12 +33,20 @@ struct node_napi_env__ : public napi_env__ {
 
   v8::Maybe<bool> mark_arraybuffer_as_untransferable(
       v8::Local<v8::ArrayBuffer> ab) const override {
-    return ab->SetPrivate(
-        context(),
-        node_env()->arraybuffer_untransferable_private_symbol(),
-        v8::True(isolate));
+    return ab->SetPrivate(context(),
+                          node_env()->untransferable_object_private_symbol(),
+                          v8::True(isolate));
   }
-}; 
+
+  void CallFinalizer(napi_finalize cb, void* data, void* hint) override {
+    napi_env env = static_cast<napi_env>(this);
+    node_env()->SetImmediate([=](node::Environment* node_env) {
+      v8::HandleScope handle_scope(env->isolate);
+      v8::Context::Scope context_scope(env->context());
+      env->CallIntoModule([&](napi_env env) { cb(env, data, hint); });
+    });
+  }
+};
 	
 typedef node_napi_env__* node_napi_env;
 
