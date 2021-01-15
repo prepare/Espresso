@@ -25,9 +25,7 @@
 
 // MIT, 2015-2019, EngineKit, brezza92
 
-#if !ESPR_VE;
 #include <js_native_api.h>
-#endif
 #include <iostream>
 #include "espresso.h"
 
@@ -35,7 +33,7 @@ using namespace v8;
 
 extern "C" {
 EXPORT int getVersion() {
-  return 130500;
+  return 150501;
 }
 
 EXPORT JsEngine* CALLCONV
@@ -376,8 +374,8 @@ EXPORT void CALLCONV jsvalue_buffer_copy_buffer_data(JsContext* contextPtr,
       Local<ArrayBuffer> arrBuff = Local<ArrayBuffer>::Cast(js_buffer);
       // copy content
       void* rawBufferData = arrBuff->GetBackingStore()->Data();
-      memcpy_s(dstMem, len, rawBufferData, arrBuff->ByteLength());
-
+      //memcpy_s(dstMem, len, rawBufferData, arrBuff->ByteLength());
+      memcpy(dstMem, rawBufferData, arrBuff->ByteLength());
     } break;
   }
 }
@@ -411,7 +409,8 @@ jsvalue_buffer_write_buffer_data(JsContext* contextPtr,
         if (dstIndex + copyLen <= buff_len) {
           // check in range
           char* dst1 = ((char*)underlying_data1) + dstIndex;
-          memcpy_s((void*)dst1, buff_len, src, copyLen);
+          //memcpy_s((void*)dst1, buff_len, src, copyLen);
+          memcpy((void*)dst1, src, arrBuff->ByteLength());
           output->type = JSVALUE_TYPE_EMPTY;  // void
           output->i32 = 0;
           return;
@@ -429,7 +428,8 @@ jsvalue_buffer_write_buffer_data(JsContext* contextPtr,
         if (dstIndex + copyLen <= buff_len) {
           // check in range
           char* dst1 = ((char*)rawBufferData) + dstIndex;
-          memcpy_s((void*)dst1, buff_len, src, copyLen);
+          //memcpy_s((void*)dst1, buff_len, src, copyLen);
+          memcpy((void*)dst1, src, copyLen);
           output->type = JSVALUE_TYPE_EMPTY;  // void
           output->i32 = 0;
           return;
@@ -457,7 +457,8 @@ EXPORT void CALLCONV jsvalue_alloc_string(const uint16_t* str,
   uint16_t* newstr = new uint16_t[len + 1];  //+1 for null-terminated string
   if (newstr != NULL) {
     // alloc succeed
-    memcpy_s(newstr, (len + 1) * 2, str, len * 2);
+    //memcpy_s(newstr, (len + 1) * 2, str, len * 2);
+    memcpy(newstr, str, len * 2);
     /*for (int i = length - 1; i >= 0; --i)
     {
             newstr[i] = newstr[i];
