@@ -21,11 +21,11 @@ namespace TestNode01
             string currentdir = System.IO.Directory.GetCurrentDirectory();
 
 
-            string libEspr = @"../../../node-v15.5.1/out/Release/node.dll";
+            string libEspr = @"../../../node-v16.3.0/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //----------------------------------- 
-            
+
             IntPtr intptr = LoadLibrary(libEspr);
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
@@ -34,7 +34,8 @@ namespace TestNode01
 #endif
             //------------
             MyApp myApp = new MyApp();
-            NodeJsEngineHelper.Run(new string[] { "--inspect", "hello.espr" },
+            //NodeJsEngineHelper.Run(new string[] { "--inspect", "hello.espr" },
+            NodeJsEngineHelper.Run(new string[] { "hello.espr" },
                ss =>
                {
                    ss.SetExternalObj("myApp", myApp);
@@ -51,17 +52,16 @@ namespace TestNode01
 
                     server.on('stream', (stream, headers) => {
                       // stream is a Duplex
-                      //const method = headers[':method'];
-                      //const path = headers[':path'];  
-                       
-                      //let result=  myApp.HandleRequest(method,path);
+                      const method = headers[':method'];
+                      const path = headers[':path'];                       
+                      let result=  myApp.HandleRequest(method,path);
                       
                       //stream.respond({
                       //  'content-type': 'text/html',
                       //  ':status': 200
                       //});
-                      stream.end('<h1>Hello World, EspressoND, node 15.5.1</h1>'+ myApp.GetMyName());
-                      //stream.end(result);
+                      //stream.end('<h1>Hello World, EspressoND, node 16.3.0</h1>'+ myApp.GetMyName());
+                      stream.end(result);
                     });
 
                     server.listen(8443);
@@ -86,7 +86,7 @@ namespace TestNode01
                 }
             }
         }
-       
+
 
         [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
         static extern IntPtr LoadLibrary(string dllname);

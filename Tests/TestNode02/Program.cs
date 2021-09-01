@@ -19,7 +19,8 @@ namespace TestNode01
             //after we build nodejs in dll version
             //we will get node.dll
             //then just copy it to another name 'libespr'   
-            string libEspr = @"../../../node-v15.5.1/out/Release/node.dll";
+            
+            string libEspr = "node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
@@ -27,9 +28,15 @@ namespace TestNode01
             int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
 
+            System.AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            try
+            {
+                TestNodeJs_NApi(); //
+            }
+            catch (Exception ex)
+            {
+            }
 
-
-            TestNodeJs_NApi(); //
             //TestNodeJs_Buffer();
             //TestNodeVM_Example();
             //TestNodeFeature_OS_Example1();
@@ -37,15 +44,16 @@ namespace TestNode01
             //TestNodeFeature_DNS_Example();
             //TestNodeFeature_Internationalization_Example();
             // TestNodeFeature_Url_Example();
-
-            //TestSocketIO_ChatExample(); 
-
-
+            //TestSocketIO_ChatExample();
             //since node has libuv inside,            
-            TestApp01.TestLibUV.Test1();
+            //TestNodeJs_NApi();
+            //TestApp01.TestLibUV.Test1();
         }
 
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
 
+        }
 
         static void TestNodeJs_NApi()
         {
@@ -71,6 +79,14 @@ namespace TestNode01
 
                     var externalMem = test_instance.CreateExternalBuffer();
                     console.log(externalMem);
+                    test_instance.RecheckExternalBuffer();
+                    if(externalMem[1]==1){
+                        console.log('hello2');
+                    }
+                    else{
+                        console.log(externalMem);
+                    }
+
                     externalMem=null;
                      
                     test_instance.TestRunScript();
@@ -85,6 +101,7 @@ namespace TestNode01
             JsContext _context;
             NapiEnv _env;
 
+            MyNativeMemBuffer _myNativeBuffer;
             public void SetJsContext(JsContext context)
             {
                 _context = context;
@@ -104,8 +121,23 @@ namespace TestNode01
                 //TODO: implement dispose
                 //this is an example 
                 MyNativeMemBuffer myNativeMemBuffer = MyNativeMemBuffer.AllocNativeMem(100);
+                _myNativeBuffer = myNativeMemBuffer;
                 return _env.CreateExternalBuffer(myNativeMemBuffer);
             }
+            public void RecheckExternalBuffer()
+            {
+
+                unsafe
+                {
+                    byte* ptr = (byte*)_myNativeBuffer.Ptr;
+                    *ptr = 0;
+                    *(ptr + 1) = 1;
+                }
+            }
+            //public string CreateString(string user_input)
+            //{
+            //    return "hello! " + user_input + " , from .net side";
+            //}
             public NodeJsString CreateString(string user_input)
             {
                 return _env.CreateString("hello! " + user_input + " , from .net side");

@@ -7,15 +7,6 @@ namespace TestNode01
 {
     static class Program
     {
-
-        //  [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        //        static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb, NativeEngineClosingCallback engineClosingCb);
-
-        delegate int RunJsEngineDel(int argc,
-            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPArray)] string[] args,
-            IntPtr engineSetupCb,
-            IntPtr engineClosingCb);
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -29,26 +20,20 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
 
 
-            string libEspr = @"../../../node-v16.3.0/out/Release/node.dll";
+            //string libEspr = @"../../../node-v15.5.1/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //----------------------------------- 
             //string libEspr = "libespr.dll";
-            IntPtr hModule = LoadLibrary(libEspr);
-            int errCode = GetLastError();
+            //IntPtr intptr = LoadLibrary(libEspr);
+            //int errCode = GetLastError();
             int libesprVer = JsBridge.LibVersion;
-
 #if DEBUG
             JsBridge.dbugTestCallbacks();
-            IntPtr proc = GetProcAddress(hModule, "RunJsEngine");
-            //RunJsEngineDel del1 = (RunJsEngineDel)System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer(proc,
-            //   typeof(RunJsEngineDel));
-            //del1(3, new string[] { "node", "--inspect", "hello.espr" }, IntPtr.Zero, IntPtr.Zero);
-#endif
+#endif  
             //------------
             NodeJsEngineHelper.Run(new string[] { "--inspect", "hello.espr" },
-                ss => @"
-                    const http2 = require('http2');
+                ss => @" const http2 = require('http2');
                     const fs = require('fs');
 
                     const server = http2.createSecureServer({
@@ -64,7 +49,7 @@ namespace TestNode01
                         'content-type': 'text/html',
                         ':status': 200
                       });
-                      stream.end('<h1>Hello World, EspressoND, node 16.3.0</h1>');
+                      stream.end('<h1>Hello World, EspressoND, node 15.5.1</h1>');
                     });
 
                     server.listen(8443);
@@ -73,11 +58,9 @@ namespace TestNode01
         }
 
 
-        [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
-        static extern IntPtr LoadLibrary(string dllname);
-        [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
-        static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
-        [System.Runtime.InteropServices.DllImport("Kernel32.dll")]
-        static extern int GetLastError();
+        //[System.Runtime.InteropServices.DllImport("Kernel32.dll")]
+        //static extern IntPtr LoadLibrary(string dllname);
+        //[System.Runtime.InteropServices.DllImport("Kernel32.dll")]
+        //static extern int GetLastError();
     }
 }

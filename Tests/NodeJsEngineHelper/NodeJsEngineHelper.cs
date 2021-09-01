@@ -43,9 +43,9 @@ namespace Espresso
                 string mainSrc = nodeExecSession(nodeJsExecSession);
 
                 jstypedef.AddMember(new JsMethodDefinition(LOAD_MAIN_SRC_FILE, args =>
-                 {
+                {
                      args.SetResult(mainSrc);
-                 }));
+                }));
                 if (!jstypedef.IsRegisterd)
                 {
                     ctx.RegisterTypeDefinition(jstypedef);
