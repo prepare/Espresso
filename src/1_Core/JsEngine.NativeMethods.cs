@@ -104,10 +104,10 @@ namespace Espresso
             JsEngine eng = null;
             return RunJsEngine(parameters, (IntPtr nativeEngine, IntPtr nativeContext) =>
             {
-               eng = new JsEngine(nativeEngine);
-               //
-               JsContext context = eng.CreateContext(nativeContext, s_jsTypeDefBuilder);
-               engineSetup(eng, context);
+                eng = new JsEngine(nativeEngine);
+                //
+                JsContext context = eng.CreateContext(nativeContext, s_jsTypeDefBuilder);
+                engineSetup(eng, context);
             },
             (IntPtr nativeEngine, IntPtr nativeContext, int exitcode) =>
             {
@@ -129,17 +129,26 @@ namespace Espresso
                 engineSetupCb,
                 engineClosingCb);
         }
+
+
+        static NativeEngineSetupCallback s_engineSetupCb;
+        static NativeEngineClosingCallback s_engineClosingCb;
+
         static int RunJsEngine(string[] parameters, NativeEngineSetupCallback engineSetupCb,
                NativeEngineClosingCallback engineClosingCb)
         {
+            s_engineSetupCb = engineSetupCb;
+            s_engineClosingCb = engineClosingCb;
+
             List<string> nodeStartPars = new List<string>();
             nodeStartPars.Add("node"); //essential first parameter
             if (parameters != null) nodeStartPars.AddRange(parameters);
 
+
             return RunJsEngine(nodeStartPars.Count, nodeStartPars.ToArray(), engineSetupCb, engineClosingCb);
         }
         //-------------------------------------------------------------------------------------------------------
-        [DllImport(JsBridge.LIB_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb, NativeEngineClosingCallback engineClosingCb);
     }
 }

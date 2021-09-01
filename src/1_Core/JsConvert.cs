@@ -168,6 +168,7 @@ namespace Espresso
                 case JsValueType.Array:
                     {
                         int len = v->I32;
+                        //copy to array
                         object[] newarr = new object[len];
                         JsValue* arr = (JsValue*)v->Ptr;
                         for (int i = 0; i < len; ++i)
@@ -227,6 +228,7 @@ namespace Espresso
         {
             //js dic is key-pair object
             JsObject obj = new JsObject(_context, v.Ptr);
+            obj.EnableDic();
             int count = v.I32 * 2;//key and value
             unsafe
             {
@@ -249,6 +251,7 @@ namespace Espresso
             //js dic is key-pair
 
             JsObject obj = new JsObject(_context, v->Ptr);
+            obj.EnableDic();
             int count = v->I32 * 2;//key and value
             unsafe
             {
@@ -397,7 +400,7 @@ namespace Espresso
             {
                 //TODO: review here again
                 //extension
-                output.Type = JsValueType.Wrapped;
+                output.Type = JsValueType.JSVALUE_TYPE_V8_Local;
                 output.Ptr = jsobject.UnmanagedPtr;
                 return;
             }

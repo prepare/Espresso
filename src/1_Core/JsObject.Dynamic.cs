@@ -28,16 +28,48 @@ using System.Collections.Generic;
 
 namespace Espresso
 {
-    public class DynamicObject
+    public abstract class DynamicObject
     {
         //member cache
-        Dictionary<string, object> _members = new Dictionary<string, object>();
-        public object this[string name]
+        public DynamicObject() { }
+        public abstract object this[string name] { get; set; }
+
+        public abstract bool TryGetMember(string mbname, out object result);
+        public abstract bool TrySetMember(string mbname, object value);
+        public virtual IEnumerable<string> GetDynamicMemberNames() => null;
+    }
+
+
+    public class JsObject : DynamicObject, IDisposable
+    {
+        readonly JsContext _context;
+        readonly IntPtr _handle;
+        bool _disposed;
+        Dictionary<string, object> _members;
+        public JsObject(JsContext context, IntPtr ptr)
+        {
+            if (ptr == IntPtr.Zero)
+                throw new ArgumentException("can't wrap an empty object (ptr is Zero)", "ptr");
+
+            _context = context;
+            _handle = ptr;
+        }
+        /// <summary>
+        /// enable dictionary feature
+        /// </summary>
+        internal void EnableDic()
+        {
+            if (_members == null)
+            {
+                _members = new Dictionary<string, object>();
+            }
+        }
+        public override object this[string name]
         {
             get
             {
-                object foundMember;
-                if (!_members.TryGetValue(name, out foundMember))
+
+                if (!_members.TryGetValue(name, out object foundMember))
                 {
                     if (this.TryGetMember(name, out foundMember))
                     {
@@ -49,35 +81,7 @@ namespace Espresso
                 }
                 return foundMember;
             }
-            set
-            {
-                this.TrySetMember(name, value);
-                //this.members[name] = value;
-            }
-        }
-
-        public virtual bool TryGetMember(string mbname, out object result)
-        {
-            result = null;
-            return false;
-        }
-        public virtual bool TrySetMember(string mbname, object value) => false;
-        public virtual IEnumerable<string> GetDynamicMemberNames() => null;
-    }
-
-
-    public class JsObject : DynamicObject, IDisposable
-    {
-        readonly JsContext _context;
-        readonly IntPtr _handle;
-        bool _disposed;
-        public JsObject(JsContext context, IntPtr ptr)
-        {
-            if (ptr == IntPtr.Zero)
-                throw new ArgumentException("can't wrap an empty object (ptr is Zero)", "ptr");
-
-            _context = context;
-            _handle = ptr;
+            set => throw new NotImplementedException();
         }
         public IntPtr Handle => _handle;
         public JsContext Context => _context;

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\build\Net20\Espresso.Interfaces\Espresso.Interfaces.csproj" />
+    <ProjectReference Include="..\build\NetCore\EspressoCore.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems" Label="Shared" />
+
+</Project>

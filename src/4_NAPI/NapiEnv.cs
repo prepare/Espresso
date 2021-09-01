@@ -79,6 +79,15 @@ namespace Espresso.NodeJsApi
         public IntPtr UnmanagedPtr => _nativePtr;
     }
 
+    public static class MyNativeMethods
+    {
+        //this is platform specific ***
+        [DllImport("msvcrt.dll", EntryPoint = "memset", CallingConvention = CallingConvention.Cdecl)]
+        public static unsafe extern void memset(byte* dest, byte c, int byteCount);
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", CallingConvention = CallingConvention.Cdecl)]
+        public static unsafe extern void memcpy(byte* dest, byte* src, int byteCount);
+
+    }
 
     public class MyNativeMemBuffer : System.IDisposable
     {
@@ -90,14 +99,10 @@ namespace Espresso.NodeJsApi
         private MyNativeMemBuffer() { }
         public int Length { get; private set; }
         public IntPtr Ptr { get; private set; }
-
-
         static MyNativeMemBuffer()
         {
             //temp fix
-
         }
-
         public void Dispose()
         {
             if (Ptr != IntPtr.Zero)
@@ -115,11 +120,7 @@ namespace Espresso.NodeJsApi
             unsafe
             {
                 byte* ptr = (byte*)nativeMemBuffer;
-                for (int i = 0; i < len; ++i)
-                {
-                    ptr[i] = 0;
-                }
-
+                MyNativeMethods.memset(ptr, 0, len);
             }
 
             if (nativeMemBuffer != IntPtr.Zero)
