@@ -29,7 +29,7 @@ namespace TestNode01
             //then just copy it to another name 'libespr'   
 
 
-            string libEspr = @"../../../node-v16.3.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v16.8.0/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //----------------------------------- 
@@ -64,7 +64,7 @@ namespace TestNode01
                         'content-type': 'text/html',
                         ':status': 200
                       });
-                      stream.end('<h1>Hello World, EspressoND, node 16.3.0</h1>');
+                      stream.end('<h1>Hello World, EspressoND, node 16.8.0</h1>');
                     });
 
                     server.listen(8443);

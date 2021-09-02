@@ -19,7 +19,7 @@ namespace TestNode01
             //we will get node.dll
             //then just copy it to another name 'libespr'    
 
-            string libEspr = @"../../../node-v16.3.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v16.8.0/out/Release/node.dll";
 
             //-----------------------------------
             //2. load node.dll
