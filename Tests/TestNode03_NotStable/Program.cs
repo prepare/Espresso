@@ -322,7 +322,7 @@ MainLoop();");
 
         void InitializeJsGlobals()
         {
-            string libEspr = @"../../../node-v16.3.0/out/Release/node.dll";
+            string libEspr = @"../../../node-v16.8.0/out/Release/node.dll";
             //-----------------------------------
             //2. load node.dll
             //-----------------------------------  
