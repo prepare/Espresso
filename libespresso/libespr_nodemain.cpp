@@ -22,6 +22,7 @@
 #include "node.h"
 #include "../src/libespresso/bridge2.h"
 #ifdef _WIN32
+#include <windows.h>
 #include <VersionHelpers.h>
 #include <WinError.h>
 
@@ -45,7 +46,7 @@ int mywinmain(int argc, wchar_t *wargv[]) {
             "to 1 skips this\ncheck, but Node.js might not execute "
             "correctly. Any issues encountered on\nunsupported "
             "platforms will not be fixed.");
-    exit(ERROR_EXE_MACHINE_TYPE_MISMATCH);
+    //exit(ERROR_EXE_MACHINE_TYPE_MISMATCH);
   }
 
   // Convert argv to UTF8

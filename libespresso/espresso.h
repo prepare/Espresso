@@ -66,6 +66,8 @@ using namespace v8;
 #define JSVALUE_TYPE_INTEGER64      19 //my extension
 #define JSVALUE_TYPE_MEM_ERROR      20 //my extension
 
+#define JSVALUE_TYPE_V8_Local 21  // my extension
+
 #ifdef _WIN32 
 #define EXPORT __declspec(dllexport)
 #else 
