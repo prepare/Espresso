@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNode01_SimpleApp", "Tes
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Espresso_SH", "src\Espresso_SH.shproj", "{2DC5EB46-6421-4AA9-B086-DDEC9BA7296B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNode_NetCore", "TestNode_NetCore\TestNode_NetCore.csproj", "{C02838CF-DC05-4879-945C-7EE72B63C271}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{0cc52d07-104e-45ce-9c37-6480f1a55edf}*SharedItemsImports = 4
@@ -55,6 +57,7 @@ Global
 		src\Espresso_SH.projitems*{2dc5eb46-6421-4aa9-b086-ddec9ba7296b}*SharedItemsImports = 13
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3ae55809-8020-4b59-b969-44ed49111c14}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{3d1e03eb-863d-4b02-9021-c69805c73f7c}*SharedItemsImports = 4
+		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{c02838cf-dc05-4879-945c-7ee72b63c271}*SharedItemsImports = 5
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{d03a94f4-7fa3-491d-94fd-b3ce9800ef80}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e0270099-2d7e-441f-b70e-5654d7bb780f}*SharedItemsImports = 4
 		Tests\NodeJsEngineHelper\NodeJsEngineHelper.projitems*{e2cff41d-e996-47d1-b135-38ae6ebe66c6}*SharedItemsImports = 4
@@ -374,6 +377,26 @@ Global
 		{0CC52D07-104E-45CE-9C37-6480F1A55EDF}.Release|x64.Build.0 = Release|Any CPU
 		{0CC52D07-104E-45CE-9C37-6480F1A55EDF}.Release|x86.ActiveCfg = Release|Any CPU
 		{0CC52D07-104E-45CE-9C37-6480F1A55EDF}.Release|x86.Build.0 = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|Win32.Build.0 = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|x64.Build.0 = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Debug|x86.Build.0 = Debug|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Win32.ActiveCfg = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|Win32.Build.0 = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|x64.ActiveCfg = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|x64.Build.0 = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|x86.ActiveCfg = Release|Any CPU
+		{C02838CF-DC05-4879-945C-7EE72B63C271}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -396,6 +419,7 @@ Global
 		{25C800D8-D92C-4EE9-9512-3FE928E2B6C4} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 		{3D1E03EB-863D-4B02-9021-C69805C73F7C} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 		{0CC52D07-104E-45CE-9C37-6480F1A55EDF} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
+		{C02838CF-DC05-4879-945C-7EE72B63C271} = {75840F7C-C87E-4D91-8B83-80C9BE6E495B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98455A9B-B480-4424-A3C8-D72CDD4D76FA}

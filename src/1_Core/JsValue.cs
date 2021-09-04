@@ -117,7 +117,8 @@ namespace Espresso
 
         //---------------
         //my extension
-        JsTypeWrap = 18
+        JsTypeWrap = 18,
+        JSVALUE_TYPE_V8_Local = 21//v8::Local 
     }
 
     enum JsManagedError

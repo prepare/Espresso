@@ -9,16 +9,14 @@
 #include "js_native_api_v8.h"
 
 using namespace v8;
- 
-
-extern "C" {
-
+  
 
 //---------------
 //COPY from nodejs project's node_api.cc
+//change node_napi_env__ to node_napi_env__2
 // node_napi impl
-struct node_napi_env__ : public napi_env__ {
-  explicit node_napi_env__(v8::Local<v8::Context> context)
+struct node_napi_env__2 : public napi_env__ {
+  explicit node_napi_env__2(v8::Local<v8::Context> context)
       : napi_env__(context) {
     CHECK_NOT_NULL(node_env());
   }
@@ -48,12 +46,12 @@ struct node_napi_env__ : public napi_env__ {
   }
 };
 	
-typedef node_napi_env__* node_napi_env;
+typedef node_napi_env__2* node_napi_env;
 
 static inline napi_env NewEnv(v8::Local<v8::Context> context) {
-  node_napi_env result;
+  node_napi_env result;   
 
-  result = new node_napi_env__(context);
+  result = new node_napi_env__2(context);
   // TODO(addaleax): There was previously code that tried to delete the
   // napi_env when its v8::Context was garbage collected;
   // However, as long as N-API addons using this napi_env are in place,
@@ -69,6 +67,7 @@ static inline napi_env NewEnv(v8::Local<v8::Context> context) {
 }
 //---------------
 
+extern "C" {
 EXPORT void CALLCONV
 js_new_napi_env(JsContext* contextPtr, jsvalue* output) {
   

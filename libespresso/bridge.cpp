@@ -33,7 +33,7 @@ using namespace v8;
 
 extern "C" {
 EXPORT int getVersion() {
-  return 150501;
+  return 160800;
 }
 
 EXPORT JsEngine* CALLCONV
