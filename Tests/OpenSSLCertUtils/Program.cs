@@ -19,7 +19,8 @@ namespace OpenSslPrivateKeyUtils
 
             //1. To generate the certificate and key for this example
 
-            string openssl = @"D:\projects\espr_dev\node-v15.5.1\out\Release\openssl-cli.exe";
+            //string openssl = @"D:\projects\espr_dev\node-v15.5.1\out\Release\openssl-cli.exe";
+            string openssl = @"openssl-cli.exe";
             string openssl_cnf = "openssl.cnf";
 
             {
