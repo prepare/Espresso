@@ -4,7 +4,7 @@
 #include <v8.h>
 #include <cstring>
 #include "libplatform/libplatform.h"
-
+ 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 using namespace std;
 using namespace v8;
@@ -355,11 +355,14 @@ int ArgCount(MetCallingArgs* args) {
 }
 //======================================================
 
-static v8::Platform* default_platform;
+ 
+std::unique_ptr<v8::Platform> default_platform;
 void V8Init() {
-  const int thread_pool_size = 4;
+  const int thread_pool_size = 4; 
+  v8::V8::InitializeICUDefaultLocation("./"); //to current dir
+  v8::V8::InitializeExternalStartupData("./");//to current dir
 
-  default_platform = v8::platform::NewDefaultPlatform(thread_pool_size).get();
-  V8::InitializePlatform(default_platform);
-  V8::Initialize();
-}
+  default_platform = v8::platform::NewDefaultPlatform(thread_pool_size);
+  V8::InitializePlatform(default_platform.get());
+  V8::Initialize();   
+} 
