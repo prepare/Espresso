@@ -148,7 +148,7 @@ namespace Espresso
             return RunJsEngine(nodeStartPars.Count, nodeStartPars.ToArray(), engineSetupCb, engineClosingCb);
         }
         //-------------------------------------------------------------------------------------------------------
-        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JsBridge.LIB_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         static extern int RunJsEngine(int argc, string[] args, NativeEngineSetupCallback engineSetupCb, NativeEngineClosingCallback engineClosingCb);
     }
 }
