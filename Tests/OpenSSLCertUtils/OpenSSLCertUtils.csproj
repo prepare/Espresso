@@ -46,8 +46,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\node-v16.8.0\out\Release\openssl-cli.exe">
-      <Link>openssl-cli.exe</Link>
+    <Content Include="openssl-cli.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
